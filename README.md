@@ -1,4 +1,4 @@
-# histo-MINER: cellular scale features extraction with deep learning from hisitological images for recurrence prediction in SCC skin cancer.
+# histo-MINER: cellular scale features extraction with deep learning from histological images for SCC skin cancer recurrence prediction
 
 ### Possible names:
 
