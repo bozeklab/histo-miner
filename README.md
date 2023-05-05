@@ -1,4 +1,4 @@
-# H&E-MINER: cellular scale features extraction with deep learning from H&E images for skin cancer recurrence prediction
+# histo-MINER: cellular scale features extraction with deep learning from H&E images for skin cancer recurrence prediction
 
 ## Presentation of the pipeline
 
@@ -13,4 +13,7 @@
 - histo-miner
 - histo-lightfall
 - histo-torch
+- he-miner
+- hande-miner
+- HE-miner
 
