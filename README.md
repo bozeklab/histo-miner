@@ -3,7 +3,7 @@
 ## Presentation of the pipeline
 
 <p align="center">
-  <img src="doc/pipeline-scheme.png", style="zoom:500%">
+  <img src="docs/images/pipeline-scheme.png", style="zoom:500%">
 </p>
 
 
