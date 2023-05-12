@@ -6,7 +6,6 @@
   <img src="docs/images/pipeline-scheme.png", style="zoom:500%">
 </p>
 
-
 ## Explain the repo structure
 
 ## Give instructions
