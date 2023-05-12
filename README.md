@@ -7,7 +7,14 @@
 </p>
 
 
-### Possible names:
+## Explain the repo structure
+
+## Give instructions
+- installtion
+- creation of conda env 
+- how to use it 
+
+## Misc
 
 - histo-hash
 - histo-enlighten 
