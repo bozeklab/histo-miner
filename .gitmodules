@@ -1,6 +1,3 @@
-[submodule "src/models/src/models/hovernet"]
-	path = src/models/src/models/hovernet
-	url = https://github.com/lucas-sancere/hover_net
 [submodule "src/models/hovernet"]
 	path = src/models/hovernet
-	url = https://github.com/lucas-sancere/hover_net
+	url = git@github.com:lucas-sancere/hover_net.git
