@@ -19,6 +19,8 @@ from sklearn import linear_model, ensemble
 """
 This file is to update fully
 We will abandon a bit the mrmr repo to apply all the classifider here 
+
+-> needs to play with the last inferences from hvn to updates these repo
 """
 
 

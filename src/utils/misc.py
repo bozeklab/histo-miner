@@ -3,9 +3,7 @@
 from collections import MutableMapping
 
 
-
 ### Utils Functions
-
 
 def convert_flatten_redundant(inputdic, parent_key='', sep='_'):
     """
