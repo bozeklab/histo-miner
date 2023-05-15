@@ -11,7 +11,7 @@ import mrmr
 import boruta
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import linear_model, ensemble
-from utils import *
+
 
 # sys.path.append('../')  # Only for Remote use on Clusters
 

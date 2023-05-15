@@ -10,7 +10,7 @@ import mrmr
 import boruta
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import linear_model, ensemble
-from utils import *
+from src.utils.misc import convert_flatten_redundant
 
 # sys.path.append('../')  # Only for Remote use on Clusters
 
@@ -69,8 +69,7 @@ for root, dirs, files in os.walk(Parentdir):
                     data = filename.read()  # extract information of the JSON as a string
                     print(file)
                     data = json.loads(data)  # read JSON formatted string and convert it to a dict
-                    data = convert_flatten_redundant(
-                        data)  # flatten the dict (with redundant keys in nested dict, see function)
+                    data = convert_flatten_redundant(data)  # flatten the dict (with redundant keys in nested dict, see function)
                     data = {k: v for (k, v) in data.items() if v != 'Not calculated'} #HEre is some dict comprehension / dicitionnary comprehension
 
                     #Convert dict values into an array
