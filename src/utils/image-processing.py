@@ -1,3 +1,4 @@
+#Lucas Sancéré -
 
 """
 Here we will add the functions from classic_image_processing
