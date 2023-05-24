@@ -14,7 +14,7 @@ from scipy.io import loadmat
 
 
 
-# HOVERNET OUTPUT CONVERSIONS AND PROCESSING
+##### HOVERNET OUTPUT CONVERSIONS AND PROCESSING
 
 
 def replacestring_json(file, string2replace, newstring, string2replace_2r, newstring_2r):
@@ -108,7 +108,7 @@ def extr_mattypes(file, savename):
 
 
 
-# TRAINING UTILS: CREATE TRAINING PATCHES
+##### TRAINING UTILS: CREATE TRAINING PATCHES
 
 def gen_hvn_training_bigpatches_from_masks(imagesNpyPannukeFormat, masksNpyPannukeFormat, pathtosave):
     """

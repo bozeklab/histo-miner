@@ -3,6 +3,7 @@
 import json
 import os
 import time
+import subprocess
 
 import numpy as np
 import scipy.stats
@@ -13,9 +14,9 @@ import boruta
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import linear_model, ensemble
 
-
 # sys.path.append('../')  # Only for Remote use on Clusters
-
+from scripts.feature_selection_main import featarray, clarray, Selfeat_mrmr, Selfeat_boruta, Orderedp_mannwhitneyu\
+    , Nbr_keptfeat
 
 """
 This file is to update fully
@@ -24,12 +25,22 @@ We will abandon a bit the mrmr repo to apply all the classifider here
 -> needs to play with the last inferences from hvn to updates these repo
 """
 
+# Choose classification you want to run
+
+run_mrmr = True
+run_boruta = True
+run_mannwhitney = True
+
+
+
 
 ######### CLASSIFIERS ################  /!\   -----> PREDICTION ON TRAINING DATA§ Not good!! Split the set into 2 when more data!!!!!
 #For now we just check that the code is working, it is a debugging step
 
 #https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
 #https://scikit-learn.org/stable/modules/linear_model.html
+
+
 
 
 ####### Classifier using as input all the data
@@ -69,7 +80,7 @@ print("Accuracy of RANDOM FOREST classifier:", forest.score(genfeatarray, clarra
 
 if run_mrmr:
     # Generate the matrix with selected feature for mrmr
-    mrmrselectedfeatures_idx = selfeat_mrmr[0]
+    mrmrselectedfeatures_idx = Selfeat_mrmr[0]
     mrmrselectedfeatures_idx = sorted(mrmrselectedfeatures_idx)
     featarrar_mrmr = np.transpose(featarray)
     featarray_mrmr = featarrar_mrmr[:, mrmrselectedfeatures_idx]
@@ -110,44 +121,44 @@ if run_mrmr:
 
 if run_boruta:
     # here the matrix with selected feature is already done
-    print('Shape selfeat_boruta', selfeat_boruta.shape)
+    print('Shape selfeat_boruta', Selfeat_boruta.shape)
     print('Shape clarray', clarray.shape)
 
     ###### RIDGE CLASSIFIER
     # Initialize the RidgeClassifier with an alpha value of 0.5
     ridge_boruta = linear_model.RidgeClassifier(alpha=0.5)
     # Fit the classifier to the data
-    ridge_boruta.fit(selfeat_boruta, clarray)
+    ridge_boruta.fit(Selfeat_boruta, clarray)
     # Predict the labels for new data
-    ridge_boruta_pred = ridge_boruta.predict(selfeat_boruta)
+    ridge_boruta_pred = ridge_boruta.predict(Selfeat_boruta)
     print('ridge_boruta_pred : {}'.format(ridge_boruta_pred))
     # Print the accuracy of the classifier
-    print("Accuracy of RIDGE BORUTA classifier:", ridge_boruta.score(selfeat_boruta, clarray))
+    print("Accuracy of RIDGE BORUTA classifier:", ridge_boruta.score(Selfeat_boruta, clarray))
 
     ##### LOGISTIC REGRESSION
     lr_boruta = linear_model.LogisticRegression(solver='liblinear', multi_class='ovr')
     # Fit the classifier to the data
-    lr_boruta.fit(selfeat_boruta, clarray)
+    lr_boruta.fit(Selfeat_boruta, clarray)
     # Predict the labels for new data
-    lr_boruta_pred = lr_boruta.predict(selfeat_boruta)
+    lr_boruta_pred = lr_boruta.predict(Selfeat_boruta)
     print('lr_boruta_pred : {}'.format(lr_boruta_pred))
     # Print the accuracy of the classifier
-    print("Accuracy of LOGISTIC BORUTA classifier:", lr_boruta.score(selfeat_boruta, clarray))
+    print("Accuracy of LOGISTIC BORUTA classifier:", lr_boruta.score(Selfeat_boruta, clarray))
 
     ##### RANDOM FOREST
     forest_boruta = ensemble.RandomForestClassifier(n_estimators=100, class_weight='balanced')
     # Fit the classifier to the data
-    forest_boruta.fit(selfeat_boruta, clarray)
+    forest_boruta.fit(Selfeat_boruta, clarray)
     # Predict the labels for new data
-    forest_boruta_pred = forest_boruta.predict(selfeat_boruta)
+    forest_boruta_pred = forest_boruta.predict(Selfeat_boruta)
     print('forest_boruta_pred : {}'.format(forest_boruta_pred))
     # Print the accuracy of the classifier
-    print("Accuracy of RANDOM FOREST BORUTA classifier:", forest_boruta.score(selfeat_boruta, clarray))
+    print("Accuracy of RANDOM FOREST BORUTA classifier:", forest_boruta.score(Selfeat_boruta, clarray))
 
 
 if run_mannwhitney:
     # Generate the matrix with selected feature for mannwhitney
-    mwuselectedfeatures_idx = orderedp_mannwhitneyu[:nbr_keptfeat - 1]
+    mwuselectedfeatures_idx = Orderedp_mannwhitneyu[:Nbr_keptfeat - 1]
     mwuselectedfeatures_idx = sorted(mwuselectedfeatures_idx)
     featarray_mannwhitney = np.transpose(featarray)
     featarray_mannwhitney = featarray_mannwhitney[:, mwuselectedfeatures_idx]
