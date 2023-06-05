@@ -1,0 +1,76 @@
+
+# All path related parameters
+# the "" quotes allow to break the line with \ properly for then loading into python
+  paths:
+    folders:
+        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/\
+        histo-miner/testdataorga/recurrence/Dortmund(copy)"
+
+
+    files:
+
+
+
+# All parameters of string names
+  names:
+      filename: 2021-07-14-20.02.54-labels.png
+
+      savename: Crops
+
+      newnamecore: segmtrain_tumor_
+
+      cararcters_filter: Region_
+
+      namesuffix: _ClassMap
+
+      managment:
+        # For some reason, >- is needed because if not we will have an issue with the quotes inside the string
+        str2replace_tilemode: >-
+           {"mag": null, "nuc": {
+
+        newstr_tilemode: >-
+           {
+
+        str2replace2_tilemode: >-
+           }}}
+
+        newstr2_tilemode: >-
+           }}
+
+        str2replace_wsimode: >-
+          {"mag": 40, "nuc": {
+
+        newstr_wsimode: >-
+          {
+
+        str2replace2_wsimode: >-
+          }}}
+
+        newstr2_wsimode: >-
+          }}
+
+      extension: tif
+
+# All not strings parameters
+  parameters:
+
+    booleans:
+
+    lists:
+      selectedclasses: [1, 2, 3, 4, 5]
+
+      classnameaskey: ['Granulocyte', 'Lymphocyte' , 'Plasme', 'Stroma', 'Tumor']
+
+      values2change: [1, 2]
+
+      newvalues: [0, 255]
+
+    dict:
+
+
+    int:
+
+
+    str:
+      hovernet_mode: 'wsi'
+

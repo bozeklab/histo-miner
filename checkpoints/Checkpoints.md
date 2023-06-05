@@ -1,5 +1,5 @@
 
-# Chekpoints  
+# Checkpoints  
 
 ## Download and Use Checkpoints
 
