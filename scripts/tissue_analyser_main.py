@@ -1,19 +1,17 @@
 
 import json
 import os
-import sys
 
-import numpy as np
-import scipy.stats
 import yaml
 from attrdict import AttrDict as attributedict
 
-
 from src.histo_miner import hovernet_utils, segmenter_utils
+from src.histo_miner import tissue_analyser as analyser
+from src.utils.misc import NpEncoder
 
-
-"""Collection of scripts for different Hovernet tasks"""
-
+# import sys
+# import numpy as np
+# import scipy.stats
 
 ##################################### Load configs parameter #############################
 
@@ -24,11 +22,13 @@ with open("./../configs/histo_miner/tissue_analyser.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 parentdir = config.paths.folders.main
+maskmap_downfactor = config.parameters.int.maskmap_downfactor
 hovernet_mode = str(config.parameters.str.hovernet_mode)
 values2change = list(config.parameters.lists.values2change)
 newvalues = list(config.parameters.lists.newvalues)
 selectedclasses = list(config.parameters.lists.selectedclasses)
-class_name_as_key = list(config.parameters.lists.classnameaskey)
+classnames = list(config.parameters.lists.classnames)
+classnames_injson = dict(config.parameters.dict.classnames_injson)
 
 str2replace_tilemode = config.names.managment.str2replace_tilemode
 newstr_tilemode = config.names.managment.newstr_tilemode
@@ -38,6 +38,203 @@ str2replace_wsimode = config.names.managment.str2replace_wsimode
 newstr_wsimode = config.names.managment.newstr_wsimode
 str2replace2_wsimode = config.names.managment.str2replace2_wsimode
 newstr2_wsimode = config.names.managment.newstr2_wsimode
+
+
+
+#############################################################
+## Processing of inferences results for Tissue Analyser
+#############################################################
+
+"""Update each json files to be compatible with Tissue Analyser AND QuPath"""
+
+"""Update each mask output """
+
+
+# Load each parametes as define in ManageJSON script
+if hovernet_mode == 'tile':
+    string2replace = str(str2replace_tilemode)
+    newstring = str(newstr_tilemode)
+    string2replace2 = str(str2replace2_tilemode)
+    newstring2 = str(newstr2_tilemode)
+elif hovernet_mode == 'wsi':
+    string2replace = str(str2replace_wsimode)
+    newstring = str(newstr_wsimode)
+    string2replace2 = str(str2replace2_wsimode)
+    newstring2 = str(newstr2_wsimode)
+else:
+    print("hovernet_mode string is not correct, tile mode choosen by default")
+    string2replace = str(str2replace_tilemode)
+    newstring = str(newstr_tilemode)
+    string2replace2 = str(str2replace2_tilemode)
+    newstring2 = str(newstr2_tilemode)
+
+
+print('The folders must contains only hovernet predictions and segmenter predictions files')
+for root, dirs, files in os.walk(parentdir):
+    if files:  # Keep only the not empty lists of files
+        # Because files is a list of file name here, and not a srting. You create a string with this:
+        for file in files:
+            path, extension = os.path.splitext(file)
+            # Update each JSON file
+            filepath = root + '/' + file
+            # Knowing that root is the path to the directory of the selected file,
+            # root + file is the complete path
+            if extension == '.json':
+                print('Detected json file:', file)
+                print('Path to file :', filepath)
+                hovernet_utils.replacestring_json(filepath, string2replace,
+                                                  newstring, string2replace2,
+                                                  newstring2)
+                pathtofolder, filename = os.path.split(file)
+                print('Updated json')
+            if extension != '.json':
+                print('Detected mask file '
+                      '(has to be in a pillow supported format - like .png)', file)
+                print('Path to file :', filepath)
+                segmenter_utils.change_pix_values(filepath, values2change,
+                                                  newvalues)
+                print('Updated mask file')
+
+
+print('All json files updated with mode {}'.format(hovernet_mode))
+print('All mask files updated')
+
+
+#############################################################
+## Tissue Analysis, Extraction of features
+#############################################################
+
+"""Tissue Analysis"""
+
+
+for root, dirs, files in os.walk(parentdir):
+    if files:  # Keep only the not empty lists of files
+        # Because files is a list of file name here, and not a srting. You create a string with this:
+        for file in files:
+            path, extension = os.path.splitext(file)
+            path_to_parentfolder, nameoffile = os.path.split(path)  # path_to_parentfolder is empty, why?)
+            if extension == '.json' and 'data' not in nameoffile:
+                if os.path.exists(parentdir + '/' + nameoffile + '_data2.json'):
+                    print('Detected an already processed file:', nameoffile)
+                    continue
+                else:
+                    print('Detected json file:', file)
+                    # Knowing that root is the path to the directory of the selected file,
+                    # root + file is the complete path
+                    # Creating the dictionnary to count the cells using countjson function
+                    jsonfilepath = root + '/' + file
+                    print('Process count of cells per cell type in the whole slide image...')
+                    classcountsdict = analyser.countjson(jsonfilepath, classnames_injson)
+                    allcells_in_wsi_dict = classcountsdict
+                    print('Allcells_inWSI_dict generated as follow:', allcells_in_wsi_dict)
+                    print('Note: at this stage the correspondance between "type number" and "cell type name" '
+                          'is not done yet')
+                    # Create the path to Mask map binarized and Class JSON and save it into a variable
+                    if os.path.exists(jsonfilepath) and os.path.exists(jsonfilepath.replace(extension, '.png')):
+
+                        # Create path for the maskmap
+                        maskmappath = jsonfilepath.replace(extension, '.png')
+                        print('Detected mask file:', maskmappath)
+
+                        #Change pixel values of the maskmaps
+                        # TO CHECK - very long step GPU or no GPU
+                        # change_pix_values(Maskmappath, [1, 2], [0, 255], UseGPU=False)
+
+                        # Analysis
+                        tumor_tot_area = analyser.count_pix_value(maskmappath, 255) * maskmap_downfactor
+                        print('Process cells identification '
+                              '(number of cells and tot area of cells) inside tumor regions...')
+
+                        cellsratio_inmask_dict = analyser.cellsratio_insidemask_classjson(
+                            maskmappath, jsonfilepath, selectedclasses,
+                            maskmapdownfactor=maskmap_downfactor,
+                            classnameaskey=classnames)
+
+                        print('Cellsratio_inmask_dict generated as follow:', cellsratio_inmask_dict)
+                        print('Process distance calculcations inside tumor regions...')
+
+                        cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
+                            jsonfilepath, selectedclasses,
+                            cellfilter='Tumor',
+                            maskmap=maskmappath,
+                            maskmapdownfactor=maskmap_downfactor,
+                            tumormargin=None)
+
+                        print('Cellsdist_inmask_dict generated as follow:', cellsdist_inmask_dict)
+
+                    else:
+                        cellsratio_inmask_dict = None
+                        cellsdist_inmask_dict = None
+                        print('Cellsratio_inmask_dict not generated')
+                        print('Cellsdist_inmask_dict not generated')
+
+
+                    jsondata = analyser.hvn_outputproperties(allcells_in_wsi_dict,
+                                                    cellsratio_inmask_dict, cellsdist_inmask_dict,
+                                                    masknature='Tumor',
+                                                    areaofmask=tumor_tot_area)
+
+                    # Write information inside a json file and save it
+                    with open(parentdir + '/' + nameoffile + '_data.json', 'w') as outfile:
+                        json.dump(jsondata, outfile, cls=NpEncoder)
+
+                    print('Json file written :', path_to_parentfolder + nameoffile + '_data.json')
+
+print('Tissue Analysis Done')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ##################################### Classes for functions ###############################
 
@@ -55,14 +252,14 @@ newstr2_wsimode = config.names.managment.newstr2_wsimode
 
 #################################### Select the task to run #######################################
 
-"""
-Code snippet 1 : Generate ClassMaps from InstanceMaps and ClassVectors OR
-                 Generate ClassVector from InstanceMaps and ClassMaps
-Code snippet 2 : Update each json files to be compatible with QuPath
-Code snippet 3 : Count number of cells per type and calculate density related metrics from HVN JSON outputs
-Code snippet 4 : Run Stats test on the data (for exemple  Mann-Whitney U rank test)
-Code snippet 5 : **MOVED** Concatenate the quantification features all together in pandas DataFrame and run MRMR  
-"""
+# """
+# Code snippet 1 : Generate ClassMaps from InstanceMaps and ClassVectors OR
+#                  Generate ClassVector from InstanceMaps and ClassMaps
+# Code snippet 2 : Update each json files to be compatible with QuPath
+# Code snippet 3 : Count number of cells per type and calculate density related metrics from HVN JSON outputs
+# Code snippet 4 : Run Stats test on the data (for exemple  Mann-Whitney U rank test)
+# Code snippet 5 : **MOVED** Concatenate the quantification features all together in pandas DataFrame and run MRMR
+# """
 #
 # codesnippet = 3
 #
@@ -125,141 +322,6 @@ Code snippet 5 : **MOVED** Concatenate the quantification features all together 
 
 
 
-#############################################################
-## Processing of inferences results for Tissue Analyser
-#############################################################
-
-"""Update each json files to be compatible with Tissue Analyser AND QuPath"""
-
-"""Update each mask output """
-
-## Parameters
-
-# Not useful except for larning purpose
-# param = ManageJSONparameters()  # Load ManageJSONparameters from ManageJSON script2021-05-07_16.21.29
-# param_tile = Tile()
-# param_wsi = WSI()
-
-# Load each parametes as define in ManageJSON script
-if hovernet_mode == 'tile':
-    string2replace = str(str2replace_tilemode)
-    newstring = str(newstr_tilemode)
-    string2replace2 = str(str2replace2_tilemode)
-    newstring2 = str(newstr2_tilemode)
-elif hovernet_mode == 'wsi':
-    string2replace = str(str2replace_wsimode)
-    newstring = str(newstr_wsimode)
-    string2replace2 = str(str2replace2_wsimode)
-    newstring2 = str(newstr2_wsimode)
-    # string2replace = '{"mag": 40, "nuc": {'
-    # newstring = '{'
-    # string2replace2 = '}}}'
-    # newstring2 = '}}'
-else:
-    print("hovernet_mode string is not correct, tile mode choosen by default")
-    string2replace = str(str2replace_tilemode)
-    newstring = str(newstr_tilemode)
-    string2replace2 = str(str2replace2_tilemode)
-    newstring2 = str(newstr2_tilemode)
-
-
-print('The folders must contains only hovernet predictions and segmenter predictions files')
-for root, dirs, files in os.walk(parentdir):
-    if files:  # Keep only the not empty lists of files
-        # Because files is a list of file name here, and not a srting. You create a string with this:
-        for file in files:
-            path, extension = os.path.splitext(file)
-            # Update each JSON file
-            filepath = root + '/' + file
-            # Knowing that root is the path to the directory of the selected file,
-            # root + file is the complete path
-            if extension == '.json':
-                print('Detected json file:', file)
-                print('Path to file :', filepath)
-                hovernet_utils.replacestring_json(filepath, string2replace,
-                                                  newstring, string2replace2,
-                                                  newstring2)
-                pathtofolder, filename = os.path.split(file)
-                print('Updated json')
-            # if extension != '.json':
-            #     print('Detected mask file '
-            #           '(has to be in a pillow supported format - like .png)', file)
-            #     print('Path to file :', filepath)
-            #     segmenter_utils.change_pix_values(filepath, values2change,
-            #                                       newvalues)
-            #     print('Updated mask file')
-
-
-print('All json files updated with mode {}'.format(hovernet_mode))
-print('All mask files updated')
-
-
-#############################################################
-## Tissue Analysis, Extraction of features
-#############################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -277,7 +339,7 @@ print('All mask files updated')
 # # Parameter
 #
 # class_names = ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5']
-# maskmapdownfactor = 32
+# maskmap_downfactor = 32
 #
 #
 # if codesnippet == 3:

@@ -1,8 +1,11 @@
 #Lucas Sancéré -
 
-from collections import MutableMapping
+import json
 import os
+from collections import MutableMapping
+
 import imagesize
+import numpy as np
 from openslide import OpenSlide
 
 
@@ -117,3 +120,16 @@ def convert_flatten(inputdic: dict, parent_key: str = '') -> dict:
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+### Utils Classes
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
