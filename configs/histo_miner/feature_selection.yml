@@ -1,0 +1,20 @@
+
+# All path related parameters
+# the "" quotes allow to break the line with \ properly for then loading into python
+  paths:
+    folders:
+        main: "/home/"
+
+
+
+# All parameters of string names
+
+
+
+
+
+# All not strings parameters
+
+  parameters:
+    int:
+      nbr_keptfeat: 5

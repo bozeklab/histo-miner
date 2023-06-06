@@ -525,9 +525,9 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
                                      maskmap,
                                      tumorid_map,
                                      cellfilter,
-                                     tumormargin,
+                                     #tumormargin,
                                      maskmapdownfactor,
-                                     dist_nestedlist,
+                                     #dist_nestedlist,
                                      queuenames_list[-1]))
                 p.start()
 
@@ -556,6 +556,7 @@ def multipro_distc2c(allnucl_info,
                      queue):
     """
     Function to allow multiprocessing on the distance calculation.
+    See mpcell2celldist_classjson function
 
     Parameters
     ----------
@@ -615,8 +616,10 @@ def multipro_distc2c(allnucl_info,
         bboxcoord = [r.bbox for r in regions if
                      r.label == source_tumor_id]  # Bounding box (min_row, min_col, max_row, max_col).
         bbmin_row, bbmax_row, bbmin_col, bbmax_col = bboxcoord[0][0], bboxcoord[0][2], bboxcoord[0][1], bboxcoord[0][3]
-        bboxlength = bbmax_col - bbmin_col  # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
-        bboxwide = bbmax_row - bbmin_row  # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
+        bboxlength = bbmax_col - bbmin_col
+        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
+        bboxwide = bbmax_row - bbmin_row
+        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
         # BE CAREFUL ALL THESE LENGHT ARE IN THE DOWNSIZE MAP
         # Find all the points belonging to the subset of the bounding box around the source class cell
         # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself

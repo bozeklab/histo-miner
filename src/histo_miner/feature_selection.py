@@ -1,49 +1,38 @@
 #Lucas Sancéré -
 
-import json
-import os
-import time
-
-import numpy as np
-import scipy.stats
-import sys
-import pandas as pd
-import mrmr
 import boruta
-from pandas import DataFrame
+import mrmr
+import numpy as np
+import pandas as pd
+import scipy.stats
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import linear_model, ensemble
-from src.utils.misc import convert_flatten_redundant
 
-# sys.path.append('../')  # Only for Remote use on Clusters
-
-
-"""
-This file is to update fully
-We will abandon a bit the mrmr repo to do all the feature selections here 
-
--> needs to play with the last inferences from hvn to updates these repo
-"""
-
+# import sys
+# from pandas import DataFrame
+# from sklearn import linear_model, ensemble
+# from src.utils.misc import convert_flatten_redundant
+# import json
+# import os
+# import time
 
 class FeatureSelector:
     """
     Different methods to select features from a feature array
     """
-    def __init_(self, feature_array: np.ndarray, classification_arrray: np.ndarray):
+    def __init_(self, feature_array: np.ndarray, classification_array: np.ndarray):
         """
         Parameters
         ----------
         feature_array: npy array
             Array containing all the features values for each wsi image
-        classification_arrray: npy array
+        classification_array: npy array
             Array containing the classification output (recurrence, or no recurrence) of each wsi image
 
         Returns
         ------
         """
         self.feature_array = feature_array
-        self.classification_array = classification_arrray
+        self.classification_array = classification_array
 
 
     def run_mrmr(self, nbr_keptfeat: int, return_scores: bool = True) -> np.ndarray:
@@ -148,8 +137,3 @@ class FeatureSelector:
         orderedp_mannwhitneyu = sorted(orderedp_mannwhitneyu.items(),
                                        key=lambda x: x[1])
         return orderedp_mannwhitneyu
-
-
-
-
-

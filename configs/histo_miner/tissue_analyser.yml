@@ -7,21 +7,9 @@
         histo-miner/testdataorga/recurrence/Dortmund(copy)"
 
 
-    files:
-
-
-
 # All parameters of string names
   names:
-      filename: 2021-07-14-20.02.54-labels.png
-
-      savename: Crops
-
-      newnamecore: segmtrain_tumor_
-
-      cararcters_filter: Region_
-
-      namesuffix: _ClassMap
+      hovernet_mode: wsi
 
       managment:
         # For some reason, >- is needed because if not we will have an issue with the quotes inside the string
@@ -49,30 +37,23 @@
         newstr2_wsimode: >-
           }}
 
-      extension: tif
 
 # All not strings parameters
   parameters:
-
-    booleans:
 
     lists:
       selectedclasses: [1, 2, 3, 4, 5]
 
       classnames: ['Granulocyte', 'Lymphocyte' , 'Plasme', 'Stroma', 'Tumor']
 
+      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5']
+
       values2change: [1, 2]
 
       newvalues: [0, 255]
-
-    dict:
-      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5']
-
 
     int:
       maskmap_downfactor: 32
 
 
-    str:
-      hovernet_mode: 'wsi'
 
