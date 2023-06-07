@@ -2,13 +2,26 @@
 #
 #
 #
+# Possiblities for distance caluclation
+
+
 #
+# pourcindex = 0
+pourcentages = [0.05, 0.1, 0.25, 0.5, 1, 'stop']
+# while len(selectedtrg_points) == 0 and pourcentages[pourcindex] != 'stop':
+#     pourcentage = int(pourcentages[pourcindex])
+#     xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, \
+#                        source_info[0] + bboxlength * pourcentage * maskmapdownfactor,
+#     yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, \
+#                        source_info[1] + bboxwide * pourcentage * maskmapdownfactor
+#     selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
+#                           max(xminthr, bbmin_col * maskmapdownfactor) <= trgpoint[0]
+#                           <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
+#                           max(yminthr, bbmin_row) <= trgpoint[1]
+#                           <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
 #
-
-
-
-
-
+#     pourcindex += 1
+#
 
 
 

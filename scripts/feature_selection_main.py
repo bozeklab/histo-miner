@@ -52,8 +52,6 @@ in pandas DataFrame and run the different feature selections"""
 
 ####### TO ADD: Associate the index of the selected feature to the name of it (use dict probably)
 
-# Try to use https://github.com/smazzanti/mrmr with pandas dataframes as input
-# Boruta, github repo is: https://github.com/scikit-learn-contrib/boruta_py
 
 cllist = list()
 # clarray stands for for classification list (recurrence (1) or norecurrence (0))
@@ -94,7 +92,7 @@ for root, dirs, files in os.walk(pathtofolder):
                     else:
                         raise ValueError('Some features are not associated to a recurrence '
                                          'or norecurrence WSI classification. User must sort JSON and rename it'
-                                         'with the corresponding reccurence and noreccurence caracters')
+                                         ' with the corresponding reccurence and noreccurence caracters')
 
             if not feature_init:
                 featarray = valuearray
@@ -117,6 +115,7 @@ if cllist:
 clarray = np.asarray(cllist)
 # clarray stands for for classification array (recurrence or norecurrence)
 print("Feature Matrix Shape is", featarray.shape)
+print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
 
 
@@ -126,19 +125,21 @@ print("Classification Vector is", clarray)
 #############################################################
 
 
+FeatureSelector = FeatureSelector(featarray, clarray)
+
 print('mR.MR calculations (see https://github.com/smazzanti/mrmr to have more info) '
       'in progress...')
-selfeat_mrmr = FeatureSelector.run_mrmr(featarray, clarray, nbr_keptfeat)
+selfeat_mrmr = FeatureSelector.run_mrmr(nbr_keptfeat)
 print('Selected Features: {}'.format(selfeat_mrmr[0]))
 print('Relevance Matrix: {}'.format(selfeat_mrmr[1]))
 print('Redundancy Matrix: {}'.format(selfeat_mrmr[2]))
 
 print('Boruta calculations  (https://github.com/scikit-learn-contrib/boruta_py to have more info)'
       ' in progress...')
-selfeat_boruta = FeatureSelector.run_boruta(featarray, clarray)
+selfeat_boruta = FeatureSelector.run_boruta()
 print("Selected Feature Matrix Shape: {}".format(selfeat_boruta.shape))
 print('Selected Features: {}'.format(selfeat_boruta))
 
 print('Mann Whitney U calculations in progress...')
-orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney(featarray, clarray)
+orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney()
 print('Output Ordered from best p-values to worst: {}'.format(orderedp_mannwhitneyu))

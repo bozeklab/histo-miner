@@ -183,6 +183,3 @@ for root, dirs, files in os.walk(pathtofolder):
                     print('Json file written :', path_to_parentfolder + nameoffile + '_analysed.json')
 
 print('Tissue Analysis Done')
-
-
-

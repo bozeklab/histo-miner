@@ -525,10 +525,11 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
                                      maskmap,
                                      tumorid_map,
                                      cellfilter,
-                                     #tumormargin,
                                      maskmapdownfactor,
-                                     #dist_nestedlist,
-                                     queuenames_list[-1]))
+                                     queuenames_list[-1])
+                                     # tumormargin,
+                                     # dist_nestedlist,
+                              )
                 p.start()
 
     p.join()
@@ -613,8 +614,8 @@ def multipro_distc2c(allnucl_info,
         selectedtrg_points = list()
         multfactor = 1
         # define the bounding box of the tumor region, and the length and wide of the bbox
-        bboxcoord = [r.bbox for r in regions if
-                     r.label == source_tumor_id]  # Bounding box (min_row, min_col, max_row, max_col).
+        bboxcoord = [r.bbox for r in regions if r.label == source_tumor_id]
+        # Bounding box (min_row, min_col, max_row, max_col).
         bbmin_row, bbmax_row, bbmin_col, bbmax_col = bboxcoord[0][0], bboxcoord[0][2], bboxcoord[0][1], bboxcoord[0][3]
         bboxlength = bbmax_col - bbmin_col
         # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
@@ -625,10 +626,10 @@ def multipro_distc2c(allnucl_info,
         # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself
         while len(selectedtrg_points) == 0 and multfactor < 20.5:
             pourcentage = 0.05 * multfactor
-            xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, source_info[
-                0] + bboxlength * pourcentage * maskmapdownfactor,
-            yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, source_info[
-                1] + bboxwide * pourcentage * maskmapdownfactor
+            xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, \
+                               source_info[0] + bboxlength * pourcentage * maskmapdownfactor,
+            yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, \
+                               source_info[1] + bboxwide * pourcentage * maskmapdownfactor
             selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
                                   max(xminthr, bbmin_col * maskmapdownfactor)
                                   <= trgpoint[0] <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
@@ -930,36 +931,16 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         # Average Distance to closest neighboor
         # What to look for in cellsdist_in_mask is not obvious at all !!! Look doc string of cell2celldist_classjson
 
-        dist_tumor_dict[
-            "DistClosest_Granulocytes_TumorCells_inTumor"
-        ] = cellsdist_inmask_dict[0][3]
-        dist_tumor_dict[
-            "DistClosest_Lymphocytes_TumorCells_inTumor"
-        ] = cellsdist_inmask_dict[1][2]
-        dist_tumor_dict[
-            "DistClosest_PlasmaCells_TumorCells_inTumor"
-        ] = cellsdist_inmask_dict[2][1]
-        dist_tumor_dict[
-            "DistClosest_StromaCells_TumorCells_inTumor"
-        ] = cellsdist_inmask_dict[3][0]
-        dist_tumor_dict[
-            "DistClosest_Granulocytes_Lymphocytes_inTumor"
-        ] = cellsdist_inmask_dict[0][0]
-        dist_tumor_dict[
-            "DistClosest_PlasmaCells_Lymphocytes_inTumor"
-        ] = cellsdist_inmask_dict[1][0]
-        dist_tumor_dict[
-            "DistClosest_StromaCells_Lymphocytes_inTumor"
-        ] = cellsdist_inmask_dict[1][1]
-        dist_tumor_dict[
-            "DistClosest_Granulocytes_PlasmaCells_inTumor"
-        ] = cellsdist_inmask_dict[0][1]
-        dist_tumor_dict[
-            "DistClosest_StromaCells_PlasmaCells_inTumor"
-        ] = cellsdist_inmask_dict[2][0]
-        dist_tumor_dict[
-            "DistClosest_StromaCells_Granulocytes_inTumor"
-        ] = cellsdist_inmask_dict[0][2]
+        dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][3]
+        dist_tumor_dict["DistClosest_Lymphocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[1][2]
+        dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][1]
+        dist_tumor_dict["DistClosest_StromaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[3][0]
+        dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]
+        dist_tumor_dict["DistClosest_PlasmaCells_Lymphocytes_inTumor"] = cellsdist_inmask_dict[1][0]
+        dist_tumor_dict["DistClosest_StromaCells_Lymphocytes_inTumor"] = cellsdist_inmask_dict[1][1]
+        dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
+        dist_tumor_dict["DistClosest_StromaCells_PlasmaCells_inTumor"] = cellsdist_inmask_dict[2][0]
+        dist_tumor_dict["DistClosest_StromaCells_Granulocytes_inTumor"] = cellsdist_inmask_dict[0][2]
         # could be change to make it more explicit??
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions distances

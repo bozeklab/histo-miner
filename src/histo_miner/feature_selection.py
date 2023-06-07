@@ -19,7 +19,7 @@ class FeatureSelector:
     """
     Different methods to select features from a feature array
     """
-    def __init_(self, feature_array: np.ndarray, classification_array: np.ndarray):
+    def __init__(self, feature_array: np.ndarray, classification_array: np.ndarray):
         """
         Parameters
         ----------
@@ -31,6 +31,7 @@ class FeatureSelector:
         Returns
         ------
         """
+        super(FeatureSelector, self).__init__()
         self.feature_array = feature_array
         self.classification_array = classification_array
 
