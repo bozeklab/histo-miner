@@ -6,10 +6,10 @@
 
 
 #
-# pourcindex = 0
-pourcentages = [0.05, 0.1, 0.25, 0.5, 1, 'stop']
-# while len(selectedtrg_points) == 0 and pourcentages[pourcindex] != 'stop':
-#     pourcentage = int(pourcentages[pourcindex])
+# ratioindex = 0
+sizeratios = [0.005, 0.012, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 'stop']
+# while len(selectedtrg_points) == 0 and sizeratios[ratioindex] != 'stop':
+#     sizeratio = int(sizeratios[ratioindex])
 #     xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, \
 #                        source_info[0] + bboxlength * pourcentage * maskmapdownfactor,
 #     yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, \
@@ -20,8 +20,8 @@ pourcentages = [0.05, 0.1, 0.25, 0.5, 1, 'stop']
 #                           max(yminthr, bbmin_row) <= trgpoint[1]
 #                           <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
 #
-#     pourcindex += 1
-#
+#     ratioindex += 1
+
 
 
 

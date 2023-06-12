@@ -124,7 +124,7 @@ for root, dirs, files in os.walk(pathtofolder):
                     print('Detected an already processed file:', nameoffile)
                     continue
                 else:
-                    print('Detected hovernet output json file:', file)
+                    print('***** \nDetected hovernet output json file:', file)
                     # Knowing that root is the path to the directory of the selected file,
                     # root + file is the complete path
                     # Creating the dictionnary to count the cells using countjson function
@@ -180,6 +180,6 @@ for root, dirs, files in os.walk(pathtofolder):
                     with open(pathtofolder + '/' + nameoffile + '_analysed.json', 'w') as outfile:
                         json.dump(jsondata, outfile, cls=NpEncoder)
 
-                    print('Json file written :', path_to_parentfolder + nameoffile + '_analysed.json')
+                    print('Json file written :', path_to_parentfolder + nameoffile + '_analysed.json \n*****')
 
 print('Tissue Analysis Done')

@@ -41,7 +41,11 @@
   parameters:
 
     lists:
-      selectedclasses: [1, 2, 3, 4, 5]
+      selectedclasses: [1, 2, 3, 5]
+      # For a very comprehensive (but wazy too long for now) analysis we can keep all classes:
+      # [1, 2, 3, 4, 5]
+      # For a realistic analysis speed, avoid including stroma cells in the distance calculation and then keep:
+      # [1, 2, 3, 5]
 
       classnames: ['Granulocyte', 'Lymphocyte' , 'Plasme', 'Stroma', 'Tumor']
 

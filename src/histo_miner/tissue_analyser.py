@@ -347,15 +347,15 @@ def cell2celldist_classjson(classjson: str, selectedclasses: list,
                     # or until the subset is the bounding box itself
                     while len(selectedtrg_points) == 0 and multfactor < 20.5:
                         pourcentage = 0.05 * multfactor
-                        xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, \
-                                           source_info[0] + bboxlength * pourcentage * maskmapdownfactor,
-                        yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, \
-                                           source_info[1] + bboxwide * pourcentage * maskmapdownfactor
+                        xminthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor
+                        xmaxthr = source_info[0] + bboxlength * pourcentage * maskmapdownfactor
+                        yminthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor
+                        ymaxthr = source_info[1] + bboxwide * pourcentage * maskmapdownfactor
                         selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
-                                              max(xminthr, bbmin_col * maskmapdownfactor) <= trgpoint[0]
-                                              <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
-                                              max(yminthr, bbmin_row) <= trgpoint[1]
-                                              <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
+                                              max(xminthr, bbmin_col * maskmapdownfactor)
+                                              <= trgpoint[0] <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
+                                              max(yminthr, bbmin_row)
+                                              <= trgpoint[1] <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
 
                         multfactor += 1
                     # We calculate all the distances for the points in the subset
@@ -517,7 +517,7 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
                     ['queuedist_' + 'sourceclass' + str(sourceclass) + '_targetclass' + str(targetclass)]
                 )
                 queuenames_list[-1] = mp.Queue()
-                p = mp.Process(target=multipro_distc2c,
+                p = mp.Process(target=multipro_distc2c_test,
                                args=(allnucl_info,
                                      sourceclass,
                                      targetclass,
@@ -626,10 +626,10 @@ def multipro_distc2c(allnucl_info,
         # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself
         while len(selectedtrg_points) == 0 and multfactor < 20.5:
             pourcentage = 0.05 * multfactor
-            xminthr, xmaxthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor, \
-                               source_info[0] + bboxlength * pourcentage * maskmapdownfactor,
-            yminthr, ymaxthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor, \
-                               source_info[1] + bboxwide * pourcentage * maskmapdownfactor
+            xminthr = source_info[0] - bboxlength * pourcentage * maskmapdownfactor
+            xmaxthr = source_info[0] + bboxlength * pourcentage * maskmapdownfactor
+            yminthr = source_info[1] - bboxwide * pourcentage * maskmapdownfactor
+            ymaxthr = source_info[1] + bboxwide * pourcentage * maskmapdownfactor
             selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
                                   max(xminthr, bbmin_col * maskmapdownfactor)
                                   <= trgpoint[0] <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
@@ -1019,3 +1019,138 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     # Remark: we no longer keep the instance numbers in the dict :
     # {'InstancesNumberWSI': allcells_inWSI_dict, 'InstancesNumberMaskRegion': cellsratio_inmask_dict}
     return resultdict
+
+
+########
+# UNDER CONSTRUCTIONS FUNCTIONS
+########
+
+
+
+def multipro_distc2c_test(allnucl_info,
+                     sourceclass,
+                     targetclass,
+                     regions,
+                     maskmap,
+                     tumorid_map,
+                     cellfilter,
+                     maskmapdownfactor,
+                     queue):
+    """
+    Function to allow multiprocessing on the distance calculation.
+    See mpcell2celldist_classjson function
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    # In the case we take all the cells inside the tumor region only
+    # or we take all the cells inside the tumor region + a margin
+    # Keep in mind that the maskmap (tumormap) is a downsampled version of the WSI
+    if cellfilter == 'Tumor' or cellfilter == 'TumorMargin':
+        # keep only the nucleus of source class inside the tumor region:
+        sourceclass_list = [nucl_info for nucl_info in allnucl_info
+                            if nucl_info[2] == sourceclass and
+                            maskmap[int(nucl_info[1] / maskmapdownfactor),
+                                    int(nucl_info[0] / maskmapdownfactor)] == 255]
+
+        # keep only the nucleus of target class inside the tumor region:
+        targetclass_list = [nucl_info for nucl_info in allnucl_info
+                            if nucl_info[2] == targetclass and
+                            maskmap[int(nucl_info[1] / maskmapdownfactor),
+                                    int(nucl_info[0] / maskmapdownfactor)] == 255]
+    # In the case we take all the cells
+    else:
+        sourceclass_list = [nucl_info for nucl_info in allnucl_info if
+                            nucl_info[2] == sourceclass]  # keep only the nucleus of source class
+        targetclass_list = [nucl_info for nucl_info in allnucl_info if
+                            nucl_info[2] == targetclass]  # keep only the nucleus of target class
+
+    # maybe create a 2 different reseacrch areas size and if there is no cells in the first area, go to the second,
+    # if there is no cells in the second area  go to everything
+    # create a chain of this the areea size will be linked to the tumor region area (maybe taking the extreme points)
+
+    # Pick a  nucleus of source class, calculate distance with it and all the other class, keep
+    # the lowest and delete the list
+    allmindist = list()
+    min_dist = []
+    for source_info in tqdm(sourceclass_list):
+        alldist = list()
+        all_trgpoints = list()
+        if cellfilter == 'Tumor' or cellfilter == 'TumorMargin':
+            for target_info in targetclass_list:
+                source_tumor_id = tumorid_map[int(source_info[1] / maskmapdownfactor),
+                                              int(source_info[0] / maskmapdownfactor)]
+                target_tumor_id = tumorid_map[int(target_info[1] / maskmapdownfactor),
+                                              int(target_info[0] / maskmapdownfactor)]
+                if source_tumor_id == target_tumor_id:
+                    # we calculate the distance only if we are in the same tumor region
+                    all_trgpoints.append(
+                        [int(target_info[0]), int(target_info[1])])  # /!\ x and y are kept inverted (as in the json)
+        else:
+            all_trgpoints = [[int(target_info[0]), int(target_info[1])] for target_info in targetclass_list]
+        selectedtrg_points = list()
+        multfactor = 1
+        # define the bounding box of the tumor region, and the length and wide of the bbox
+        bboxcoord = [r.bbox for r in regions if r.label == source_tumor_id]
+        # Bounding box (min_row, min_col, max_row, max_col).
+        bbmin_row, bbmax_row, bbmin_col, bbmax_col = bboxcoord[0][0], bboxcoord[0][2], bboxcoord[0][1], bboxcoord[0][3]
+        bboxlength = bbmax_col - bbmin_col
+        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
+        bboxwide = bbmax_row - bbmin_row
+        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
+        # BE CAREFUL ALL THESE LENGHT ARE IN THE DOWNSIZE MAP
+        # Find all the points belonging to the subset of the bounding box around the source class cell
+        # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself
+        ratioindex = 0
+        sizeratios = [0.005, 0.012, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 'stop']
+        while len(selectedtrg_points) == 0 and sizeratios[ratioindex] != 'stop':
+            sizeratio = int(sizeratios[ratioindex])
+            xminthr = source_info[0] - bboxlength * sizeratio * maskmapdownfactor
+            xmaxthr = source_info[0] + bboxlength * sizeratio * maskmapdownfactor
+            yminthr = source_info[1] - bboxwide * sizeratio * maskmapdownfactor
+            ymaxthr = source_info[1] + bboxwide * sizeratio * maskmapdownfactor
+            selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
+                                  max(xminthr, bbmin_col * maskmapdownfactor) <= trgpoint[0]
+                                  <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
+                                  max(yminthr, bbmin_row) <= trgpoint[1]
+                                  <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
+            ratioindex += 1
+
+        # We calculate all the distances for the points in the subset
+        # print('len of selectedtrg_points', len(selectedtrg_points))
+        for selectedtrg_point in selectedtrg_points:
+            dist = math.sqrt((int(source_info[0]) - selectedtrg_point[0]) ** 2 + (
+                    int(source_info[1]) - selectedtrg_point[1]) ** 2)  # distance calculation
+            # In alldist there is all the distances between cell of source class and all cells of target class
+            alldist.append(dist)
+        # We keep only the min distance
+        if alldist:  # We need to check if the list is not empty to continue
+            # (because it is possible that no target cells are in the same tumor region)
+            min_dist = min(alldist)
+        del alldist
+        # In allmindist there is all the minimum distances between each cell of source class and
+        # all cells of target class
+
+        # if not min_dist:  # in case there is no neighbour beetwen the 2 classes
+        #     dist_nestedlist.append({})
+
+        if min_dist:  # redundant but better readibility
+            allmindist.append(min_dist)
+
+    del sourceclass_list
+    del targetclass_list
+    if min_dist:
+        avgdist = sum(allmindist) / len(allmindist)  # take the average of all closest neighbour distance
+    else:
+        avgdist = False
+
+    # In sourceclass_allavgdist
+
+    queue.put(avgdist)
+
+    # outlist = [avgdist, min_dist]
+    # list(map(queue.put, outlist))
