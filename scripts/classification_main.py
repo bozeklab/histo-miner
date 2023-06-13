@@ -1,22 +1,27 @@
 #Lucas Sancéré -
 
-import json
-import os
-import time
-import subprocess
+# import sys
+# sys.path.append('../')  # Only for Remote use on Clusters
+
+
 
 import numpy as np
-import scipy.stats
-import sys
-import pandas as pd
-import mrmr
-import boruta
-from sklearn.ensemble import RandomForestClassifier
 from sklearn import linear_model, ensemble
 
-# sys.path.append('../')  # Only for Remote use on Clusters
-from scripts.feature_selection_main import featarray, clarray, Selfeat_mrmr, Selfeat_boruta, Orderedp_mannwhitneyu\
-    , Nbr_keptfeat
+# import scipy.stats
+# import sys
+# import pandas as pd
+# import mrmr
+# import boruta
+# from sklearn.ensemble import RandomForestClassifier
+# import json
+# import os
+# import time
+# import subprocess
+
+
+
+
 
 """
 This file is to update fully
@@ -40,6 +45,8 @@ run_mannwhitney = True
 #https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
 #https://scikit-learn.org/stable/modules/linear_model.html
 
+
+#### STart by loading the files preeviously saved
 
 
 

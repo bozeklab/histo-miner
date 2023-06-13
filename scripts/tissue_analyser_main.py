@@ -22,7 +22,7 @@ from src.utils.misc import NpEncoder
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner/tissue_analyser.yml", "r") as f:
+with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)

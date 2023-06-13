@@ -32,7 +32,7 @@ from src.utils.misc import convert_flatten_redundant
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner/feature_selection.yml", "r") as f:
+with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
@@ -50,7 +50,15 @@ nbr_keptfeat = config.parameters.int.nbr_keptfeat
 in pandas DataFrame and run the different feature selections"""
 
 
-####### TO ADD: Associate the index of the selected feature to the name of it (use dict probably)
+
+##### IMPORTANT TO ADD
+
+# Create a util function that find the "analysed" json and put them in a new directory (called tissue analysis)
+# with recurrence and no_recurrence in the name of the file to add
+
+####### TO ADD AS WELL:
+# Associate the index of the selected feature to the name of it (use dict probably)
+
 
 
 cllist = list()
@@ -143,3 +151,29 @@ print('Selected Features: {}'.format(selfeat_boruta))
 print('Mann Whitney U calculations in progress...')
 orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney()
 print('Output Ordered from best p-values to worst: {}'.format(orderedp_mannwhitneyu))
+
+print('feature selection finished')
+print('***** \n')
+
+
+############################################################
+## Save alll numpy files
+############################################################
+
+# Save all the files in the tissue analysiis folder
+
+pathnumpy = pathtofolder + '/FeatureSelection/'
+ext = '.npy'
+
+print('Save numpy files...')
+pathfeatarray = pathnumpy + 'featarray' + ext
+np.save(pathfeatarray, featarray)
+pathclarray = pathnumpy + 'clarray' + ext
+np.save(path, clarray)
+pathselfeat_mrmr = pathnumpy + 'selfeat_mrmr' + ext
+np.save(path, selfeat_mrmr)
+pathselfeat_boruta = pathnumpy + 'selfeat_boruta' + ext
+np.save(path, selfeat_boruta)
+pathorderedp_mannwhitneyu = pathnumpy + 'orderedp_mannwhitneyu' + ext
+np.save(path, orderedp_mannwhitneyu)
+print('Saving done.')

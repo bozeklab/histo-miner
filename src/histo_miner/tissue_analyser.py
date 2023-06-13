@@ -1106,7 +1106,7 @@ def multipro_distc2c_test(allnucl_info,
         # Find all the points belonging to the subset of the bounding box around the source class cell
         # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself
         ratioindex = 0
-        sizeratios = [0.005, 0.012, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 'stop']
+        sizeratios = [0.05, 0.1, 0.25, 0.5, 1, 'stop']
         while len(selectedtrg_points) == 0 and sizeratios[ratioindex] != 'stop':
             sizeratio = int(sizeratios[ratioindex])
             xminthr = source_info[0] - bboxlength * sizeratio * maskmapdownfactor
