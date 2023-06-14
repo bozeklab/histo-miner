@@ -39,7 +39,6 @@
 
 # All not strings parameters
   parameters:
-
     lists:
       selectedclasses: [1, 2, 3, 5]
       # For a very comprehensive (but wazy too long for now) analysis we can keep all classes:
@@ -59,6 +58,51 @@
       maskmap_downfactor: 32
 
       nbr_keptfeat: 5
+
+    bool:
+      classification_from_allfeatures: True
+
+      training_classifiers: True
+
+      saving_classifiers:
+        ridge: True
+
+        logistic_regression: True
+
+        random_forest: True
+
+
+
+# Classifiers parameters
+
+  classifierparam:
+    ridge:
+      # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
+      # #https://scikit-learn.org/stable/modules/linear_model.html
+      alpha:  0.5
+
+    logistic_regression:
+      # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
+      # #https://scikit-learn.org/stable/modules/linear_model.html
+      solver: 'liblinear'
+
+      multi_class: 'ovr'
+
+    random_forest:
+      # For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
+      # #https://scikit-learn.org/stable/modules/linear_model.html
+      n_estimators: 100
+
+      class_weight: 'balanced'
+
+
+
+
+
+
+
+
+
 
 
 

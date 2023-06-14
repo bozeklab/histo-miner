@@ -27,11 +27,9 @@ class FeatureSelector:
             Array containing all the features values for each wsi image
         classification_array: npy array
             Array containing the classification output (recurrence, or no recurrence) of each wsi image
-
         Returns
         ------
         """
-        super(FeatureSelector, self).__init__()
         self.feature_array = feature_array
         self.classification_array = classification_array
 
@@ -138,3 +136,67 @@ class FeatureSelector:
         orderedp_mannwhitneyu = sorted(orderedp_mannwhitneyu.items(),
                                        key=lambda x: x[1])
         return orderedp_mannwhitneyu
+
+
+
+class SelectedFeaturesMatrix:
+    """
+    Generate the matrix of selected features based on the output of a given feature selection method
+
+    Note: No need for Boruta method, as the output is already the matrix of selected features
+    """
+    def __init__(self, feature_array: np.ndarray,):
+        """
+        Parameters
+        ----------
+        feature_array: npy array
+            Array containing all the originial (before selection) features values for each wsi image
+        Returns
+        ------
+        """
+        self.feature_array = feature_array
+
+
+    def mrmr_matr(self,  output_featselect_mrmr: np.ndarray) -> np.ndarray:
+        """
+        Generate the matrix of selected features from mrmr method output
+
+        Parameters
+        ----------
+        output_featselect_mrmr: npy array
+            Array containing the output of mrmr method
+        Returns
+        -------
+        featarray_mrmr:
+            Matrix with the values of features selected with mrmr
+        """
+        # Be sure to enter output from mrmr here
+        mrmrselectedfeatures_idx = output_featselect_mrmr[0]
+        mrmrselectedfeatures_idx = sorted(mrmrselectedfeatures_idx)
+        featarrar_mrmr = np.transpose(self.feature_array)
+        featarray_mrmr = featarrar_mrmr[:, mrmrselectedfeatures_idx]
+        return featarray_mrmr
+
+
+    def mannwhitney_matr(self, output_featselect_mannwhitney: np.ndarray,
+                         nbr_keptfeat: int = 5) -> np.ndarray:
+        """
+        Generate the matrix of selected features from Mann-Whitney U rank test output
+
+        Parameters
+        ----------
+        output_featselect_mannwhitney: npy array
+            Array containing the output of Mann-Whitney U rank test
+        nbr_keptfeat: int, optional
+            Number of features to keep during the feature selection process
+        Returns
+        -------
+        featarray_mrmr:
+            Matrix with the values of features selected with Mann-Whitney U rank test
+        """
+        # Be sure to enter output from  Mann-Whitney U rank test here
+        mwuselectedfeatures_idx = output_featselect_mannwhitney[:nbr_keptfeat - 1]
+        mwuselectedfeatures_idx = sorted(mwuselectedfeatures_idx)
+        featarray_mannwhitney = np.transpose(self.feature_array)
+        featarray_mannwhitney = featarray_mannwhitney[:, mwuselectedfeatures_idx]
+        return featarray_mannwhitney

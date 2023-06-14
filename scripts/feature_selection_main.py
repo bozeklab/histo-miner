@@ -40,7 +40,6 @@ pathtofolder = config.paths.folders.main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 
 
-
 #############################################################
 ## Concatenate features and create Pandas DataFrames
 #############################################################
@@ -157,23 +156,29 @@ print('***** \n')
 
 
 ############################################################
-## Save alll numpy files
+## Save all numpy files
 ############################################################
 
 # Save all the files in the tissue analysiis folder
 
-pathnumpy = pathtofolder + '/FeatureSelection/'
+# Create the path to folder that will contain the numpy feature selection files
+pathnumpy = pathtofolder.replace('tissue_analyses/', 'feature_selection/')
 ext = '.npy'
 
-print('Save numpy files...')
+# If the folder doesn't exist create it
+if not os.path.exists(pathnumpy):
+    os.makedirs(pathnumpy)
+
+
+print('Save feature selection numpy files...')
 pathfeatarray = pathnumpy + 'featarray' + ext
 np.save(pathfeatarray, featarray)
 pathclarray = pathnumpy + 'clarray' + ext
-np.save(path, clarray)
+np.save(pathclarray, clarray)
 pathselfeat_mrmr = pathnumpy + 'selfeat_mrmr' + ext
-np.save(path, selfeat_mrmr)
+np.save(pathselfeat_mrmr, selfeat_mrmr)
 pathselfeat_boruta = pathnumpy + 'selfeat_boruta' + ext
-np.save(path, selfeat_boruta)
+np.save(pathselfeat_boruta, selfeat_boruta)
 pathorderedp_mannwhitneyu = pathnumpy + 'orderedp_mannwhitneyu' + ext
-np.save(path, orderedp_mannwhitneyu)
+np.save(pathorderedp_mannwhitneyu, orderedp_mannwhitneyu)
 print('Saving done.')
