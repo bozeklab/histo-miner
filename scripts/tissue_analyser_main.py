@@ -1,7 +1,7 @@
 #Lucas Sancéré -
 
-# import sys
-# sys.path.append('../')  # Only for Remote use on Clusters
+import sys
+sys.path.append('../')  # Only for Remote use on Clusters
 
 import json
 import os

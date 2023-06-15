@@ -196,7 +196,8 @@ class SelectedFeaturesMatrix:
         """
         # Be sure to enter output from  Mann-Whitney U rank test here
         mwuselectedfeatures_idx = output_featselect_mannwhitney[:nbr_keptfeat - 1]
-        mwuselectedfeatures_idx = sorted(mwuselectedfeatures_idx)
+        mwuselectedfeatures_idx = mwuselectedfeatures_idx[:, 0]
+        mwuselectedfeatures_idx = [int(element) for element in mwuselectedfeatures_idx]
         featarray_mannwhitney = np.transpose(self.feature_array)
         featarray_mannwhitney = featarray_mannwhitney[:, mwuselectedfeatures_idx]
         return featarray_mannwhitney

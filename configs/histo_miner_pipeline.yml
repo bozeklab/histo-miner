@@ -62,40 +62,6 @@
     bool:
       classification_from_allfeatures: True
 
-      training_classifiers: True
-
-      saving_classifiers:
-        ridge: True
-
-        logistic_regression: True
-
-        random_forest: True
-
-
-
-# Classifiers parameters
-
-  classifierparam:
-    ridge:
-      # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
-      alpha:  0.5
-
-    logistic_regression:
-      # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
-      solver: 'liblinear'
-
-      multi_class: 'ovr'
-
-    random_forest:
-      # For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
-      n_estimators: 100
-
-      class_weight: 'balanced'
-
-
 
 
 
