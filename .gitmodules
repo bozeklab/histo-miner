@@ -1,3 +1,8 @@
-[submodule "src/models/hovernet"]
-	path = src/models/hovernet
+[submodule "src/models/hover_net"]
+	path = src/models/hover_net
 	url = git@github.com:lucas-sancere/hover_net.git
+	branch = histo-miner-submodule
+[submodule "src/models/mmsegmentation"]
+	path = src/models/mmsegmentation
+	url = git@github.com:lucas-sancere/mmsegmentation.git
+	branch = histo-miner-submodule
