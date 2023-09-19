@@ -2,7 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/models/hover_net" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/src/models/hovernet" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/src/models/hovernet/hover_net" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/models/mmsegmentation" vcs="Git" />
   </component>
 </project>
