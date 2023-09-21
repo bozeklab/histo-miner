@@ -57,6 +57,18 @@ newstr2_wsimode = config.names.managment.newstr2_wsimode
 """Update each mask output """
 
 
+#Check if user needs to run the processing of inference 
+runpreprocessing = input(
+    "Update inference outputs to be compatible with Tissue Analyser AND QuPath? \n"
+    "Type 'yes' (Recommanded) or 'no' "
+    "(User should enter no ONLY if the processing was already done):")
+
+if str(runpreprocessing) != 'yes'and str(runpreprocessing) != 'no':
+    raise ValueError('User should input yes or no.')
+    runpreprocessing = input(
+    "Update inference outputs to be compatible with Tissue Analyser AND QuPath? \n"
+    "Type 'yes' or 'no' (User should enter no ONLY if the processing was already done):")
+
 # Load each parametes as define in ManageJSON script
 if hovernet_mode == 'tile':
     string2replace = str(str2replace_tilemode)
@@ -76,35 +88,38 @@ else:
     newstring2 = str(newstr2_tilemode)
 
 
-print('The folders must contains only hovernet predictions and segmenter predictions files.')
-for root, dirs, files in os.walk(pathtofolder):
-    if files:  # Keep only the not empty lists of files
-        # Because files is a list of file name here, and not a srting. You create a string with this:
-        for file in files:
-            path, extension = os.path.splitext(file)
-            # Update each JSON file
-            filepath = root + '/' + file
-            # Knowing that root is the path to the directory of the selected file,
-            # root + file is the complete path
-            if extension == '.json':
-                print('Detected json file:', file)
-                print('Path to file :', filepath)
-                hovernet_utils.replacestring_json(filepath, string2replace,
-                                                  newstring, string2replace2,
-                                                  newstring2)
-                pathtofolder, filename = os.path.split(file)
-                print('Updated json')
-            if extension != '.json':
-                print('Detected mask file '
-                      '(has to be in a pillow supported format - like .png)', file)
-                print('Path to file :', filepath)
-                segmenter_utils.change_pix_values(filepath, values2change,
-                                                  newvalues)
-                print('Updated mask file')
+
+if str(runpreprocessing) == 'yes':
+
+    print('The folders must contains only hovernet predictions and segmenter predictions files.')
+    for root, dirs, files in os.walk(pathtofolder):
+        if files:  # Keep only the not empty lists of files
+            # Because files is a list of file name here, and not a srting. You create a string with this:
+            for file in files:
+                path, extension = os.path.splitext(file)
+                # Update each JSON file
+                filepath = root + '/' + file
+                # Knowing that root is the path to the directory of the selected file,
+                # root + file is the complete path
+                if extension == '.json':
+                    print('Detected json file:', file)
+                    print('Path to file :', filepath)
+                    hovernet_utils.replacestring_json(filepath, string2replace,
+                                                      newstring, string2replace2,
+                                                      newstring2)
+                    pathtofolder, filename = os.path.split(file)
+                    print('Updated json')
+                if extension != '.json':
+                    print('Detected mask file '
+                          '(has to be in a pillow supported format - like .png)', file)
+                    print('Path to file :', filepath)
+                    segmenter_utils.change_pix_values(filepath, values2change,
+                                                      newvalues)
+                    print('Updated mask file')
 
 
-print('All json files updated with mode {}'.format(hovernet_mode))
-print('All mask files updated')
+    print('All json files updated with mode {}'.format(hovernet_mode))
+    print('All mask files updated')
 
 
 #############################################################
