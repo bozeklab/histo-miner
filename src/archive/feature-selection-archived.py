@@ -73,7 +73,7 @@ for root, dirs, files in os.walk(Parentdir):
                     print(file)
                     data = json.loads(data)  # read JSON formatted string and convert it to a dict
                     data = convert_flatten_redundant(data)  # flatten the dict (with redundant keys in nested dict, see function)
-                    data = {k: v for (k, v) in data.items() if v != 'Not calculated'} #HEre is some dict comprehension / dicitionnary comprehension
+                    data = {k: v for (k, v) in data.items() if v != 'Not calculated'} #Here is some dict comprehension / dicitionnary comprehension
 
                     #Convert dict values into an array
                     valuearray = np.fromiter(data.values(), dtype=float)

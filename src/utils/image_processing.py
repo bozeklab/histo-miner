@@ -124,4 +124,3 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized'):
     # save
     print('saving...')
     imageresized.save(savepath)
-

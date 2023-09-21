@@ -4,6 +4,7 @@
   paths:
     folders:
         main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
+#        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
 
 
 # All parameters of string names
@@ -11,7 +12,7 @@
       hovernet_mode: wsi
 
       managment:
-        # For some reason, >- is needed because if not we will have an issue with the quotes inside the string
+        # >- is needed because if not we will have an issue with the quotes inside the string
         str2replace_tilemode: >-
            {"mag": null, "nuc": {
 
@@ -42,13 +43,15 @@
     lists:
       selectedclasses: [1, 2, 3, 5]
       # For a very comprehensive (but wazy too long for now) analysis we can keep all classes:
-      # [1, 2, 3, 4, 5]
-      # For a realistic analysis speed, avoid including stroma cells in the distance calculation and then keep:
+      # [1, 2, 3, 4, 5, 6]
+      # For a realistic analysis speed, avoid including stroma cells and epithelial cells
+      # in the distance calculation and then keep:
       # [1, 2, 3, 5]
 
-      classnames: ['Granulocyte', 'Lymphocyte' , 'Plasme', 'Stroma', 'Tumor']
+      classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']
+      #Still to test when the analyser will run
 
-      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5']
+      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5', '"type": 6']
 
       values2change: [1, 2]
 

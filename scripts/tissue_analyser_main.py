@@ -13,8 +13,10 @@ from src.histo_miner import hovernet_utils, segmenter_utils
 from src.histo_miner import tissue_analyser as analyser
 from src.utils.misc import NpEncoder
 
+
 # import numpy as np
 # import scipy.stats
+
 
 #############################################################
 ## Load configs parameter
@@ -111,7 +113,6 @@ print('All mask files updated')
 
 """Tissue Analysis"""
 
-
 for root, dirs, files in os.walk(pathtofolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
@@ -143,36 +144,38 @@ for root, dirs, files in os.walk(pathtofolder):
                         print('Detected mask file:', maskmappath)
 
                         # Analysis
-                        tumor_tot_area = analyser.count_pix_value(maskmappath, 255) * maskmap_downfactor
+                        tumor_tot_area = analyser.count_pix_value(maskmappath, 255) * (maskmap_downfactor ** 2)
                         print('Process cells identification '
                               '(number of cells and tot area of cells) inside tumor regions...')
 
-                        cellsratio_inmask_dict = analyser.cellsratio_insidemask_classjson(
+                        cells_inmask_dict = analyser.cells_insidemask_classjson(
                             maskmappath, jsonfilepath, selectedclasses,
                             maskmapdownfactor=maskmap_downfactor,
                             classnameaskey=classnames)
 
-                        print('Cellsratio_inmask_dict generated as follow:', cellsratio_inmask_dict)
+                        print('Cellsratio_inmask_dict generated as follow:', cells_inmask_dict)
                         print('Process distance calculcations inside tumor regions...')
 
-                        cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
-                            jsonfilepath, selectedclasses,
-                            cellfilter='Tumor',
-                            maskmap=maskmappath,
-                            maskmapdownfactor=maskmap_downfactor,
-                            tumormargin=None)
+                        #### For DEV -----
+                        cellsdist_inmask_dict = None
+                        # cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
+                        #     jsonfilepath, selectedclasses,
+                        #     cellfilter='Tumor',
+                        #     maskmap=maskmappath,
+                        #     maskmapdownfactor=maskmap_downfactor,
+                        #     tumormargin=None)
 
                         print('Cellsdist_inmask_dict generated as follow:', cellsdist_inmask_dict)
+                        ####  -----
 
                     else:
-                        cellsratio_inmask_dict = None
+                        cells_inmask_dict = None
                         cellsdist_inmask_dict = None
                         print('Cellsratio_inmask_dict not generated')
                         print('Cellsdist_inmask_dict not generated')
 
-
                     jsondata = analyser.hvn_outputproperties(allcells_in_wsi_dict,
-                                                    cellsratio_inmask_dict, cellsdist_inmask_dict,
+                                                    cells_inmask_dict, cellsdist_inmask_dict,
                                                     masknature='Tumor',
                                                     areaofmask=tumor_tot_area)
 
