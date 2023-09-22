@@ -78,6 +78,40 @@ def countjson(file: str, searchedwords: list) -> dict:
     return wordcountsdict
 
 
+def counthvnjson(file: str, searchedwords: list, classnameaskey: list = None) -> dict:
+    """
+    Count occurence of different cell class in a json output from hovernet predictions. 
+    The list of cell classes is provided by searchwords.
+
+    Parameters
+    ----------
+    file: str
+        path to the .json file
+    searchedwords: list
+        list of strings user wants to count occurence for
+    classnameaskey: list, optional
+        List object containing the name of the classes to replace their number in the final output.
+        To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
+    Returns
+    -------
+    wordcountsdict: dict
+        dict countaining as key the different words cf searchwords list and as value the number of occurence of the
+        key word
+    """
+    wordcountsdict = dict()
+    with open(file, 'r') as filename:
+        data = filename.read()
+        for word in tqdm(searchedwords):
+            wordcount = data.count(word)
+            wordcountsdict[word] = wordcount
+    if not classnameaskey: 
+        return wordcountsdict
+    else:
+        wordcountvalues = list(wordcountsdict.values())
+        wordcountsdict = dict(zip(['Background'] + classnameaskey, wordcountvalues))
+        return wordcountsdict
+
+
 def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: list,
                                     maskmapdownfactor: int = 1, classnameaskey: list = None) -> dict:
     """
@@ -164,8 +198,11 @@ def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: li
                       "list_totareainstanceperclass": totareainstanceperclass}
         return outputlist
     else:
-        numinstanceperclass_dict = dict(zip(classnameaskey, numinstanceperclass))
-        totareainstanceperclass_dict = dict(zip(classnameaskey, totareainstanceperclass))
+        #update classnames with the selectedclasses
+        updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
+        #now we use zip method to match class number with its name 
+        numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
+        totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
         outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
                       "dict_totareainstanceperclass": totareainstanceperclass_dict}
         return outputdict
@@ -678,8 +715,9 @@ def multipro_distc2c(allnucl_info,
 def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                          cells_inmask_dict: dict = None,
                          cellsdist_inmask_dict: dict = None,
-                         masknature: str = 'Tumor',
-                         areaofmask: int = None) -> dict:
+                         masktype: str = 'Tumor',
+                         areaofmask: int = None, 
+                         selectedcls_dist: list = None) -> dict:
     """
     Calculate and store in a dictionnary all tissue features.
 
@@ -702,6 +740,8 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         Define the type of the mask from mask map. Here it is usually Tumor.
     areaofmask: int, optional
         Area in pixel of the mask (tumor region) in the maskmap.
+    selectedcls_dist: list, optional
+        List containing the different class from what the user wants the distance caclulation to be done
     Returns:
     -------
     resultdict, dict
@@ -733,15 +773,6 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     ### Calculations linked to WSI cells regardless Tumor Regions
 
     if allcells_in_wsi_dict:
-        # Change the names of the keys
-        allcells_in_wsi_dict["Background"] = allcells_in_wsi_dict.pop('"type": 0')
-        allcells_in_wsi_dict["Granulocyte"] = allcells_in_wsi_dict.pop('"type": 1')
-        allcells_in_wsi_dict["Lymphocyte"] = allcells_in_wsi_dict.pop('"type": 2')
-        allcells_in_wsi_dict["Plasma"] = allcells_in_wsi_dict.pop('"type": 3')
-        allcells_in_wsi_dict["Stroma"] = allcells_in_wsi_dict.pop('"type": 4')
-        allcells_in_wsi_dict["Tumor"] = allcells_in_wsi_dict.pop('"type": 5')
-        allcells_in_wsi_dict["Epithelial"] = allcells_in_wsi_dict.pop('"type": 6')
-
         # Fraction of cell types (FractionsWSIDict)
         totalnumberofcells = (
                 sum(allcells_in_wsi_dict.values()) - allcells_in_wsi_dict["Background"]
@@ -827,12 +858,14 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     if cells_inmask_dict:
         # Fraction of cell types taking into account only cells inside tumor regions (FractionsTumorDict)
-        if masknature == "Tumor":
+        if masktype == "Tumor":
             nummcellsdict = cells_inmask_dict.get(
                 "dict_numinstanceperclass", {}
             )  # number of cells inside tumor regions
             numcells = sum(
                 nummcellsdict.values()
+
+
             )  # No background cell class inside  instmaskdict
             fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumor"] = (
                     cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
@@ -850,8 +883,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             )
             fractions_tumor_dict["Pourcentage_TumorCells_allcellsinTumor"] = (
                     cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] / numcells
-            )
-
+                    )
             # Cell Type ratios (RatioTumorDict)
             ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] = (
                     cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
@@ -893,7 +925,6 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                     cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                     / cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
             )
-
             if areaofmask:
                 # Number of cells per tumor area
                 density_tumor_dict["Granulocytes_perTumorarea"] = (
@@ -916,7 +947,6 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                         cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                         / areaofmask
                 )
-
                 # Density of cells per tumor area
                 density_tumor_dict["GranulocytesDensity_insideTumorarea"] = (
                         cells_inmask_dict["dict_totareainstanceperclass"][
@@ -941,6 +971,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                         / areaofmask
                 )
 
+
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions ratios
     calculations_ratio_tumor_dict = {
         "Pourcentages_of_cell_types_in_Tumor_Regions": fractions_tumor_dict,
@@ -953,18 +984,32 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     if cellsdist_inmask_dict:
         # Average Distance to closest neighboor
         # What to look for in cellsdist_in_mask is not obvious at all !!! Look doc string of cell2celldist_classjson
+        if selectedcls_dist == [1, 2, 3, 4, 5]:
+            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]    
+            dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
+            dist_tumor_dict["DistClosest_Granulocytes_StromaCells_inTumor"] = cellsdist_inmask_dict[0][2]
+            dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][3]
+            dist_tumor_dict["DistClosest_Lymphocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[1][0]
+            dist_tumor_dict["DistClosest_Lymphocytes_StromaCells_inTumor"] = cellsdist_inmask_dict[1][1]
+            dist_tumor_dict["DistClosest_Lymphocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[1][2]
+            dist_tumor_dict["DistClosest_StromaCells_PlasmaCells_inTumor"] = cellsdist_inmask_dict[2][0]
+            dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][1]
+            dist_tumor_dict["DistClosest_StromaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[3][0]
+        
+        elif selectedcls_dist == [1, 2, 3, 5]:
+            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]    
+            dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
+            dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][2]
+            dist_tumor_dict["DistClosest_Lymphocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[1][0]
+            dist_tumor_dict["DistClosest_Lymphocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[1][1]
+            dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][0]
 
-        dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][3]
-        dist_tumor_dict["DistClosest_Lymphocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[1][2]
-        dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][1]
-        dist_tumor_dict["DistClosest_StromaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[3][0]
-        dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]
-        dist_tumor_dict["DistClosest_PlasmaCells_Lymphocytes_inTumor"] = cellsdist_inmask_dict[1][0]
-        dist_tumor_dict["DistClosest_StromaCells_Lymphocytes_inTumor"] = cellsdist_inmask_dict[1][1]
-        dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
-        dist_tumor_dict["DistClosest_StromaCells_PlasmaCells_inTumor"] = cellsdist_inmask_dict[2][0]
-        dist_tumor_dict["DistClosest_StromaCells_Granulocytes_inTumor"] = cellsdist_inmask_dict[0][2]
-        # could be change to make it more explicit??
+        else:
+            raise ValueError('hvn_outputproperties cannot run with selectedcls_dist as {}.'
+                'This is a custom class selection for distance calculations.'
+                'hvn_outputproperties needs to be updated to fit this selection.'
+                .format(selectedcls_dist)) 
+
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions distances
     calculations_dist_tumor_dict = {"Distances_of_cells_in_Tumor_Regions": dist_tumor_dict}
@@ -973,7 +1018,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     if allcells_in_wsi_dict and cells_inmask_dict:
         # Fraction of the cells outside and inside tumor regions per type (InsidevsOutsideDict)
-        if masknature == "Tumor":
+        if masktype == "Tumor":
             insidevs_outside_dict["Pourcentage_Granulocytes_insideTumor"] = (
                     cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                     / allcells_in_wsi_dict["Granulocyte"]
@@ -1007,7 +1052,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         print(
             "For ITLR calculation, the mask used for the input cells_inmask_dict must be a mask of tumor areas"
         )
-        if masknature == "Tumor":
+        if masktype == "Tumor":
             num_itlymphocytes = cells_inmask_dict.get(
                 "dict_numinstanceperclass", {}
             ).get(
@@ -1022,7 +1067,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         print(
             "For SCD calculation, the mask used for the input cells_inmask_dict must be a mask of stromal areas"
         )
-        if not masknature == "Tumor" and areaofmask:
+        if not masktype == "Tumor" and areaofmask:
             areanuclcellsdict = cells_inmask_dict.get(
                 "dict_totareainstanceperclass", {}
             )

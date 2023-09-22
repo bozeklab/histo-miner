@@ -41,12 +41,18 @@
 # All not strings parameters
   parameters:
     lists:
-      selectedclasses: [1, 2, 3, 5]
+      selectedcls_dist: [1, 2, 3, 5]
+      # Selected Classes for the Distance Calculation (average closest distance between cells of given class)
       # For a very comprehensive (but wazy too long for now) analysis we can keep all classes:
       # [1, 2, 3, 4, 5, 6]
       # For a realistic analysis speed, avoid including stroma cells and epithelial cells
       # in the distance calculation and then keep:
       # [1, 2, 3, 5]
+
+      selectedcls_ratio: [1, 2, 3, 4, 5]
+      # Selected Classes for ratio calculcations
+      # COULD BE REDUCED TO ONLY ONE SELECTEDCLASS AS Stromal cell ratio inside tumor is not interesting and maybe
+      # Missleadin
 
       classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']
       #Still to test when the analyser will run
