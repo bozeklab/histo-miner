@@ -59,10 +59,10 @@ def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int):
             classdict2update[nucleus]['type'] = epithelialclass
 
     # Load the dict as json file
-    new_json = json.loads(classdict2update)
+    classdictupdated = classdict2update
     # Save the file with new dictionnary as json and overwritte the previous one
     with open(classjson, 'w') as filename:
-        json.dump(new_json, filename)
+        json.dump(classdictupdated, filename)
 
 
 def cancelupdate(classjson: str):

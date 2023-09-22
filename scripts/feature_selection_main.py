@@ -11,7 +11,7 @@ import yaml
 from attrdict import AttrDict as attributedict
 
 from src.histo_miner.feature_selection import FeatureSelector
-from src.utils.misc import convert_flatten_redundant
+from src.histo_miner.utils.misc import convert_flatten_redundant
 
 # import time
 # import scipy.stats
