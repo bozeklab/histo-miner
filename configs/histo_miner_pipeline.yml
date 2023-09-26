@@ -3,9 +3,9 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        tissue_analyser_main: "/data/shared/scc/tissue_analyser/tests/test_cologne_progress"
+        tissue_analyser_main: "/data/shared/scc/tissue_analyser/data_analysis/progress/Dortmund"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
-        inferences_postproc_main: "/data/shared/scc/tissue_analyser/data_analysis/progress/Cologne"
+        inferences_postproc_main: "/data/shared/scc/tissue_analyser/data_analysis/progress/Bonn"
 
 
 # All parameters of string names
@@ -51,7 +51,7 @@
       # [1, 2, 3, 5]
 
       selectedcls_ratio: [1, 2, 3, 4, 5]
-      # Selected Classes for ratio calculcations
+      # Selected Classes for ratio calculcations inside tumor regions
       # COULD BE REDUCED TO ONLY ONE SELECTEDCLASS AS Stromal cell ratio inside tumor is not interesting and maybe
       # Missleadin
 
@@ -71,6 +71,9 @@
 
     bool:
       classification_from_allfeatures: True
+
+    str:
+      maskmap_ext: .png
 
 
 

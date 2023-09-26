@@ -1,13 +1,14 @@
 #Lucas Sancéré -
 
 import sys
-sys.path.append('../')  # Only for Remote use on Clusters
+sys.path.append('../../../')  # Only for Remote use on Clusters
 
 import json
 import os
 
 import yaml
 from attrdict import AttrDict as attributedict
+from tqdm import tqdm
 # import numpy as np
 # import scipy.stats
 
@@ -21,12 +22,13 @@ from src.histo_miner.utils import cellclass_process
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner_pipeline.yml", "r") as f:
+with open("./../../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtofolder = config.paths.folders.main
+pathtofolder = config.paths.folders.inferences_postproc_main 
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
+maskmapext = str(config.parameters.str.maskmap_ext)
 hovernet_mode = str(config.names.hovernet_mode)
 values2change = list(config.parameters.lists.values2change)
 newvalues = list(config.parameters.lists.newvalues)
@@ -42,29 +44,12 @@ str2replace2_wsimode = config.names.managment.str2replace2_wsimode
 newstr2_wsimode = config.names.managment.newstr2_wsimode
 
 
+pathtofolder = '/data/shared/scc/tissue_analyser/data_analysis/progress/Regensburg'
+
 
 #############################################################
-## Processing of inferences results for Tissue Analyser
+## Update parameters depending on hovernet_mode
 #############################################################
-
-"""Update each json files to be compatible with Tissue Analyser AND QuPath"""
-
-"""Update each mask output """
-
-
-#Check if user needs to run the processing of inference 
-# runpreprocessing = input(
-#     "Update inference outputs to be compatible with Tissue Analyser AND QuPath? \n"
-#     "Type 'yes' (Recommanded) or 'no' "
-#     "(User should enter no ONLY if the processing was already done):")
-
-# if str(runpreprocessing) != 'yes'and str(runpreprocessing) != 'no':
-#     raise ValueError('User should input yes or no.')
-#     runpreprocessing = input(
-#     "Update inference outputs to be compatible with Tissue Analyser AND QuPath? \n"
-#     "Type 'yes' or 'no' (User should enter no ONLY if the processing was already done):")
-
-# Load each parametes as define in ManageJSON script
 if hovernet_mode == 'tile':
     string2replace = str(str2replace_tilemode)
     newstring = str(newstr_tilemode)
@@ -83,37 +68,50 @@ else:
     newstring2 = str(newstr2_tilemode)
 
 
-print('The folders must contains only hovernet predictions and segmenter predictions files.')
+
+
+#############################################################
+## Processing of inferences results for Tissue Analyser
+#############################################################
+
+"""Update each mask output and  each json files to be compatible with Tissue Analyser AND QuPath"""
+
+
+########  Create lists with the paths of the files to process
+jsonfiles = list()
+maskfiles = list()
 for root, dirs, files in os.walk(pathtofolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
         for file in files:
             path, extension = os.path.splitext(file)
-            # Update each JSON file
             filepath = root + '/' + file
             # Knowing that root is the path to the directory of the selected file,
             # root + file is the complete path
             if extension == '.json':
-                print('Detected json file:', file)
-                print('Path to file :', filepath)
-                hovernet_utils.replacestring_json(filepath, string2replace,
-                                                  newstring, string2replace2,
-                                                  newstring2)
-                maskmappath = jsonfilepath.replace(extension, '.png')
-                cellclass_process.update_cellclass(filepath, maskmappath, 
-                                                   maskmapdownfactor=maskmap_downfactor)
-                print('Updated json')
-            if extension != '.json':
-                print('Detected mask file '
-                      '(has to be in a pillow supported format - like .png)', file)
-                print('Path to file :', filepath)
-                segmenter_utils.change_pix_values(filepath, values2change,
-                                                  newvalues)
-                print('Updated mask file')
+                print('Detected hovernet output json file:', file)
+                jsonfiles.append(filepath)
+            if extension == maskmapext:
+                print('Detected segmenter output file:', file)
+                maskfiles.append(filepath)
 
 
+######## Process the files
+# The masks have to be updated BEFORE the json files
+print('Update of the mask files...')
+print('Mask files have to be in a pillow supported format (like .png)')
+for maskfile in tqdm(maskfiles):
+    segmenter_utils.change_pix_values(maskfile, values2change, newvalues)
 
-print('All json files updated with mode {}'.format(hovernet_mode))
+#Update of the jsons
+print('Update of the json files...')
+for jsonfile in tqdm(jsonfiles):
+    hovernet_utils.replacestring_json(jsonfile, string2replace,
+                                      newstring, string2replace2,
+                                      newstring2)
+    maskmappath = jsonfile.replace('.json', '.png')
+    cellclass_process.update_cellclass(jsonfile, maskmappath, 
+                                       maskmapdownfactor=maskmap_downfactor)
+
 print('All mask files updated')
-
-
+print('All json files updated with mode {}'.format(hovernet_mode))

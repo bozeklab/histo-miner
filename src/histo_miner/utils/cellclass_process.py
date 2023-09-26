@@ -47,8 +47,9 @@ def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int):
 
     # Create a new dict where the cancer cells outside tumor regions will be replace
     #With epithelial cells
+    classjsonkeys = classjsondict.keys()  # should extract only first level keys
     classdict2update = classjsondict
-    for nucleus in classdict2update.keys():  # should extract only first level keys
+    for nucleus in classjsonkeys:
         ycoordinate = int(classdict2update[nucleus]['centroid'][0])
         xcoordinate = int(classdict2update[nucleus]['centroid'][1])
         nucleusclass = classdict2update[nucleus]['type']

@@ -717,6 +717,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                          cellsdist_inmask_dict: dict = None,
                          masktype: str = 'Tumor',
                          areaofmask: int = None, 
+                         selectedcls_ratio: list = None,
                          selectedcls_dist: list = None) -> dict:
     """
     Calculate and store in a dictionnary all tissue features.
@@ -740,8 +741,10 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         Define the type of the mask from mask map. Here it is usually Tumor.
     areaofmask: int, optional
         Area in pixel of the mask (tumor region) in the maskmap.
+    selectedcls_ratio: list, optional
+        List containing the different class from what the user wants the ratio caclulations (inside tumor regions) to be done
     selectedcls_dist: list, optional
-        List containing the different class from what the user wants the distance caclulation to be done
+        List containing the different class from what the user wants the distance caclulations to be done
     Returns:
     -------
     resultdict, dict
@@ -864,112 +867,117 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             )  # number of cells inside tumor regions
             numcells = sum(
                 nummcellsdict.values()
-
-
             )  # No background cell class inside  instmaskdict
-            fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-                    / numcells
-            )
-            fractions_tumor_dict["Pourcentage_Lymphocytes_allcellsinTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-                    / numcells
-            )
-            fractions_tumor_dict["Pourcentage_PlasmaCells_allcellsinTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] / numcells
-            )
-            fractions_tumor_dict["Pourcentage_StromaCells_allcellsinTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] / numcells
-            )
-            fractions_tumor_dict["Pourcentage_TumorCells_allcellsinTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] / numcells
-                    )
-            # Cell Type ratios (RatioTumorDict)
-            ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-            )
-            ratio_tumor_dict["Ratio_Lymphocytes_TumorCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-            )
-            ratio_tumor_dict["Ratio_PlasmaCells_TumorCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-            )
-            ratio_tumor_dict["Ratio_StromaCells_TumorCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-            )
-            ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-            )
-            ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-            )
-            ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-            )
-            ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
-            )
-            ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
-            )
-            ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
-                    / cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-            )
-            if areaofmask:
-                # Number of cells per tumor area
-                density_tumor_dict["Granulocytes_perTumorarea"] = (
+                    
+            if selectedcls_ratio == [1, 2, 3, 4, 5]:    
+                fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumor"] = (
                         cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
-                        / areaofmask
+                        / numcells
                 )
-                density_tumor_dict["Lymphocytes_perTumorarea"] = (
+                fractions_tumor_dict["Pourcentage_Lymphocytes_allcellsinTumor"] = (
                         cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
-                        / areaofmask
+                        / numcells
                 )
-                density_tumor_dict["PlasmaCells_perTumorarea"] = (
+                fractions_tumor_dict["Pourcentage_PlasmaCells_allcellsinTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] / numcells
+                )
+                fractions_tumor_dict["Pourcentage_StromaCells_allcellsinTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] / numcells
+                )
+                fractions_tumor_dict["Pourcentage_TumorCells_allcellsinTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] / numcells
+                        )
+                # Cell Type ratios (RatioTumorDict)
+                ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
+                )
+                ratio_tumor_dict["Ratio_Lymphocytes_TumorCells_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
+                )
+                ratio_tumor_dict["Ratio_PlasmaCells_TumorCells_inTumor"] = (
                         cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
-                        / areaofmask
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                density_tumor_dict["StromaCells_perTumorarea"] = (
+                ratio_tumor_dict["Ratio_StromaCells_TumorCells_inTumor"] = (
                         cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
-                        / areaofmask
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                density_tumor_dict["TumorCells_perTumorarea"] = (
-                        cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                # Density of cells per tumor area
-                density_tumor_dict["GranulocytesDensity_insideTumorarea"] = (
-                        cells_inmask_dict["dict_totareainstanceperclass"][
-                            "Granulocyte"
-                        ]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                density_tumor_dict["LymphocytesDensity_insideTumorarea"] = (
-                        cells_inmask_dict["dict_totareainstanceperclass"]["Lymphocyte"]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                density_tumor_dict["PlasmaCellsDensity_insideTumorarea"] = (
-                        cells_inmask_dict["dict_totareainstanceperclass"]["Plasma"]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                 )
-                density_tumor_dict["StromaCellsDensity_insideTumorarea"] = (
-                        cells_inmask_dict["dict_totareainstanceperclass"]["Stroma"]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                 )
-                density_tumor_dict["TumorCellsDensity_insideTumorarea"] = (
-                        cells_inmask_dict["dict_totareainstanceperclass"]["Tumor"]
-                        / areaofmask
+                ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumor"] = (
+                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
+                        / cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                 )
+                if areaofmask:
+                    # Number of cells per tumor area
+                    density_tumor_dict["Granulocytes_perTumorarea"] = (
+                            cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["Lymphocytes_perTumorarea"] = (
+                            cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["PlasmaCells_perTumorarea"] = (
+                            cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["StromaCells_perTumorarea"] = (
+                            cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["TumorCells_perTumorarea"] = (
+                            cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
+                            / areaofmask
+                    )
+                    # Density of cells per tumor area
+                    density_tumor_dict["GranulocytesDensity_insideTumorarea"] = (
+                            cells_inmask_dict["dict_totareainstanceperclass"][
+                                "Granulocyte"
+                            ]
+                            / areaofmask
+                    )
+                    density_tumor_dict["LymphocytesDensity_insideTumorarea"] = (
+                            cells_inmask_dict["dict_totareainstanceperclass"]["Lymphocyte"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["PlasmaCellsDensity_insideTumorarea"] = (
+                            cells_inmask_dict["dict_totareainstanceperclass"]["Plasma"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["StromaCellsDensity_insideTumorarea"] = (
+                            cells_inmask_dict["dict_totareainstanceperclass"]["Stroma"]
+                            / areaofmask
+                    )
+                    density_tumor_dict["TumorCellsDensity_insideTumorarea"] = (
+                            cells_inmask_dict["dict_totareainstanceperclass"]["Tumor"]
+                            / areaofmask
+                    )
+            else:
+                raise ValueError('hvn_outputproperties cannot run with selectedcls_ratio as {}.'
+                    'This is a custom class selection for ratio calculations iniside tumors.'
+                    'hvn_outputproperties function needs to be updated to fit this selection.'
+                    .format(selectedcls_ratio)) 
 
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions ratios
@@ -1007,7 +1015,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         else:
             raise ValueError('hvn_outputproperties cannot run with selectedcls_dist as {}.'
                 'This is a custom class selection for distance calculations.'
-                'hvn_outputproperties needs to be updated to fit this selection.'
+                'hvn_outputproperties function needs to be updated to fit this selection.'
                 .format(selectedcls_dist)) 
 
 
