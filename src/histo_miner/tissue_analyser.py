@@ -556,7 +556,7 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
                     ['queuedist_' + 'sourceclass' + str(sourceclass) + '_targetclass' + str(targetclass)]
                 )
                 queuenames_list[-1] = mp.Queue()
-                p = mp.Process(target=multipro_distc2c_test,
+                p = mp.Process(target=multipro_distc2c,
                                args=(allnucl_info,
                                      sourceclass,
                                      targetclass,

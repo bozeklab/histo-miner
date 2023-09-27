@@ -124,7 +124,9 @@ for jsonfile in jsonfiles:
                                     cells_inmask_dict, 
                                     cellsdist_inmask_dict,
                                     masktype='Tumor',
-                                    areaofmask=tumor_tot_area)
+                                    areaofmask=tumor_tot_area, 
+                                    selectedcls_ratio=selectedcls_ratio, 
+                                    selectedcls_dist=selectedcls_dist)
 
     # Write information inside a json file and save it
     with open(pathtofolder + '/' + nameoffile + '_analysed.json', 'w') as outfile:

@@ -44,7 +44,7 @@ str2replace2_wsimode = config.names.managment.str2replace2_wsimode
 newstr2_wsimode = config.names.managment.newstr2_wsimode
 
 
-pathtofolder = '/data/shared/scc/tissue_analyser/data_analysis/progress/Munich'
+pathtofolder = '/data/shared/scc/tissue_analyser/data_analysis/no_progress/Munich'
 
 
 #############################################################
