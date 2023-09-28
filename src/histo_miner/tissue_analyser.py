@@ -539,7 +539,7 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
     queuenames_list = list()
     print("All the distance calculations will run in parallel...")
     print("One progress bar per _COMPLETED_ process (one process = calculation of distances between 2 cell classes)")
-    print("Number of needed CPU is (number-of-selectedclass * number-of-selectedclass - 1) / 2 ")
+    print("Number of needed CPU is (number-of-selectedclass * (number-of-selectedclass - 1)) / 2 ")
     print("In this run, the number of needed CPU is {}".format(
         int((len(selectedclasses) * (len(selectedclasses) - 1)) / 2)))
     for sourceclass in selectedclasses:

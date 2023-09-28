@@ -36,7 +36,7 @@ classnames = list(config.parameters.lists.classnames)
 classnames_injson = list(config.parameters.lists.classnames_injson)
 
 
- 
+
 #############################################################
 ## Tissue Analysis, Extraction of features
 #############################################################
