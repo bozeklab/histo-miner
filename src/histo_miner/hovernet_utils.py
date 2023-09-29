@@ -5,8 +5,6 @@ import itertools
 import os
 
 import numpy as np
-import yaml
-from attrdict import AttrDict as attributedict
 from skimage.measure import regionprops
 from tqdm import tqdm
 import json

@@ -1,25 +1,22 @@
 #Lucas Sancéré -
 
-import copy
-import glob
+# import copy
+# import glob
 import json
 import math
 import multiprocessing as mp
-import os
-from ast import literal_eval
+# import os
+# from ast import literal_eval
 from itertools import product
 
 import PIL
 import cv2
-import imagesize
 import numpy as np
 import shapely.geometry
-import yaml
 from PIL import Image
-from attrdict import AttrDict as attributedict
-from skimage.measure import regionprops, label
-from skimage.util import view_as_blocks
-from sklearn.preprocessing import binarize
+from skimage.measure import regionprops
+# from skimage.util import view_as_blocks
+# from sklearn.preprocessing import binarize
 from tqdm import tqdm
 
 PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
@@ -179,7 +176,6 @@ def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: li
             if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
                 indexclass = selectedclasses.index(nucl_info[2])
                 numinstanceperclass[indexclass] += 1
-                instancenumber = count
                 # Add Area Calculation by importing all the edges of polygons
                 polygoninfo = shapely.geometry.Polygon(nucl_info[3])
                 instancearea = polygoninfo.area
@@ -543,7 +539,7 @@ def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
     print("In this run, the number of needed CPU is {}".format(
         int((len(selectedclasses) * (len(selectedclasses) - 1)) / 2)))
     for sourceclass in selectedclasses:
-        sourceclass_allavgdist = list()
+        # sourceclass_allavgdist = list()
         for targetclass in selectedclasses:
 
             if targetclass <= sourceclass:

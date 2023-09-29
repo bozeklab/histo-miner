@@ -2,10 +2,8 @@
 
 ################ RMQ
 
-##  maybe create a config outside the submodule but in the configs to make it clearer that the
-## submodule shouldn't be touched for inference
-
-## maybe we can do that it is not made to be changed for training as well / This let see
+## Create a config file that overwritte the original mmsegmentations configs, 
+## and put the segmenter cpython configs files in the core directories
 
 
 ############### SCRIPT
@@ -24,7 +22,6 @@ cd ./src/models/mmsegmentation/
 
 
 # Set number of open files limit to 10 000! 
-ulimit -n 10000
 
 echo "Run mmsegmentation submodule inference..."
 

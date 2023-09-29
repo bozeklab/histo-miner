@@ -1,24 +1,28 @@
+#!/bin/bash
 #Lucas Sancéré -
 
-################ RMQ
+## As hovernet is a submodule of the repo, it is better to use sh files and not python script
+## as we need activate corresponding env and the inference was also originally performed
+## thourgh as sh file (see src/models/hover_net/run_wsi.sh)
 
-####### Add the parameters in a config files and read it HERE on the sh scripts
-####### Except the thing that shouldn't be changed like type info path and model mode?
 
-#!/bin/bash
+################ PARSE CONFIG ARGS
 
-# Source the configuration file
-. config.txt
+# Extract all needed parameters from hovernet config
 
-# Access configuration values
-echo "API_KEY: $API_KEY"
-echo "DATABASE_URL: $DATABASE_URL"
+config_path=./configs/models/hovernet.yml
 
-if [ "$DEBUG" = "true" ]; then
-    echo "Debug mode is enabled."
-else
-    echo "Debug mode is disabled."
-fi
+yaml() {
+    python -c "import yaml;print(yaml.safe_load(open('$1'))$2)"
+}
+
+hovernet_mode=$(yaml $config_path "['key1']['key2']['key3']")
+gpulist=$(yaml $config_path "['key1']['key2']['key3']") 
+checkpoints_dir=$(yaml $config_path "['key1']['key2']['key3']")
+input_dir=$(yaml $config_path "['key1']['key2']['key3']")
+output_dir=$(yaml $config_path "['key1']['key2']['key3']")
+cache_path=$(yaml $config_path "['key1']['key2']['key3']")
+
 
 
 ############### SCRIPT
@@ -34,6 +38,14 @@ cd ./src/models/hover_net/
 
 # Download weigths to add
 
+### Add script to download weghts only if there are not already downloaded
+### for dev purposes, download it from google drive
+### for publication purposes, download if from Zenodo
+
+
+
+
+
 
 
 # Set number of open files limit to 10 000! 
@@ -42,29 +54,32 @@ ulimit -n 10000
 echo "Run hover_net submodule inference..."
 
 # Hovernet inference parameters 
-python run_infer.py \
---gpu='1' \
---nr_types=6 \
---type_info_path=./type_info_SCC.json \
---model_path=tocomplete \
---model_mode=fast \
---batch_size=64 \
-wsi \
---input_dir=/path/to/data/input/to/add/ \
---output_dir=//path/to/data/output/to/add/ \
---cache_path=/path/to/cache/to/add/
+
+if [ "$hovernet_mode" == "$wsi" ]; then
+    python run_infer.py \
+    --gpu= gpulist \
+    --nr_types=6 \
+    --type_info_path=./type_info_SCC.json \
+    --model_path= checkpoints_dir \
+    --model_mode=fast \
+    --batch_size=64 \
+    wsi \
+    --input_dir= input_dir \
+    --output_dir= output_dir \
+    --cache_path= cache_path
+
+if [ "$hovernet_mode" == "$tile" ]; then
+    python run_infer.py \
+    --gpu= gpulist \
+    --nr_types=6 \
+    --type_info_path=./type_info_SCC.json \
+    --model_path= checkpoints_dir \
+    --model_mode=fast \
+    --batch_size=64 \
+    tile \
+    --input_dir= input_dir \
+    --output_dir= output_dir \
 
 
-# Example of tile mode:
-# python run_infer.py \
-# --gpu='1' \
-# --nr_types=6 \
-# --type_info_path=./type_info_SCC.json \
-# --model_path= \
-# --model_mode=fast \
-# --batch_size=64 \
-# wsi \
-# --input_dir=/path/to/add/ \
-# --output_dir=/path/to/add/ 
 
 
