@@ -3,21 +3,22 @@
 
   inference:
 
+    hovernet_mode: wsi
+
+    gpulist: "0,1"
+
     paths:
       
-      checkpoints_dir: ""
+      checkpoints: "/data/lsancere/checkpoints_temp/hvn_bestweights.tar"
 
-      input_dir: ""
+      input_dir: "/data/shared/scc/progress/Cologne/"
 
-      output_dir: ""
+      output_dir: "/data/shared/scc/hovernet_prediction/opt4set5extended_wsimode/test/"
 
-      cache_path: ""
-
-
-    gpulist: '0,1'
+      cache_path: "/dev/shm/cachelucas/"
 
 
-    hovernet_mode: wsi
+
 
 
 

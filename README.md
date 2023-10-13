@@ -9,7 +9,9 @@
 ## Explain the repo structure
 
 ## Give instructions
-- installtion
+- installtios
+
+--- see submodules so far for the env 
 - creation of conda env 
 - how to use it 
 

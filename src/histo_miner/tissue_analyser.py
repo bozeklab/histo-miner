@@ -8,7 +8,6 @@ import multiprocessing as mp
 # import os
 # from ast import literal_eval
 from itertools import product
-
 import PIL
 import cv2
 import numpy as np
@@ -23,7 +22,6 @@ PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
 
 
 ## Functions
-
 
 def count_pix_value(file: str, value: int) -> int:
     """
@@ -1083,6 +1081,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     # Creation of Nested dictionnary including all the informations needed
     resultdict = {
+        "AllCellsinWSI": allcells_in_wsi_dict,
         "CalculationsforWSI": calculations_wsi_dict,
         "CalculationsRatiosinsideTumor": calculations_ratio_tumor_dict,
         "CalculationsDistinsideTumor": calculations_dist_tumor_dict,

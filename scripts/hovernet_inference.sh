@@ -10,18 +10,18 @@
 
 # Extract all needed parameters from hovernet config
 
-config_path=./configs/models/hovernet.yml
+config_path=../configs/models/hovernet.yml
 
 yaml() {
     python -c "import yaml;print(yaml.safe_load(open('$1'))$2)"
 }
 
-hovernet_mode=$(yaml $config_path "['key1']['key2']['key3']")
-gpulist=$(yaml $config_path "['key1']['key2']['key3']") 
-checkpoints_dir=$(yaml $config_path "['key1']['key2']['key3']")
-input_dir=$(yaml $config_path "['key1']['key2']['key3']")
-output_dir=$(yaml $config_path "['key1']['key2']['key3']")
-cache_path=$(yaml $config_path "['key1']['key2']['key3']")
+hovernet_mode=$(yaml $config_path "['inference']['hovernet_mode']")
+gpulist=$(yaml $config_path "['inference']['gpulist']") 
+checkpoints=$(yaml $config_path "['inference']['paths']['checkpoints']")
+input_dir=$(yaml $config_path "['inference']['paths']['input_dir']")
+output_dir=$(yaml $config_path "['inference']['paths']['output_dir']")
+cache_path=$(yaml $config_path "['inference']['paths']['cache_path']")
 
 
 
@@ -30,56 +30,57 @@ cache_path=$(yaml $config_path "['key1']['key2']['key3']")
 conda deactivate
 conda activate hovernet_submodule_test1
 
-cd ./src/models/hover_net/
+cd ../src/models/hover_net/
+
 
 #May need to export the LIBRARY PATH as follow
-# export LD_LIBRARY_PATH="/data/user/miniconda3/envs/hovernet_submodule_test1/lib/:$LD_LIBRARY_PATH"
+# export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/hovernet_submodule_test1/lib/:$LD_LIBRARY_PATH"
 
 
+#----------------------------
+# No need Yet----
 # Download weigths to add
-
-### Add script to download weghts only if there are not already downloaded
+### Add script to download weights only if there are not already downloaded
 ### for dev purposes, download it from google drive
 ### for publication purposes, download if from Zenodo
-
-
-
-
-
+#----------------------------
 
 
 # Set number of open files limit to 10 000! 
-ulimit -n 10000
+ulimit -n 100000
 
 echo "Run hover_net submodule inference..."
 
 # Hovernet inference parameters 
 
-if [ "$hovernet_mode" == "$wsi" ]; then
+if [ "$hovernet_mode" == "wsi" ]; then
     python run_infer.py \
-    --gpu= gpulist \
+    --gpu=$gpulist \
     --nr_types=6 \
     --type_info_path=./type_info_SCC.json \
-    --model_path= checkpoints_dir \
+    --model_path=$checkpoints \
     --model_mode=fast \
     --batch_size=64 \
     wsi \
-    --input_dir= input_dir \
-    --output_dir= output_dir \
-    --cache_path= cache_path
+    --input_dir=$input_dir \
+    --output_dir=$output_dir \
+    --cache_path=$cache_path 
+fi
 
-if [ "$hovernet_mode" == "$tile" ]; then
-    python run_infer.py \
-    --gpu= gpulist \
+
+if [ "$hovernet_mode" == "tile" ]; then
+python run_infer.py \
+    --gpu=$gpulist \
     --nr_types=6 \
     --type_info_path=./type_info_SCC.json \
-    --model_path= checkpoints_dir \
+    --model_path$checkpoints \
     --model_mode=fast \
     --batch_size=64 \
     tile \
-    --input_dir= input_dir \
-    --output_dir= output_dir \
+    --input_dir$input_dir \
+    --output_dir$output_dir
+fi 
 
-
-
-
+conda deactivate
+conda activate histo-miner-env
+cd "$OLDPWD"

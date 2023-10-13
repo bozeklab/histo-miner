@@ -3,7 +3,7 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        tissue_analyser_main: "/data/shared/scc/tissue_analyser/data_analysis/progress/Bonn"
+        tissue_analyser_main: "/data/shared/scc/tissue_analyser/data_analysis/"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
         inferences_postproc_main: "/data/shared/scc/tissue_analyser/data_analysis/no_progress/Regensburg"
 

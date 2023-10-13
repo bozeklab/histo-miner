@@ -36,7 +36,6 @@ classnames = list(config.parameters.lists.classnames)
 classnames_injson = list(config.parameters.lists.classnames_injson)
 
 
-
 #############################################################
 ## Tissue Analysis, Extraction of features
 #############################################################
@@ -55,8 +54,8 @@ for root, dirs, files in os.walk(pathtofolder):
             # Knowing that root is the path to the directory of the selected file,
             # root + file is the complete path
             filepath = root + '/' + file
-            
-            if extension == '.json' and not any(keyword in nameoffile for keyword in ['data', 'analysed']):
+
+            if extension == '.json' and not any(keyword in nameoffile for keyword in ['data', 'analysed', 'cellnbr']):
                 # 'data' not in name of files means it is not a json file coming from the analysis
                 if os.path.exists(pathtofolder + '/' + nameoffile + '_analysed.json'):
                     print('Detected an already processed file:', nameoffile)
@@ -70,7 +69,8 @@ for root, dirs, files in os.walk(pathtofolder):
 ######## Process the files
 for jsonfile in jsonfiles:
    # Creating the dictionnary to count the cells using countjson function
-    nameoffile = os.path.split(jsonfile)[1]
+    nameoffile = os.path.splitext(jsonfile)[0]
+
     print('********** \nProcess file:', nameoffile)
     print('Process count of cells per cell type in the whole slide image...')
     classcountsdict = analyser.counthvnjson(
@@ -79,6 +79,7 @@ for jsonfile in jsonfiles:
                                  classnameaskey=classnames)
     allcells_in_wsi_dict = classcountsdict
     print('\nAllcells_inWSI_dict generated as follow:', allcells_in_wsi_dict)
+
 
     # Create the path to Mask map binarized and Class JSON and save it into a variable
     if os.path.exists(jsonfile) and os.path.exists(jsonfile.replace('.json', maskmapext)):
@@ -129,9 +130,9 @@ for jsonfile in jsonfiles:
                                     selectedcls_dist=selectedcls_dist)
 
     # Write information inside a json file and save it
-    with open(pathtofolder + '/' + nameoffile + '_analysed.json', 'w') as outfile:
-        json.dump(jsondata, outfile, cls=NpEncoder)
+    with open(nameoffile + '_analysed.json', 'w') as outfile:
+        json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
 
-    print('Json file written :', path_to_parentfolder + nameoffile + '_analysed.json \n**********')
+    print('Json file written :', nameoffile + '_cellnbr.json \n**********')
 
 print('Tissue Analysis Done')
