@@ -12,6 +12,11 @@
 
 config_path=../configs/models/hovernet.yml
 
+# We need yaml lib so we reactivate histo-miner env if it was not done befre
+conda deactivate
+conda activate histo-miner-env
+
+# We extract all parameters now:
 yaml() {
     python -c "import yaml;print(yaml.safe_load(open('$1'))$2)"
 }
@@ -28,7 +33,7 @@ cache_path=$(yaml $config_path "['inference']['paths']['cache_path']")
 ############### SCRIPT
 
 conda deactivate
-conda activate hovernet_submodule_test1
+conda activate hovernet_submodule
 
 cd ../src/models/hover_net/
 
@@ -37,13 +42,14 @@ cd ../src/models/hover_net/
 # export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/hovernet_submodule_test1/lib/:$LD_LIBRARY_PATH"
 
 
-#----------------------------
+#--------------------------------------------------------
+# TO DO? WE CAN ALSO DOWNLOAD USING THE MAIN README
 # No need Yet----
 # Download weigths to add
 ### Add script to download weights only if there are not already downloaded
 ### for dev purposes, download it from google drive
 ### for publication purposes, download if from Zenodo
-#----------------------------
+#--------------------------------------------------------
 
 
 # Set number of open files limit to 10 000! 

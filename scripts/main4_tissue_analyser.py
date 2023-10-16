@@ -17,9 +17,9 @@ from src.histo_miner.utils.misc import NpEncoder
 
 
 
-#############################################################
+###################################################################
 ## Load configs parameter
-#############################################################
+###################################################################
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -36,9 +36,9 @@ classnames = list(config.parameters.lists.classnames)
 classnames_injson = list(config.parameters.lists.classnames_injson)
 
 
-#############################################################
+#################################################################
 ## Tissue Analysis, Extraction of features
-#############################################################
+#################################################################
 
 """Tissue Analysis"""
 
@@ -47,14 +47,10 @@ classnames_injson = list(config.parameters.lists.classnames_injson)
 jsonfiles = list()
 for root, dirs, files in os.walk(pathtofolder):
     if files:  # Keep only the not empty lists of files
-        # Because files is a list of file name here, and not a srting. You create a string with this:
+        # Because files is a list of file name here, and not a single path string. Create a string with this:
         for file in files:
             path, extension = os.path.splitext(file)
             path_to_parentfolder, nameoffile = os.path.split(path)
-            # Knowing that root is the path to the directory of the selected file,
-            # root + file is the complete path
-            filepath = root + '/' + file
-
             if extension == '.json' and not any(keyword in nameoffile for keyword in ['data', 'analysed', 'cellnbr']):
                 # 'data' not in name of files means it is not a json file coming from the analysis
                 if os.path.exists(pathtofolder + '/' + nameoffile + '_analysed.json'):
@@ -62,16 +58,16 @@ for root, dirs, files in os.walk(pathtofolder):
                     continue
                 else:
                     print('Detected hovernet output json file not already analysed:', file)
-                    jsonfiles.append(filepath)
+                    jsonfiles.append(file)
 
 
 
 ######## Process the files
 for jsonfile in jsonfiles:
-   # Creating the dictionnary to count the cells using countjson function
-    nameoffile = os.path.splitext(jsonfile)[0]
+   # Creating the dictionnary to count the cells using countjson function:
+    pathwoext = os.path.splitext(jsonfile)[0]
 
-    print('********** \nProcess file:', nameoffile)
+    print('********** \nProcess file:', pathwoext)
     print('Process count of cells per cell type in the whole slide image...')
     classcountsdict = analyser.counthvnjson(
                                  jsonfile, 
@@ -130,9 +126,9 @@ for jsonfile in jsonfiles:
                                     selectedcls_dist=selectedcls_dist)
 
     # Write information inside a json file and save it
-    with open(nameoffile + '_analysed.json', 'w') as outfile:
+    with open(pathwoext + '_analysed.json', 'w') as outfile:
         json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
 
-    print('Json file written :', nameoffile + '_cellnbr.json \n**********')
+    print('Json file written :', pathwoext + '_cellnbr.json \n**********')
 
 print('Tissue Analysis Done')

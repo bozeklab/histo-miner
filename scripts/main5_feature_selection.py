@@ -12,22 +12,13 @@ from attrdict import AttrDict as attributedict
 
 from src.histo_miner.feature_selection import FeatureSelector
 from src.histo_miner.utils.misc import convert_flatten_redundant
-
-# import time
-# import scipy.stats
-# import sys
-# import pandas as pd
-# import mrmr
-# import boruta
-# from pandas import DataFrame
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn import linear_model, ensemble
+from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
 
-#############################################################
+###################################################################
 ## Load configs parameter
-#############################################################
+###################################################################
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -35,78 +26,93 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtofolder = config.paths.folders.main
+pathtofolder = config.paths.folders.feature_selection_main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 
 
-#############################################################
+###################################################################
 ## Concatenate features and create Pandas DataFrames
-#############################################################
+###################################################################
 
 
 """Concatenate the quantification features all together 
 in pandas DataFrame and run the different feature selections"""
 
 
-
-##### IMPORTANT TO ADD
-
-# Create a util function that find the "analysed" json and put them in a new directory (called tissue analysis)
-# with recurrence and no_recurrence in the name of the file to add
-
-####### TO ADD AS WELL:
+####### TO ADD AS ?
 # Associate the index of the selected feature to the name of it (use dict probably)
 
 
+###### WRITE COMMENT about what is anaylser2featselect
+anaylser2featselect(pathtofolder)
 
+
+########  Create list with the paths of the files to analyse
+pathto_sortedfolder = pathtofolder + '/' + 'tissue_analysis_sorted'
+jsonfiles = list()
 cllist = list()
-# clarray stands for for classification list (recurrence (1) or norecurrence (0))
-feature_init = False
-# Means Initialisation of feature array not done yet
-
-for root, dirs, files in os.walk(pathtofolder):
+# cllist stands for for classification list (recurrence (1) or norecurrence (0))
+for root, dirs, files in os.walk(pathto_sortedfolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
         for file in files:
             path, extension = os.path.splitext(file)
-            _, nameoffile = os.path.split(path)
+            path_to_parentfolder, nameoffile = os.path.split(path)
             if extension == '.json' and 'analysed' in nameoffile:
-                with open(root + '/' + file, 'r') as filename:
-                    # extract information of the JSON as a string
-                    print('Detected tissue analysis json file:', file)
-                    analysisdata = filename.read()
-                    # read JSON formatted string and convert it to a dict
-                    analysisdata = json.loads(analysisdata)
-                    # flatten the dict (with redundant keys in nested dict, see function)
-                    analysisdata = convert_flatten_redundant(analysisdata)
-                    analysisdata = {k: v for (k, v) in analysisdata.items() if v != 'Not calculated'}
+                print('Detected tissue analysis json file:', file)
+                if not 'recurrence' in nameoffile:
+                    raise ValueError('Some features are not associated to a recurrence '
+                                    'or norecurrence WSI classification. User must sort JSON and rename it'
+                                    ' with the corresponding reccurence and noreccurence caracters')
+                else:
+                    jsonfiles.append(file)
 
-                    #Convert dict values into an array
-                    valuearray = np.fromiter(analysisdata.values(), dtype=float)
-                    #Remove nans from arrays and add a second dimension to the array
-                    # in order to be concatenated later on
-                    valuearray = valuearray[~np.isnan(valuearray)]
-                    valuearray = np.expand_dims(valuearray, axis=1)
 
-                    # Generate the list of WSI binary classification
-                    # No list comprehension just to exhibit more clearly the error message
-                    if 'recurrence' in nameoffile:
-                        if 'no_recurrence' in nameoffile:
-                            cllist.append(int(0))
-                        else:
-                            cllist.append(int(1))
-                    else:
-                        raise ValueError('Some features are not associated to a recurrence '
-                                         'or norecurrence WSI classification. User must sort JSON and rename it'
-                                         ' with the corresponding reccurence and noreccurence caracters')
+######## Process the files
+feature_init = False
+# Means Initialisation of feature array not done yet
+for jsonfile in jsonfiles:
+    with open(jsonfile, 'r') as filename:
+        pathwoext = os.path.splitext(jsonfile)[0]
+        path_to_parentfolder, nameoffile = os.path.split(pathwoext)
 
-            if not feature_init:
-                featarray = valuearray
-                feature_init = True
+        # extract information of the JSON as a string
+        analysisdata = filename.read()
+        # read JSON formatted string and convert it to a dict
+        analysisdata = json.loads(analysisdata)
+        # flatten the dict (with redundant keys in nested dict, see function)
+        analysisdata = convert_flatten_redundant(analysisdata)
+        analysisdata = {k: v for (k, v) in analysisdata.items() if v != 'Not calculated'}
+
+        #Convert dict values into an array
+        valuearray = np.fromiter(analysisdata.values(), dtype=float)
+        #Remove nans from arrays and add a second dimension to the array
+        # in order to be concatenated later on
+        valuearray = valuearray[~np.isnan(valuearray)]
+        valuearray = np.expand_dims(valuearray, axis=1)
+
+        # Generate the list of WSI binary classification
+        # No list comprehension just to exhibit more clearly the error message
+        if 'recurrence' in nameoffile:
+            if 'no_recurrence' in nameoffile:
+                cllist.append(int(0))
             else:
-                #MEMORY CONSUMING, FIND BETTER WAY IF POSSIBLE
-                featarray = np.concatenate((featarray, valuearray), axis=1)
+                cllist.append(int(1))
+        else:
+            raise ValueError('Some features are not associated to a recurrence '
+                             'or norecurrence WSI classification. User must sort JSON and rename it'
+                             'with the corresponding reccurence and noreccurence caracters'
+                             'User can check src.utils.anaylser2featselect function for more details.')
 
+if not feature_init:
+    featarray = valuearray
+    feature_init = True
+else:
+    #MEMORY CONSUMING, FIND BETTER WAY IF POSSIBLE
+    featarray = np.concatenate((featarray, valuearray), axis=1)
+
+
+# Check if there are recurrence and no recurrence data in the training set (both needed)
 if cllist:
     if 0 not in cllist:
         raise ValueError(
@@ -120,16 +126,16 @@ if cllist:
 
 clarray = np.asarray(cllist)
 # clarray stands for for classification array (recurrence or norecurrence)
+
+##### Display Feature Matrix and its corresponding classification vectors (reccurence or no recurrence)
 print("Feature Matrix Shape is", featarray.shape)
 print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
 
 
-
-#############################################################
+###################################################################
 ## Run Feature Selections
-#############################################################
-
+###################################################################
 
 FeatureSelector = FeatureSelector(featarray, clarray)
 
@@ -158,8 +164,7 @@ print('***** \n')
 ## Save all numpy files
 ############################################################
 
-# Save all the files in the tissue analysiis folder
-
+# Save all the files in the tissue analysis folder
 # Create the path to folder that will contain the numpy feature selection files
 pathnumpy = pathtofolder.replace('tissue_analyses/', 'feature_selection/')
 ext = '.npy'
