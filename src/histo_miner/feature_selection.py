@@ -48,7 +48,7 @@ class FeatureSelector:
         -------
         selfeat_mrmr: npy array
             Array continaing the index of the selected features
-            (the index correspond to the index of the features in the feature array)
+            (the index correspond to the index of the features in the feature array, starts at 0)
         """
         # We create a pandas dataframe from the feature array
         try:
@@ -111,8 +111,8 @@ class FeatureSelector:
         -------
         orderedp_mannwhitneyu: dict
             Dictionary containing the p-values of each features (key: feature index, value: p-value)
-            calculated with Mann-Whitney U rank test.
-            The dictionary is ordered from the highest p-value to the lowest p-value
+            calculated with Mann-Whitney U rank test. Feature index starts at 0.
+            The dictionary is ordered from the highest p-value to the lowest p-value.
         """
         mannwhitneyu = dict()
         orderedp_mannwhitneyu = dict()  # p stands for p-values

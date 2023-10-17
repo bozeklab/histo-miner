@@ -34,21 +34,27 @@ nbr_keptfeat = config.parameters.int.nbr_keptfeat
 ## Concatenate features and create Pandas DataFrames
 ###################################################################
 
-
 """Concatenate the quantification features all together 
 in pandas DataFrame and run the different feature selections"""
 
 
-####### TO ADD AS ?
-# Associate the index of the selected feature to the name of it (use dict probably)
+###### Reorganise the folder and naming of files to process the concatenation of feature
+tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted'
+norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
+rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 
-
-###### WRITE COMMENT about what is anaylser2featselect
-anaylser2featselect(pathtofolder)
+# If the 2 folders norec_analyse_folder and rec_analyse_folder don't exsit, 
+# or they exist but are empty, we start the re-organization of the files with anaylser2featselect.
+if (not os.path.exists(norec_analyse_folder) and not os.path.exists(rec_analyse_folder)) or \
+    ((os.path.exists(norec_analyse_folder) and not os.listdir(norec_analyse_folder)) and \
+    (os.path.exists(rec_analyse_folder) and not os.listdir(rec_analyse_folder))):
+    anaylser2featselect(pathtofolder)
+else:
+    print('\nRe-organization of the files already performed, so moving the files skipped')
 
 
 ########  Create list with the paths of the files to analyse
-pathto_sortedfolder = pathtofolder + '/' + 'tissue_analysis_sorted'
+pathto_sortedfolder = pathtofolder + '/' + 'tissue_analyses_sorted'
 jsonfiles = list()
 cllist = list()
 # cllist stands for for classification list (recurrence (1) or norecurrence (0))
@@ -56,20 +62,20 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
         for file in files:
-            path, extension = os.path.splitext(file)
-            path_to_parentfolder, nameoffile = os.path.split(path)
-            if extension == '.json' and 'analysed' in nameoffile:
-                print('Detected tissue analysis json file:', file)
-                if not 'recurrence' in nameoffile:
+            namewoext, extension = os.path.splitext(file)
+            filepath = root + '/' + file
+            if extension == '.json' and 'analysed' in namewoext:
+                if not 'recurrence' in namewoext:
                     raise ValueError('Some features are not associated to a recurrence '
-                                    'or norecurrence WSI classification. User must sort JSON and rename it'
+                          <          'or norecurrence WSI classification. User must sort JSON and rename it'
                                     ' with the corresponding reccurence and noreccurence caracters')
                 else:
-                    jsonfiles.append(file)
+                    jsonfiles.append(filepath)
 
 
 ######## Process the files
-feature_init = False
+print('Detected {} json files.'.format(len(jsonfiles)))
+feature_init = True
 # Means Initialisation of feature array not done yet
 for jsonfile in jsonfiles:
     with open(jsonfile, 'r') as filename:
@@ -104,12 +110,17 @@ for jsonfile in jsonfiles:
                              'with the corresponding reccurence and noreccurence caracters'
                              'User can check src.utils.anaylser2featselect function for more details.')
 
-if not feature_init:
-    featarray = valuearray
-    feature_init = True
-else:
-    #MEMORY CONSUMING, FIND BETTER WAY IF POSSIBLE
-    featarray = np.concatenate((featarray, valuearray), axis=1)
+    if  feature_init:
+        #Create a list of names of the features, (only done once as all the json have the same features)
+        featlist = list(analysisdata.keys())
+        # The first row of the featarray is not concatenated to anything so we have an initialiation
+        #step that is slightly different than the other steps.
+        featarray = valuearray
+        feature_init = False
+    else:
+        #MEMORY CONSUMING, FIND BETTER WAY IF POSSIBLE
+        featarray = np.concatenate((featarray, valuearray), axis=1)
+
 
 
 # Check if there are recurrence and no recurrence data in the training set (both needed)
@@ -133,11 +144,18 @@ print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
 
 
-###################################################################
-## Run Feature Selections
-###################################################################
+# ###################################################################
+# ## Run Feature Selections
+# ###################################################################
 
 FeatureSelector = FeatureSelector(featarray, clarray)
+
+
+####### TO ADD #############
+# Associate the index of the selected feature to the name of it (use dict probably)
+############################
+
+
 
 print('mR.MR calculations (see https://github.com/smazzanti/mrmr to have more info) '
       'in progress...')
@@ -160,13 +178,21 @@ print('feature selection finished')
 print('***** \n')
 
 
-############################################################
-## Save all numpy files
-############################################################
+# ############################################################
+# ## Save all numpy files
+# ############################################################
 
-# Save all the files in the tissue analysis folder
+# Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
-pathnumpy = pathtofolder.replace('tissue_analyses/', 'feature_selection/')
+
+
+####### TO ADD #############
+# Create a file that summurize the selected features
+############################
+
+
+# OLD pathnumpy = pathtofolder.replace('tissue_analyses/', 'feature_selection/')
+pathnumpy = pathtofolder + '/feature_selection/'
 ext = '.npy'
 
 # If the folder doesn't exist create it

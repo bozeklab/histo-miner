@@ -1037,10 +1037,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                     cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                     / allcells_in_wsi_dict["Stroma"]
             )
-            insidevs_outside_dict["Pourcentage_TumorCells_insideTumor"] = (
-                    cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
-                    / allcells_in_wsi_dict["Tumor"]
-            )
+            
 
     # Create dictionnary for the whole section of calculations linked to cells inside and outside tumor regions
     calculations_mixed_dict = {
@@ -1080,8 +1077,8 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     calculations_paper_metrics_dict = {"ITLR": ITLR, "SCD": SCD}
 
     # Creation of Nested dictionnary including all the informations needed
+    # We don't create a file with cell numbers. Need to create an external file for this!!
     resultdict = {
-        "AllCellsinWSI": allcells_in_wsi_dict,
         "CalculationsforWSI": calculations_wsi_dict,
         "CalculationsRatiosinsideTumor": calculations_ratio_tumor_dict,
         "CalculationsDistinsideTumor": calculations_dist_tumor_dict,

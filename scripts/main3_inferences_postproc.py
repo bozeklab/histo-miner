@@ -83,7 +83,7 @@ for root, dirs, files in os.walk(pathtofolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
         for file in files:
-            path, extension = os.path.splitext(file)
+            namewoext, extension = os.path.splitext(file)
             filepath = root + '/' + file
             # Knowing that root is the path to the directory of the selected file,
             # root + file is the complete path

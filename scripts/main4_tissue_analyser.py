@@ -49,16 +49,16 @@ for root, dirs, files in os.walk(pathtofolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a single path string. Create a string with this:
         for file in files:
-            path, extension = os.path.splitext(file)
-            path_to_parentfolder, nameoffile = os.path.split(path)
-            if extension == '.json' and not any(keyword in nameoffile for keyword in ['data', 'analysed', 'cellnbr']):
+            namewoext, extension = os.path.splitext(file)
+            filepath = root + '/' + file
+            if extension == '.json' and not any(keyword in namewoext for keyword in ['data', 'analysed', 'cellnbr']):
                 # 'data' not in name of files means it is not a json file coming from the analysis
-                if os.path.exists(pathtofolder + '/' + nameoffile + '_analysed.json'):
-                    print('Detected an already processed file:', nameoffile)
+                if os.path.exists(pathtofolder + '/' + namewoext + '_analysed.json'):
+                    print('Detected an already processed file:', file)
                     continue
                 else:
                     print('Detected hovernet output json file not already analysed:', file)
-                    jsonfiles.append(file)
+                    jsonfiles.append(filepath)
 
 
 
