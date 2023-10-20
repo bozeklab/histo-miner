@@ -11,7 +11,7 @@ import yaml
 from attrdict import AttrDict as attributedict
 
 from src.histo_miner.feature_selection import FeatureSelector
-from src.histo_miner.utils.misc import convert_flatten_redundant
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
 from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
@@ -28,6 +28,10 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 config = attributedict(config)
 pathtofolder = config.paths.folders.feature_selection_main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
+boruta_max_depth = config.parameters.int.boruta_max_depth
+boruta_random_state = config.parameters.int.nbr_keptfeat
+
+
 
 
 ###################################################################
@@ -87,11 +91,11 @@ for jsonfile in jsonfiles:
         # read JSON formatted string and convert it to a dict
         analysisdata = json.loads(analysisdata)
         # flatten the dict (with redundant keys in nested dict, see function)
-        analysisdata = convert_flatten_redundant(analysisdata)
-        analysisdata = {k: v for (k, v) in analysisdata.items() if v != 'Not calculated'}
+        analysisdataflat = convert_flatten_redundant(analysisdata)
+        analysisdataflat = {k: v for (k, v) in analysisdataflat.items() if v != 'Not calculated'}
 
         #Convert dict values into an array
-        valuearray = np.fromiter(analysisdata.values(), dtype=float)
+        valuearray = np.fromiter(analysisdataflat.values(), dtype=float)
         #Remove nans from arrays and add a second dimension to the array
         # in order to be concatenated later on
         valuearray = valuearray[~np.isnan(valuearray)]
@@ -112,7 +116,10 @@ for jsonfile in jsonfiles:
 
     if  feature_init:
         #Create a list of names of the features, (only done once as all the json have the same features)
-        featlist = list(analysisdata.keys())
+        #We create a new dictionnary that is using not the same keys name, but simplified ones.
+        #Check the difference between convert_flatten and convert_flatten_redundant docstrings
+        simplifieddata =  convert_flatten(analysisdata)
+        featnameslist = list(simplifieddata.keys())
         # The first row of the featarray is not concatenated to anything so we have an initialiation
         #step that is slightly different than the other steps.
         featarray = valuearray
@@ -144,38 +151,49 @@ print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
 
 
+
 # ###################################################################
 # ## Run Feature Selections
 # ###################################################################
 
 FeatureSelector = FeatureSelector(featarray, clarray)
 
-
-####### TO ADD #############
-# Associate the index of the selected feature to the name of it (use dict probably)
-############################
-
-
-
+## mr.MR calculations
 print('mR.MR calculations (see https://github.com/smazzanti/mrmr to have more info) '
       'in progress...')
-selfeat_mrmr = FeatureSelector.run_mrmr(nbr_keptfeat)
-print('Selected Features: {}'.format(selfeat_mrmr[0]))
-print('Relevance Matrix: {}'.format(selfeat_mrmr[1]))
-print('Redundancy Matrix: {}'.format(selfeat_mrmr[2]))
+selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = FeatureSelector.run_mrmr(nbr_keptfeat)
+# Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
 
+print('Selected Features Indexes: {}'.format(selfeat_mrmr_index))
+print('Selected Features Names: {}'.format(selfeat_mrmr_names))
+# print('Relevance Matrix: {}'.format(mrmr_relevance_matrix))
+# print('Redundancy Matrix: {}'.format(mrmr_redundancy_matrix))
+
+## Boruta calculations
 print('Boruta calculations  (https://github.com/scikit-learn-contrib/boruta_py to have more info)'
       ' in progress...')
-selfeat_boruta = FeatureSelector.run_boruta()
-print("Selected Feature Matrix Shape: {}".format(selfeat_boruta.shape))
-print('Selected Features: {}'.format(selfeat_boruta))
+selfeat_boruta_index = FeatureSelector.run_boruta(
+    max_depth=boruta_max_depth, random_state=boruta_random_state)
+# Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index] 
 
+print('Selected Features Indexes: {}'.format(selfeat_boruta_index))
+print('Selected Features Names: {}'.format(selfeat_boruta_names))
+
+## Mann Whitney U calculations
 print('Mann Whitney U calculations in progress...')
-orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney()
+selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney(nbr_keptfeat)
+# Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
+selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index] 
+
+print('Selected Features Indexes: {}'.format(selfeat_mannwhitneyu_index))
+print('Selected Features Names: {}'.format(selfeat_mannwhitneyu_names))
 print('Output Ordered from best p-values to worst: {}'.format(orderedp_mannwhitneyu))
 
 print('feature selection finished')
 print('***** \n')
+
 
 
 # ############################################################
@@ -185,30 +203,51 @@ print('***** \n')
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
 
-
-####### TO ADD #############
-# Create a file that summurize the selected features
-############################
-
-
-# OLD pathnumpy = pathtofolder.replace('tissue_analyses/', 'feature_selection/')
-pathnumpy = pathtofolder + '/feature_selection/'
+pathoutput = pathtofolder + '/feature_selection/'
 ext = '.npy'
 
 # If the folder doesn't exist create it
-if not os.path.exists(pathnumpy):
-    os.makedirs(pathnumpy)
+if not os.path.exists(pathoutput):
+    os.makedirs(pathoutput)
 
 
-print('Save feature selection numpy files...')
-pathfeatarray = pathnumpy + 'featarray' + ext
+print('Saving feature array, classification array, summary of selected features for each methods,'
+       ' as well as methods output in numpy format to be used for classification step...')
+# Create text files with name and indexes of selected feature for 
+# every method
+summarystr_mrmr = '\n\nFor mR.MR calculations:\n' \
+                  + str(selfeat_mrmr_index) + '\n' \
+                  + str(selfeat_mrmr_names)
+
+summarystr_boruta = '\n\nFor boruta calculations:\n' \
+                  + str(selfeat_boruta_index) + '\n' \
+                  + str(selfeat_boruta_names)
+
+summarystr_mannwhitneyu = '\n\nFor Mann Whitney U calculations:\n' \
+                          + str(selfeat_mannwhitneyu_index) + '\n' \
+                          + str(selfeat_mannwhitneyu_names)
+
+summarystr = summarystr_mrmr + summarystr_boruta + summarystr_mannwhitneyu
+
+# Open the file for writing and save it
+summaryfile_path = pathoutput + 'selected_features.txt'
+with open(summaryfile_path, "w") as file:
+    file.write(summarystr)
+
+#Save feature array and classification array
+pathfeatarray = pathoutput + 'featarray' + ext
 np.save(pathfeatarray, featarray)
-pathclarray = pathnumpy + 'clarray' + ext
+pathclarray = pathoutput + 'clarray' + ext
 np.save(pathclarray, clarray)
-pathselfeat_mrmr = pathnumpy + 'selfeat_mrmr' + ext
-np.save(pathselfeat_mrmr, selfeat_mrmr)
-pathselfeat_boruta = pathnumpy + 'selfeat_boruta' + ext
-np.save(pathselfeat_boruta, selfeat_boruta)
-pathorderedp_mannwhitneyu = pathnumpy + 'orderedp_mannwhitneyu' + ext
-np.save(pathorderedp_mannwhitneyu, orderedp_mannwhitneyu)
+
+# We save the index of selected features for mrmr and mannwhitneyu 
+pathselfeat_mrmr = pathoutput + 'selfeat_mrmr_idx' + ext
+np.save(pathselfeat_mrmr, selfeat_mrmr_index)
+pathselfeat_boruta = pathoutput + 'selfeat_boruta_idx' + ext
+np.save(pathselfeat_boruta, selfeat_boruta_index)
+pathorderedp_mannwhitneyu = pathoutput + 'selfeat_mannwhitneyu_idx' + ext
+np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
+
+
 print('Saving done.')
+print('Path to the output files: {}'.format(pathoutput))

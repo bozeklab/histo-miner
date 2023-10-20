@@ -9,6 +9,8 @@
 # All not strings parameters
   parameters:
     bool:
+      perform_split: True
+
       classification_from_allfeatures: True
 
       saving_classifiers:
@@ -17,6 +19,8 @@
         logistic_regression: True
 
         random_forest: True
+    int:
+      split_pourcentage: 15
 
 
 # Classifiers parameters
@@ -25,7 +29,7 @@
     ridge:
       # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
-      alpha:  0.5
+      alpha:  2
 
     logistic_regression:
       # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation

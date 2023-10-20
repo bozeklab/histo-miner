@@ -16,6 +16,7 @@ from src.histo_miner import hovernet_utils, segmenter_utils
 from src.histo_miner.utils import cellclass_process
 
 
+
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -45,7 +46,6 @@ newstr2_wsimode = config.names.managment.newstr2_wsimode
 
 
 
-
 #############################################################
 ## Update parameters depending on hovernet_mode
 #############################################################
@@ -65,7 +65,6 @@ else:
     newstring = str(newstr_tilemode)
     string2replace2 = str(str2replace2_tilemode)
     newstring2 = str(newstr2_tilemode)
-
 
 
 

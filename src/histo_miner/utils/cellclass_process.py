@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 
-def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int):
+def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int) -> None
     """
     In the loaded json, replace all the cells predicted as tumor cells outside tumor region
     into epithelial cells (class 6) and rewritte previous json with new changes
@@ -66,7 +66,7 @@ def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int):
         json.dump(classdictupdated, filename)
 
 
-def cancelupdate(classjson: str):
+def cancelupdate(classjson: str) -> None:
     """
     In the loaded json, change all epithelial cells into tumor cells and rewritte previous json with new changes
 

@@ -34,7 +34,7 @@ PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
 
 ## Functions
 
-def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsampled'):
+def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsampled') -> None:
     """
     Downsample an image with format compatible with PILLOW and save the output image. Use of
     PILLOW to read and process images (because it can read big images, AND CV2 CANNOT).
@@ -64,7 +64,7 @@ def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsamp
     image.save(savepath)
 
 
-def resize(image: str, newheight: int, newwidth: int, savename: str = '_resized'):
+def resize(image: str, newheight: int, newwidth: int, savename: str = '_resized') -> None:
     """
     Resize an image following the new height and widee given as input. Use of
     PILLOW to read and process images (because it can read big images, AND CV2 CANNOT).
@@ -93,7 +93,7 @@ def resize(image: str, newheight: int, newwidth: int, savename: str = '_resized'
     imageresized.save(savepath)
 
 
-def resize_accordingly(image: str, modelimage: str, savename: str = '_resized'):
+def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') -> None:
     """
     Resize an image to match with the modelimage size given as input and save it. Use the cv2.resize function
     and cv2 and PILLOW to read images (can read big images).

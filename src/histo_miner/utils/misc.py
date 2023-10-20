@@ -3,6 +3,10 @@
 import json
 import os
 from collections import MutableMapping
+#depends on the env, could be
+# from collections.abd import MutableMapping
+import random
+from tqdm import tqdm
 
 import imagesize
 import numpy as np
@@ -120,6 +124,91 @@ def convert_flatten(inputdic: dict, parent_key: str = '') -> dict:
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def split_featclarrays(pathtofolder: str, splitpourcent: float = 15., 
+                       clarrayname: str = 'clarray',
+                       featarrayname: str = 'featarray') -> list:
+    """
+    Split classification array (clarrays) and feature arrays (featarray), that are 
+    outputs of Concatenate features and create Pandas DataFrames step of feature selection. 
+
+    It will then create a training set and a test set for the binary classification of WSIs.
+
+    Parameters:
+    -----------
+    pathtofolder: str
+
+    splitpourcent: float, optionnal
+
+    clarrayname: str, optionnal
+
+    featarrayname: str, optionnal
+
+
+    Returns:
+    --------
+    list_train_arrays: 
+
+    list_test_arrays
+
+
+    """
+    # Load data
+    ext = '.npy'
+    clarray = np.load(pathtofolder  + clarrayname + ext)
+    featarray = np.load(pathtofolder + featarrayname + ext) 
+    # Define number of WSI represented by the arrays and how much to split (splitpourcent)
+    totnbr_wsi = len(clarray)
+    nbrwsi2split = int(totnbr_wsi * (splitpourcent/100))
+    # Next step, create a list with  the indexes to remove from clarray and featarray
+    # Avoid list comprehension in the next line as we need to check the list itself 
+    # (. The issue here is that indexlist is not defined yet when you use it within the list comprehension. 
+    # Therefore, you cannot check for membership in indexlist at that point.)
+    indexlist = []
+    while len(indexlist) < nbrwsi2split:
+        random_index = random.randint(0, totnbr_wsi - 1)
+        if random_index not in indexlist:
+            indexlist.append(random_index)
+
+    # VERY IMPORTATNT Remark!:
+    # Sort the indices in descending order so that you remove elements from the end to avoid index shifting
+    indexlist.sort(reverse=True)
+    
+    ## Now split clarray into a test and train clarrays
+    cllist = list(clarray)
+    testcllist = list()
+    # Pruning process and append to the test list
+    print('Splitting classification array...')
+    for index in tqdm(indexlist):
+        removedelement = cllist.pop(index)
+        testcllist.append(removedelement)
+    #Generate the training classifications list from the pruned cllist:
+    traincllist = cllist
+    # Convert the list to numpy arrays
+    testclarray = np.asarray(testcllist)
+    trainclarray = np.asarray(traincllist)
+
+    ## Now split featarray into a test and train featarrays
+    # featlist = list(featarray)
+    testfeatlist = list()
+    trainfeatarray = featarray
+    # Pruning process and append to the test list
+    print('Splitting feature matrix...')
+    for index in tqdm(indexlist):
+        testfeatlist.append(featarray[:, index])
+        trainfeatarray = np.delete(trainfeatarray, index, axis=1)
+        # removedcolumn = [row.pop(indexlist) for row in featlist]
+
+    #Generate the test classifications array from the list:
+    #Don't forget to transpose it is necessary here!!!
+    testfeatarray = np.transpose(np.asarray(testfeatlist))
+    #Create one list for training data and one list for test data 
+    list_test_arrays = [testfeatarray, testclarray]
+    list_train_arrays = [trainfeatarray, trainclarray]
+
+    return list_train_arrays, list_test_arrays
+
 
 
 ### Utils Classes

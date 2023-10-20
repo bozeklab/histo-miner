@@ -3,9 +3,9 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        inferences_postproc_main: "/data/shared/scc/tissue_analyser/data_analysis/no_progress/Regensburg"
-        tissue_analyser_main: "/data/shared/scc/tissue_analyser/data_analysis/"
-        feature_selection_main: "/data/shared/scc/tissue_analyser/data_analysis/"
+        inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
+        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
         
 
@@ -70,6 +70,10 @@
       maskmap_downfactor: 32
 
       nbr_keptfeat: 5
+
+      boruta_max_depth: 12
+
+      boruta_random_state: 1
 
     bool:
       classification_from_allfeatures: True
