@@ -9,16 +9,22 @@
 # All not strings parameters
   parameters:
     bool:
-      perform_split: True
+      perform_split: False
 
       classification_from_allfeatures: True
 
       saving_classifiers:
-        ridge: True
+        ridge: False
 
-        logistic_regression: True
+        logistic_regression: False
 
-        random_forest: True
+        random_forest: False
+
+        xgboost: True 
+
+        light_gbm: True 
+
+
     int:
       split_pourcentage: 15
 
@@ -35,15 +41,51 @@
       # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
       solver: 'liblinear'
+      # choice for binary classification
 
       multi_class: 'ovr'
+      # choice for binary classification
 
     random_forest:
       # For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
       n_estimators: 100
+      # The number of trees in the forest.
 
       class_weight: 'balanced'
+
+    xgboost:
+      # For more information on xgboost parameters check the documentation here:
+      # #https://xgboost.readthedocs.io/en/stable/parameter.html
+      # and
+      # #https://xgboost.readthedocs.io/en/stable/get_started.html
+      n_estimators: 100
+      # number of boosting iterations, should be = number of trees in the forest
+
+      learning_rate: 1
+
+      objective: 'binary:logistic'
+      # choice to take for binary classification
+
+    light_gbm:
+      # For more information on light_gbm parameters check the documentation here:
+      # #https://lightgbm.readthedocs.io/en/stable/Parameters.html
+      # and
+      # #https://lightgbm.readthedocs.io/en/stable/Python-Intro.html
+      n_estimators: 100 
+      # number of boosting iterations, should be = number of trees in the forest
+
+      learning_rate: 1
+
+      objective: 'binary'
+      # choice to take for binary classification
+
+      num_leaves: 10
+
+
+
+
+
 
 
 

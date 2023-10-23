@@ -7,8 +7,12 @@ import os.path
 
 import numpy as np
 import yaml
+import xgboost 
+import lightgbm
 from attrdict import AttrDict as attributedict
 from sklearn import linear_model, ensemble
+from sklearn.model_selection import train_test_split
+ 
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
@@ -40,14 +44,23 @@ perform_split = config.parameters.bool.perform_split
 split_pourcentage = config.parameters.int.split_pourcentage
 
 ridge_alpha = config.classifierparam.ridge.alpha
-lr_solver = config.classifierparam.logistic_regression.solver
-lr_multi_class = config.classifierparam.logistic_regression.multi_class
+lregression_solver = config.classifierparam.logistic_regression.solver
+lregression_multi_class = config.classifierparam.logistic_regression.multi_class
 forest_n_estimators = config.classifierparam.random_forest.n_estimators
 forest_class_weight = config.classifierparam.random_forest.class_weight
+xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
+xgboost_lr = config.classifierparam.xgboost.learning_rate
+xgboost_objective = config.classifierparam.xgboost.objective
+lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
+lgbm_lr = config.classifierparam.light_gbm.learning_rate
+lgbm_objective = config.classifierparam.light_gbm.objective
+lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
 
 saveclassifier_ridge = config.parameters.bool.saving_classifiers.ridge
 saveclassifier_lr = config.parameters.bool.saving_classifiers.logistic_regression
 saveclassifier_forest = config.parameters.bool.saving_classifiers.random_forest
+saveclassifier_xgboost = config.parameters.bool.saving_classifiers.xgboost
+saveclassifier_lgbm = config.parameters.bool.saving_classifiers.light_gbm 
 
 
 
@@ -66,15 +79,26 @@ modelfolder = pathtofolder +'/classification_models/'
 pathridge_vanilla = modelfolder + 'ridge_vanilla.joblib'
 pathlr_vanilla = modelfolder + 'lr_vanilla.joblib'
 pathforest_vanilla = modelfolder + 'forest_vanilla.joblib'
+pathxgboost_vanilla = modelfolder + 'xgboost_vanilla.joblib'
+pathlgbm_vanilla = modelfolder + 'lgbm_vanilla.joblib'
+
 pathridge_mrmr = modelfolder + 'ridge_mrmr.joblib'
 pathlr_mrmr = modelfolder + 'lr_mrmr.joblib'
 pathforest_mrmr = modelfolder + 'forest_mrmr.joblib'
+pathxgboost_mrmr = modelfolder + 'xgboost_mrmr.joblib'
+pathlgbm_mrmr = modelfolder + 'lgbm_mrmr.joblib'
+
 pathridge_boruta = modelfolder + 'ridge_boruta.joblib'
 pathlr_boruta = modelfolder + 'lr_boruta.joblib'
 pathforest_boruta = modelfolder + 'forest_boruta.joblib'
+pathxgboost_boruta = modelfolder + 'xgboost_boruta.joblib'
+pathlgbm_boruta = modelfolder + 'lgbm_boruta.joblib'
+
 pathridge_mannwhitney = modelfolder + 'ridge_mannwhitney.joblib'
 pathlr_mannwhitney = modelfolder + 'lr_mannwhitney.joblib'
 pathforest_mannwhitney = modelfolder + 'forest_mannwhitney.joblib'
+pathxgboost_mannwhitney = modelfolder + 'xgboost_mannwhitney.joblib'
+pathlgbm_mannwhitney = modelfolder + 'lgbm_mannwhitney.joblib'
 
 
 
@@ -141,6 +165,7 @@ if not perform_split:
                           'User can check the naming of files or launch the feature selection to generate them. ')
 
 
+#This is to check but should be fine
 train_featarray = np.load(path_train_featarray)
 train_clarray = np.load(path_train_clarray)
 train_clarray = np.transpose(train_clarray)
@@ -157,16 +182,35 @@ train_clarray = np.transpose(train_clarray)
 ##### RIDGE CLASSIFIER
 Ridge = linear_model.RidgeClassifier(alpha=ridge_alpha)
 ##### LOGISTIC REGRESSION
-LR = linear_model.LogisticRegression(solver=lr_solver,
-                                     multi_class=lr_multi_class)
+LR = linear_model.LogisticRegression(solver=lregression_solver,
+                                     multi_class=lregression_multi_class)
 ##### RANDOM FOREST
 Forest = ensemble.RandomForestClassifier(n_estimators=forest_n_estimators,
                                          class_weight=forest_class_weight)
+##### XGBOOST
+XGBoost = xgboost.XGBClassifier(n_estimators=xgboost_n_estimators, 
+                                learning_rate=xgboost_lr, 
+                                objective=xgboost_objective,
+                                verbosity=0)
+##### LIGHT GBM setting
+# The use of light GBM classifier is not following the convention of the other one
+# Here we will save parameters needed for training, but there are no .fit method
+lightgbm_paramters =  { 'learning_rate': lgbm_lr,
+                       'objective': lgbm_objective,
+                       'num_leaves': lgbm_numleaves,
+                       'verbosity': -1}
+lightgbm_n_estimators = lgbm_n_estimators
+
+#RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
+#simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
+# See parameters documentation to learn about the other verbosity available. 
+
 
 if not os.path.exists(modelfolder):
     os.makedirs(modelfolder)
 
 print('Start Classifiers trainings...')
+
 
 #### Classification training with all features kept 
 
@@ -194,6 +238,23 @@ if classification_from_allfeatures:
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_vanilla, pathforest_vanilla)
+    ##### XGBOOST
+    XGBoostVanilla = XGBoost
+    xgboost_vanilla = XGBoostVanilla.fit(genfeatarray, train_clarray)
+    # If saving:
+    if saveclassifier_xgboost:
+        joblib.dump(xgboost_vanilla, pathxgboost_vanilla)
+    ##### LIGHT GBM
+    lgbm_traindata_vanilla = lightgbm.Dataset(genfeatarray, label=train_clarray) 
+    #lgbm_valdata_vanilla = lgbm_traindata_vanilla.create_valid()
+    lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
+                                  lgbm_traindata_vanilla, 
+                                  lgbm_n_estimators)
+    # If saving:
+    if saveclassifier_lgbm:
+        # Don't know if joblib works
+        joblib.dump(lgbm_vanilla, pathlgbm_vanilla)
+
 
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 
@@ -226,6 +287,22 @@ if os.path.exists(pathselfeat_mrmr):
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_mrmr, pathforest_mrmr)
+    ##### XGBOOST
+    XGBoostMrmr = XGBoost
+    xgboost_mrmr = XGBoostMrmr.fit(featarray_mrmr, train_clarray)
+    # If saving:
+    if saveclassifier_xgboost:
+        joblib.dump(xgboost_mrmr, pathxgboost_mrmr)
+    ##### LIGHT GBM
+    lgbm_traindata_mrmr = lightgbm.Dataset(featarray_mrmr, label=train_clarray)
+    #lgbm_valdata_mrmr = lgbm_traindata_mrmr.create_valid()
+    lgbm_mrmr = lightgbm.train(lightgbm_paramters, 
+                                  lgbm_traindata_mrmr, 
+                                  lgbm_n_estimators)
+    # If saving:
+    if saveclassifier_lgbm:
+        # Don't know if joblib works
+        joblib.dump(lgbm_mrmr, pathlgbm_mrmr)
 
 
 #### Classification training with the features kept by boruta
@@ -254,6 +331,22 @@ if os.path.exists(pathselfeat_boruta):
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_boruta, pathforest_boruta)
+    ##### XGBOOST
+    XGBoostBoruta = XGBoost
+    xgboost_boruta = XGBoostBoruta.fit(featarray_boruta, train_clarray)
+    # If saving:
+    if saveclassifier_xgboost:
+        joblib.dump(xgboost_boruta, pathxgboost_boruta)
+    ##### LIGHT GBM
+    lgbm_traindata_boruta = lightgbm.Dataset(featarray_boruta, label=train_clarray)
+    #lgbm_valdata_boruta = lgbm_traindata_boruta.create_valid()
+    lgbm_boruta = lightgbm.train(lightgbm_paramters, 
+                                  lgbm_traindata_boruta, 
+                                  lgbm_n_estimators)
+    # If saving:
+    if saveclassifier_lgbm:
+        # Don't know if joblib works
+        joblib.dump(lgbm_boruta, pathlgbm_boruta)
 
 
 #### Classification training with the features kept by mannwhitneyu
@@ -282,6 +375,23 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_mannwhitney, pathforest_mannwhitney)
+    ##### XGBOOST
+    XGBoostMannWhitney = XGBoost
+    xgboost_mannwhitney = XGBoostMannWhitney.fit(featarray_mannwhitney, train_clarray)
+    # If saving:
+    if saveclassifier_xgboost:
+        joblib.dump(xgboost_mannwhitney, pathxgboost_mannwhitney)
+    ##### LIGHT GBM
+    lgbm_traindata_mannwhitneya = lightgbm.Dataset(featarray_mannwhitney, label=train_clarray)
+    #lgbm_valdata_mannwhitney = lgbm_traindata_mannwhitneya.create_valid()
+    lgbm_mannwhitney = lightgbm.train(lightgbm_paramters, 
+                                  lgbm_traindata_mannwhitneya, 
+                                  lgbm_n_estimators)
+    # If saving:
+    if saveclassifier_lgbm:
+        # Don't know if joblib works
+        joblib.dump(lgbm_mannwhitney, pathlgbm_mannwhitney)
+
 
 print('All classifiers trained.')
 print('Classifiers saved here: ', modelfolder)

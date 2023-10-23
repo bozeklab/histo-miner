@@ -37,6 +37,46 @@ classification_from_allfeatures = config.parameters.bool.classification_from_all
 
 
 ############################################################
+## Create Paths Strings to Classifiers
+############################################################
+
+
+# Maybe in the inference part could be simplified
+
+# Even if the training is not launched or some steps are skipped,
+# Always define the path to the following files, corresponding to the trained models
+# Because existence or none existence of these files indicate wich previious steps were done or skipped
+
+# Folder name to save models (might not be used)
+modelfolder = pathtofolder +'/classification_models/'
+
+pathridge_vanilla = modelfolder + 'ridge_vanilla.joblib'
+pathlr_vanilla = modelfolder + 'lr_vanilla.joblib'
+pathforest_vanilla = modelfolder + 'forest_vanilla.joblib'
+pathxgboost_vanilla = modelfolder + 'xgboost_vanilla.joblib'
+pathlgbm_vanilla = modelfolder + 'lgbm_vanilla.joblib'
+
+pathridge_mrmr = modelfolder + 'ridge_mrmr.joblib'
+pathlr_mrmr = modelfolder + 'lr_mrmr.joblib'
+pathforest_mrmr = modelfolder + 'forest_mrmr.joblib'
+pathxgboost_mrmr = modelfolder + 'xgboost_mrmr.joblib'
+pathlgbm_mrmr = modelfolder + 'lgbm_mrmr.joblib'
+
+pathridge_boruta = modelfolder + 'ridge_boruta.joblib'
+pathlr_boruta = modelfolder + 'lr_boruta.joblib'
+pathforest_boruta = modelfolder + 'forest_boruta.joblib'
+pathxgboost_boruta = modelfolder + 'xgboost_boruta.joblib'
+pathlgbm_boruta = modelfolder + 'lgbm_boruta.joblib'
+
+pathridge_mannwhitney = modelfolder + 'ridge_mannwhitney.joblib'
+pathlr_mannwhitney = modelfolder + 'lr_mannwhitney.joblib'
+pathforest_mannwhitney = modelfolder + 'forest_mannwhitney.joblib'
+pathxgboost_mannwhitney = modelfolder + 'xgboost_mannwhitney.joblib'
+pathlgbm_mannwhitney = modelfolder + 'lgbm_mannwhitney.joblib'
+
+
+
+############################################################
 ## Load test/inference data
 ############################################################
 
@@ -68,39 +108,13 @@ if os.path.exists(pathorderedp_mannwhitneyu):
 print('Loading done.')
 
 
-
-############################################################
-## Create Paths Strings to Classifiers
-############################################################
-
-
-# Maybe in the inference part could be simplified
-
-# Even if the training is not launched or some steps are skipped,
-# Always define the path to the following files, corresponding to the trained models
-# Because existence or none existence of these files indicate wich previious steps were done or skipped
-
-# Folder name to save models (might not be used)
-modelfolder = pathtofolder +'/classification_models/'
-
-pathridge_vanilla = modelfolder + 'ridge_vanilla.joblib'
-pathlr_vanilla = modelfolder + 'lr_vanilla.joblib'
-pathforest_vanilla = modelfolder + 'forest_vanilla.joblib'
-pathridge_mrmr = modelfolder + 'ridge_mrmr.joblib'
-pathlr_mrmr = modelfolder + 'lr_mrmr.joblib'
-pathforest_mrmr = modelfolder + 'forest_mrmr.joblib'
-pathridge_boruta = modelfolder + 'ridge_boruta.joblib'
-pathlr_boruta = modelfolder + 'lr_boruta.joblib'
-pathforest_boruta = modelfolder + 'forest_boruta.joblib'
-pathridge_mannwhitney = modelfolder + 'ridge_mannwhitney.joblib'
-pathlr_mannwhitney = modelfolder + 'lr_mannwhitney.joblib'
-pathforest_mannwhitney = modelfolder + 'forest_mannwhitney.joblib'
-
-
-
 ############################################################
 ## Classifiers Inference
 ############################################################
+
+############ TO ADD
+# Add calculation of balanced accuracy to every inference
+###################
 
 
 if classification_from_allfeatures:
@@ -129,6 +143,9 @@ if classification_from_allfeatures:
         # print('forest_pred : {}'.format(forest_vanilla_pred))
         print("Accuracy of RANDOM FOREST classifier:",
               forest_vanilla.score(eval_globfeatarray, eval_clarray))
+    ##### XGBOOST
+    ##### LIGHT GBM
+
 
 
 SelectedFeaturesMatrix = SelectedFeaturesMatrix(eval_featarray)
@@ -160,6 +177,8 @@ if os.path.exists(pathselfeat_mrmr):
         # print('forest_mrmr_pred : {}'.format(forest_mrmr_pred))
         print("Accuracy of RANDOM FOREST MRMR classifier:",
               forest_mrmr.score(test_featarray_mrmr, eval_clarray))
+    ##### XGBOOST
+    ##### LIGHT GBM
 
 
 if os.path.exists(pathselfeat_boruta):
@@ -188,6 +207,8 @@ if os.path.exists(pathselfeat_boruta):
         # print('forest_boruta_pred : {}'.format(forest_boruta_pred))
         print("Accuracy of RANDOM FOREST BORUTA classifier:",
               forest_boruta.score(test_featarray_boruta, eval_clarray))
+    ##### XGBOOST
+    ##### LIGHT GBM
 
 
 if os.path.exists(pathorderedp_mannwhitneyu):
@@ -216,3 +237,5 @@ if os.path.exists(pathorderedp_mannwhitneyu):
         # print('forest_mannwhitney_pred : {}'.format(forest_mannwhitney_pred))
         print("Accuracy of RANDOM FOREST MANN WHITNEY classifier:",
               forest_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))
+    ##### XGBOOST
+    ##### LIGHT GBM
