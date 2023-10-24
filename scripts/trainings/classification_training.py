@@ -6,13 +6,13 @@ sys.path.append('../../')  # Only for Remote use on Clusters
 import os.path
 
 import numpy as np
+import time
 import yaml
 import xgboost 
 import lightgbm
 from attrdict import AttrDict as attributedict
 from sklearn import linear_model, ensemble
-from sklearn.model_selection import train_test_split
- 
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
@@ -44,17 +44,30 @@ perform_split = config.parameters.bool.perform_split
 split_pourcentage = config.parameters.int.split_pourcentage
 
 ridge_alpha = config.classifierparam.ridge.alpha
+
 lregression_solver = config.classifierparam.logistic_regression.solver
 lregression_multi_class = config.classifierparam.logistic_regression.multi_class
+
 forest_n_estimators = config.classifierparam.random_forest.n_estimators
 forest_class_weight = config.classifierparam.random_forest.class_weight
+forest_param_grid_n_estimators = list(config.classifierparam.random_forest.grid_dict.n_estimators)
+forest_param_grid_class_weight = list(config.classifierparam.random_forest.grid_dict.class_weight)
+
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
 xgboost_lr = config.classifierparam.xgboost.learning_rate
 xgboost_objective = config.classifierparam.xgboost.objective
+xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
+xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
+xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
+
 lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
 lgbm_lr = config.classifierparam.light_gbm.learning_rate
 lgbm_objective = config.classifierparam.light_gbm.objective
 lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
+lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
+lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
+lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
+lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
 
 saveclassifier_ridge = config.parameters.bool.saving_classifiers.ridge
 saveclassifier_lr = config.parameters.bool.saving_classifiers.logistic_regression
@@ -180,37 +193,55 @@ train_clarray = np.transpose(train_clarray)
 # Define the classifiers
 # More information here: #https://scikit-learn.org/stable/modules/linear_model.html
 ##### RIDGE CLASSIFIER
-Ridge = linear_model.RidgeClassifier(alpha=ridge_alpha)
+ridge = linear_model.RidgeClassifier(alpha=ridge_alpha)
 ##### LOGISTIC REGRESSION
-LR = linear_model.LogisticRegression(solver=lregression_solver,
+lr = linear_model.LogisticRegression(solver=lregression_solver,
                                      multi_class=lregression_multi_class)
 ##### RANDOM FOREST
-Forest = ensemble.RandomForestClassifier(n_estimators=forest_n_estimators,
+forest = ensemble.RandomForestClassifier(n_estimators=forest_n_estimators,
                                          class_weight=forest_class_weight)
 ##### XGBOOST
-XGBoost = xgboost.XGBClassifier(n_estimators=xgboost_n_estimators, 
+xgboost = xgboost.XGBClassifier(n_estimators=xgboost_n_estimators, 
                                 learning_rate=xgboost_lr, 
                                 objective=xgboost_objective,
                                 verbosity=0)
 ##### LIGHT GBM setting
 # The use of light GBM classifier is not following the convention of the other one
 # Here we will save parameters needed for training, but there are no .fit method
-lightgbm_paramters =  { 'learning_rate': lgbm_lr,
-                       'objective': lgbm_objective,
-                       'num_leaves': lgbm_numleaves,
-                       'verbosity': -1}
-lightgbm_n_estimators = lgbm_n_estimators
+lightgbm = lightgbm.LGBMClassifier(n_estimators=lgbm_n_estimators,
+                                  learning_rate=lgbm_lr,
+                                  objective=lgbm_objective,
+                                  num_leaves=lgbm_numleaves,
+                                  verbosity=-1)
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
 # See parameters documentation to learn about the other verbosity available. 
 
-
+# Create folder is it doesn't exist yet
 if not os.path.exists(modelfolder):
     os.makedirs(modelfolder)
 
-print('Start Classifiers trainings...')
 
+###### Load all paramters into a dictionnary for Grid Search
+forest_param_grid = {
+                      'n_estimators': forest_param_grid_n_estimators,
+                      'class_weight': forest_param_grid_class_weight
+}
+xgboost_param_grid = {
+                      'n_estimators': xgboost_param_grid_n_estimators,
+                      'learning_rate': xgboost_param_grid_learning_rate,
+                      'objective': xgboost_param_grid_objective
+}
+lgbm_param_grid = {
+                    'n_estimators': lgbm_param_grid_n_estimators,
+                    'learning_rate': lgbm_param_grid_learning_rate,
+                    'objective': lgbm_param_grid_objective,
+                    'num_leaves': lgbm_param_grid_num_leaves
+}
+
+
+print('Start Classifiers trainings...')
 
 #### Classification training with all features kept 
 
@@ -219,37 +250,45 @@ if classification_from_allfeatures:
     genfeatarray = np.transpose(train_featarray)
     ##### RIDGE CLASSIFIER
     # Initialize the RidgeClassifier and fit (train) it to the data
-    RidgeVanilla = Ridge
-    ridge_vanilla = RidgeVanilla.fit(genfeatarray, train_clarray)
+    ridgevanilla = ridge
+    ridge_vanilla = ridgevanilla.fit(genfeatarray, train_clarray)
     # If saving:
     if saveclassifier_ridge:
         joblib.dump(ridge_vanilla, pathridge_vanilla)
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    LRVanilla = LR
-    lr_vanilla = LRVanilla.fit(genfeatarray, train_clarray)
+    lrvanilla  = lr
+    lr_vanilla = lrvanilla.fit(genfeatarray, train_clarray)
     # If saving:
     if saveclassifier_lr:
         joblib.dump(lr_vanilla, pathlr_vanilla)
     ##### RANDOM FOREST
     # Initialize the Random Forest and fit (train) it to the data
-    ForestVanilla = Forest
-    forest_vanilla = ForestVanilla.fit(genfeatarray, train_clarray)
+    forestvanilla = forest
+    # use Gridsearch to find the best set of HPs
+    grid_forestvanilla =  GridSearchCV(forestvanilla, forest_param_grid)
+    forest_vanilla = grid_forestvanilla.fit(genfeatarray, train_clarray)
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_vanilla, pathforest_vanilla)
     ##### XGBOOST
-    XGBoostVanilla = XGBoost
-    xgboost_vanilla = XGBoostVanilla.fit(genfeatarray, train_clarray)
+    xgboostvanilla = xgboost
+    # use Gridsearch to find the best set of HPs
+    grid_xgboostvanilla =  GridSearchCV(xgboostvanilla, xgboost_param_grid)
+    xgboost_vanilla = grid_forestvanilla.fit(genfeatarray, train_clarray)
     # If saving:
     if saveclassifier_xgboost:
         joblib.dump(xgboost_vanilla, pathxgboost_vanilla)
     ##### LIGHT GBM
-    lgbm_traindata_vanilla = lightgbm.Dataset(genfeatarray, label=train_clarray) 
-    #lgbm_valdata_vanilla = lgbm_traindata_vanilla.create_valid()
-    lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
-                                  lgbm_traindata_vanilla, 
-                                  lgbm_n_estimators)
+    # lgbm_traindata_vanilla = lightgbm.Dataset(genfeatarray, label=train_clarray) 
+    # #lgbm_valdata_vanilla = lgbm_traindata_vanilla.create_valid()
+    # lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
+    #                               lgbm_traindata_vanilla, 
+    #                               lgbm_n_estimators)
+    lightgbmvanilla = lightgbm
+    # use Gridsearch to find the best set of HPs
+    grid_lightgbmvanilla =  GridSearchCV(lightgbmvanilla, lgbm_param_grid)
+    lgbm_vanilla = grid_lightgbmvanilla.fit(genfeatarray, train_clarray) 
     # If saving:
     if saveclassifier_lgbm:
         # Don't know if joblib works
@@ -258,6 +297,7 @@ if classification_from_allfeatures:
 
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 
+
 SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
 
 
@@ -268,37 +308,40 @@ if os.path.exists(pathselfeat_mrmr):
     featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr(selfeat_mrmr)
     ##### RIDGE CLASSIFIER
     # Initialize the RidgeClassifier and fit (train) it to the data
-    RidgeMrmr = Ridge
-    ridge_mrmr = RidgeMrmr.fit(featarray_mrmr, train_clarray)
+    ridgemrmr = ridge
+    ridge_mrmr = ridgemrmr.fit(featarray_mrmr, train_clarray)
     # If saving:
     if saveclassifier_ridge:
         joblib.dump(ridge_mrmr, pathridge_mrmr)
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    LRMrmr = LR
-    lr_mrmr = LRMrmr.fit(featarray_mrmr, train_clarray)
+    lrmrmr = lr
+    lr_mrmr = lrmrmr.fit(featarray_mrmr, train_clarray)
     # If saving:
     if saveclassifier_lr:
         joblib.dump(lr_mrmr, pathlr_mrmr)
     ##### RANDOM FOREST
     # Initialize the Random Forest and fit (train) it to the data
-    ForestMrmr = Forest
-    forest_mrmr = ForestMrmr.fit(featarray_mrmr, train_clarray)
+    forestmrmr = forest
+    # use Gridsearch to find the best set of HPs
+    grid_forestmrmr =  GridSearchCV(forestmrmr, forest_param_grid)
+    forest_mrmr = grid_forestvanilla.fit(featarray_mrmr, train_clarray)
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_mrmr, pathforest_mrmr)
     ##### XGBOOST
-    XGBoostMrmr = XGBoost
-    xgboost_mrmr = XGBoostMrmr.fit(featarray_mrmr, train_clarray)
+    xgboostmrmr = xgboost
+    # use Gridsearch to find the best set of HPs
+    grid_xgboostmrmr =  GridSearchCV(xgboostmrmr, xgboost_param_grid)
+    xgboost_mrmr = grid_forestvanilla.fit(featarray_mrmr, train_clarray)
     # If saving:
     if saveclassifier_xgboost:
         joblib.dump(xgboost_mrmr, pathxgboost_mrmr)
     ##### LIGHT GBM
-    lgbm_traindata_mrmr = lightgbm.Dataset(featarray_mrmr, label=train_clarray)
-    #lgbm_valdata_mrmr = lgbm_traindata_mrmr.create_valid()
-    lgbm_mrmr = lightgbm.train(lightgbm_paramters, 
-                                  lgbm_traindata_mrmr, 
-                                  lgbm_n_estimators)
+    lightgbmmrmr = lightgbm
+    # use Gridsearch to find the best set of HPs
+    grid_lightgbmmrmr =  GridSearchCV(lightgbmmrmr, lgbm_param_grid)
+    lgbm_mrmr = grid_lightgbmmrmr.fit(featarray_mrmr, train_clarray) 
     # If saving:
     if saveclassifier_lgbm:
         # Don't know if joblib works
@@ -312,37 +355,40 @@ if os.path.exists(pathselfeat_boruta):
     featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
     ##### RIDGE CLASSIFIER
     # Initialize the RidgeClassifier and fit (train) it to the data
-    RidgeBoruta = Ridge
-    ridge_boruta = RidgeBoruta.fit(featarray_boruta, train_clarray)
+    ridgeboruta = ridge
+    ridge_boruta = ridgeboruta.fit(featarray_boruta, train_clarray)
     # If saving:
     if saveclassifier_ridge:
         joblib.dump(ridge_boruta, pathridge_boruta)
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    LRBoruta = LR
-    lr_boruta = LRBoruta.fit(featarray_boruta, train_clarray)
+    lrboruta = lr
+    lr_boruta = lrboruta.fit(featarray_boruta, train_clarray)
     # If saving:
     if saveclassifier_lr:
         joblib.dump(lr_boruta, pathlr_boruta)
     ##### RANDOM FOREST
     # Initialize the Random Forest and fit (train) it to the data
-    ForestBoruta = Forest
-    forest_boruta = ForestBoruta.fit(featarray_boruta, train_clarray)
+    forestboruta = forest
+    # use Gridsearch to find the best set of HPs
+    grid_forestboruta =  GridSearchCV(forestboruta, forest_param_grid)
+    forest_boruta = grid_forestboruta.fit(featarray_boruta, train_clarray)
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_boruta, pathforest_boruta)
     ##### XGBOOST
-    XGBoostBoruta = XGBoost
-    xgboost_boruta = XGBoostBoruta.fit(featarray_boruta, train_clarray)
+    xgboostboruta = xgboost
+    # use Gridsearch to find the best set of HPs
+    grid_xgboostboruta =  GridSearchCV(xgboostboruta, xgboost_param_grid)
+    xgboost_boruta = grid_xgboostboruta.fit(featarray_boruta, train_clarray)
     # If saving:
     if saveclassifier_xgboost:
         joblib.dump(xgboost_boruta, pathxgboost_boruta)
     ##### LIGHT GBM
-    lgbm_traindata_boruta = lightgbm.Dataset(featarray_boruta, label=train_clarray)
-    #lgbm_valdata_boruta = lgbm_traindata_boruta.create_valid()
-    lgbm_boruta = lightgbm.train(lightgbm_paramters, 
-                                  lgbm_traindata_boruta, 
-                                  lgbm_n_estimators)
+    lightgbmboruta = lightgbm
+    # use Gridsearch to find the best set of HPs
+    grid_lightgbmboruta =  GridSearchCV(lightgbmboruta, lgbm_param_grid)
+    lgbm_boruta = grid_lightgbmboruta.fit(featarray_boruta, train_clarray) 
     # If saving:
     if saveclassifier_lgbm:
         # Don't know if joblib works
@@ -356,42 +402,66 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu)
     ##### RIDGE CLASSIFIER
     # Initialize the RidgeClassifier and fit (train) it to the data
-    RidgeMannWhitney = Ridge
-    ridge_mannwhitney = RidgeMannWhitney.fit(featarray_mannwhitney, train_clarray)
+    ridgemannwhitney = ridge
+    ridge_mannwhitney = ridgemannwhitney.fit(featarray_mannwhitney, train_clarray)
     # If saving:
     if saveclassifier_ridge:
         joblib.dump(ridge_mannwhitney, pathridge_mannwhitney)
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    LRMannWhitney = LR
-    lr_mannwhitney = LRMannWhitney.fit(featarray_mannwhitney, train_clarray)
+    lrmannwhitney = lr
+    lr_mannwhitney = lrmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # If saving:
     if saveclassifier_lr:
         joblib.dump(lr_mannwhitney, pathlr_mannwhitney)
     ##### RANDOM FOREST
     # Initialize the Random Forest and fit (train) it to the data
-    ForestMannWhitney = Forest
-    forest_mannwhitney = ForestMannWhitney.fit(featarray_mannwhitney, train_clarray)
+    forestmannwhitney = forest
+    # use Gridsearch to find the best set of HPs
+    grid_forestmannwhitney =  GridSearchCV(forestmannwhitney, forest_param_grid)
+    forest_mannwhitney = grid_forestmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # If saving:
     if saveclassifier_forest:
         joblib.dump(forest_mannwhitney, pathforest_mannwhitney)
     ##### XGBOOST
-    XGBoostMannWhitney = XGBoost
-    xgboost_mannwhitney = XGBoostMannWhitney.fit(featarray_mannwhitney, train_clarray)
+    xgboostmannwhitney = xgboost
+    # use Gridsearch to find the best set of HPs
+    grid_xgboostmannwhitney =  GridSearchCV(xgboostmannwhitney, xgboost_param_grid)
+    xgboost_mannwhitney = grid_xgboostmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # If saving:
     if saveclassifier_xgboost:
         joblib.dump(xgboost_mannwhitney, pathxgboost_mannwhitney)
     ##### LIGHT GBM
-    lgbm_traindata_mannwhitneya = lightgbm.Dataset(featarray_mannwhitney, label=train_clarray)
-    #lgbm_valdata_mannwhitney = lgbm_traindata_mannwhitneya.create_valid()
-    lgbm_mannwhitney = lightgbm.train(lightgbm_paramters, 
-                                  lgbm_traindata_mannwhitneya, 
-                                  lgbm_n_estimators)
+    lightgbmmannwhitney = lightgbm
+    # use Gridsearch to find the best set of HPs
+    grid_lightgbmmannwhitney =  GridSearchCV(lightgbmmannwhitney, lgbm_param_grid)
+    lgbm_mannwhitney = grid_lightgbmmannwhitney.fit(featarray_mannwhitney, train_clarray) 
     # If saving:
     if saveclassifier_lgbm:
         # Don't know if joblib works
         joblib.dump(lgbm_mannwhitney, pathlgbm_mannwhitney)
 
 
+display_bestparam = False
+if display_bestparam:
+    print(f'\nBest parameters found by grid search for random forest - all features are: {forest_vanilla.best_params_}')
+    time.sleep(2)
+    print(f'\nBest parameters found by grid search for xgboost - all features are: {xgboost_vanilla.best_params_}')
+    # print(f'\nBest parameters found by grid search for light gbm - all features are: {lgbm_vanilla.best_params_}')
+    print(f'\nBest parameters found by grid search for random forest - mrmr features are: {forest_mrmr.best_params_}')
+    time.sleep(2)
+    print(f'\nBest parameters found by grid search for xgboost - mrmr features are: {xgboost_mrmr.best_params_}')
+    # print(f'\nBest parameters found by grid search for light gbm - mrmr features are: {lgbm_mrmr.best_params_}')
+    print(f'\nBest parameters found by grid search for random forest - boruta features are: {forest_boruta.best_params_}')
+    print(f'\nBest parameters found by grid search for xgboost - boruta features are: {xgboost_boruta.best_params_}')
+    # print(f'\nBest parameters found by grid search for light gbm - boruta features are: {lgbm_boruta.best_params_}')
+    print(f'\nBest parameters found by grid search for random forest - mann whitney features are: {forest_mannwhitney.best_params_}')
+    print(f'\nBest parameters found by grid search for xgboost - mann whitney features are: {xgboost_mannwhitney.best_params_}')
+    # print(f'\nBest parameters found by grid search for light gbm - mann whitney features are: {lgbm_mannwhitney.best_params_}')
+
+
+
+
 print('All classifiers trained.')
 print('Classifiers saved here: ', modelfolder)
+print('Classifiers saved are the ones that have saving_classifiers set as True in the config.')

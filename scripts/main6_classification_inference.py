@@ -33,6 +33,8 @@ config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
+displayclass_pred = config.parameters.bool.display_classification_predictions
+displayclass_score = config.parameters.bool.display_classification_scores
 
 
 
@@ -116,6 +118,7 @@ print('Loading done.')
 # Add calculation of balanced accuracy to every inference
 ###################
 
+#### Classification training with all features kept 
 
 if classification_from_allfeatures:
     # Load test data (no feature selection)
@@ -125,30 +128,55 @@ if classification_from_allfeatures:
     ##### RIDGE CLASSIFIER
     if os.path.exists(pathridge_vanilla):
         ridge_vanilla = joblib.load(pathridge_vanilla)
-        ridge_vanilla_pred = ridge_vanilla.predict(eval_globfeatarray)
-        # print('ridge_pred : {}'.format(ridge_vanilla_pred))
-        print("Accuracy of RIDGE classifier:",
+        if displayclass_pred:
+            ridge_vanilla_pred = ridge_vanilla.predict(eval_globfeatarray)
+            print('ridge_pred : {}'.format(ridge_vanilla_pred))
+        if displayclass_score:
+            print("Accuracy of RIDGE classifier:",
               ridge_vanilla.score(eval_globfeatarray, eval_clarray))
     ##### LOGISTIC REGRESSION
     if os.path.exists(pathlr_vanilla):
         lr_vanilla = joblib.load(pathlr_vanilla)
-        lr_vanilla_pred = lr_vanilla.predict(eval_globfeatarray)
-        # print('lr_pred : {}'.format(lr_vanilla_pred))
-        print("Accuracy of LOGISTIC classifier:",
+        if displayclass_pred:
+            lr_vanilla_pred = lr_vanilla.predict(eval_globfeatarray)
+            print('lr_pred : {}'.format(lr_vanilla_pred))
+        if displayclass_score:
+            print("Accuracy of LOGISTIC classifier:",
               lr_vanilla.score(eval_globfeatarray, eval_clarray))
     ##### RANDOM FOREST
     if os.path.exists(pathforest_vanilla):
         forest_vanilla = joblib.load(pathforest_vanilla)
-        forest_vanilla_pred = forest_vanilla.predict(eval_globfeatarray)
-        # print('forest_pred : {}'.format(forest_vanilla_pred))
-        print("Accuracy of RANDOM FOREST classifier:",
+        if displayclass_pred:
+            forest_vanilla_pred = forest_vanilla.predict(eval_globfeatarray)
+            print('forest_pred : {}'.format(forest_vanilla_pred))
+        if displayclass_score:
+            print("Accuracy of RANDOM FOREST classifier:",
               forest_vanilla.score(eval_globfeatarray, eval_clarray))
     ##### XGBOOST
+    if os.path.exists(pathxgboost_vanilla):
+        xgboost_vanilla = joblib.load(pathxgboost_vanilla)
+        if displayclass_pred:
+            xgboost_vanilla_pred = xgboost_vanilla.predict(eval_globfeatarray)
+            print('xgboost_pred : {}'.format(xgboost_vanilla_pred))
+        if displayclass_score:
+            print("Accuracy of XGBOOST classifier:",
+              xgboost_vanilla.score(eval_globfeatarray, eval_clarray))
     ##### LIGHT GBM
+    if os.path.exists(pathlgbm_vanilla):
+        lgbm_vanilla = joblib.load(pathlgbm_vanilla)
+        if displayclass_pred:
+            lgbm_vanilla_pred = lgbm_vanilla.predict(eval_globfeatarray)
+            print('lgbm_pred : {}'.format(lgbm_vanilla_pred))
+        if displayclass_score:
+            print("Accuracy of LIGHT GBM classifier:",
+              lgbm_vanilla.score(eval_globfeatarray, eval_clarray))
 
 
+#### Parse the featarray to the class SelectedFeaturesMatrix 
 
 SelectedFeaturesMatrix = SelectedFeaturesMatrix(eval_featarray)
+
+#### Classification training with the features kept by mrmr
 
 if os.path.exists(pathselfeat_mrmr):
     # Load test data (that went through mrmr method)
@@ -159,27 +187,51 @@ if os.path.exists(pathselfeat_mrmr):
     ##### RIDGE CLASSIFIER
     if os.path.exists(pathridge_mrmr):
         ridge_mrmr = joblib.load(pathridge_mrmr)
-        ridge_mrmr_pred = ridge_mrmr.predict(test_featarray_mrmr)
-        # print('ridge_mrmr_pred : {}'.format(ridge_mrmr_pred))
-        print("Accuracy of RIDGE MRMR classifier:",
+        if displayclass_pred:
+            ridge_mrmr_pred = ridge_mrmr.predict(test_featarray_mrmr)
+            print('ridge_mrmr_pred : {}'.format(ridge_mrmr_pred))
+        if displayclass_score:
+            print("Accuracy of RIDGE MRMR classifier:",
               ridge_mrmr.score(test_featarray_mrmr, eval_clarray))
     ##### LOGISTIC REGRESSION
     if os.path.exists(pathlr_mrmr):
         lr_mrmr = joblib.load(pathlr_mrmr)
-        lr_mrmr_pred = lr_mrmr.predict(test_featarray_mrmr)
-        # print('lr_mrmr_pred : {}'.format(lr_mrmr_pred))
-        print("Accuracy of LOGISTIC MRMR classifier:",
+        if displayclass_pred:
+            lr_mrmr_pred = lr_mrmr.predict(test_featarray_mrmr)
+            print('lr_mrmr_pred : {}'.format(lr_mrmr_pred))
+        if displayclass_score:
+            print("Accuracy of LOGISTIC MRMR classifier:",
               lr_mrmr.score(test_featarray_mrmr, eval_clarray))
     ##### RANDOM FOREST
     if os.path.exists(pathforest_mrmr):
         forest_mrmr = joblib.load(pathforest_mrmr)
-        forest_mrmr_pred = forest_mrmr.predict(test_featarray_mrmr)
-        # print('forest_mrmr_pred : {}'.format(forest_mrmr_pred))
-        print("Accuracy of RANDOM FOREST MRMR classifier:",
+        if displayclass_pred:
+            forest_mrmr_pred = forest_mrmr.predict(test_featarray_mrmr)
+            print('forest_mrmr_pred : {}'.format(forest_mrmr_pred))
+        if displayclass_score:
+            print( "Accuracy of RANDOM FOREST MRMR classifier:",
               forest_mrmr.score(test_featarray_mrmr, eval_clarray))
     ##### XGBOOST
+    if os.path.exists(pathxgboost_mrmr):
+        xgboost_mrmr = joblib.load(pathxgboost_mrmr)
+        if displayclass_pred:
+            xgboost_mrmr_pred = xgboost_mrmr.predict(test_featarray_mrmr)
+            print('xgboost_mrmr_pred : {}'.format(xgboost_mrmr_pred))
+        if displayclass_score:
+            print("Accuracy of XGBOOST MRMR classifier:",
+              xgboost_mrmr.score(test_featarray_mrmr, eval_clarray))
     ##### LIGHT GBM
+    if os.path.exists(pathlgbm_mrmr):
+        lgbm_mrmr = joblib.load(pathlgbm_mrmr)
+        if displayclass_pred:
+            lgbm_mrmr_pred = lgbm_mrmr.predict(test_featarray_mrmr)
+            print('lgbm_mrmr_pred : {}'.format(lgbm_mrmr_pred))
+        if displayclass_score:
+            print("Accuracy of LIGHT GBM MRMR classifier:",
+              lgbm_mrmr.score(test_featarray_mrmr, eval_clarray))
 
+
+#### Classification training with the features kept by boruta
 
 if os.path.exists(pathselfeat_boruta):
     test_featarray_boruta = SelectedFeaturesMatrix.mrmr_matr(selfeat_boruta)
@@ -189,27 +241,51 @@ if os.path.exists(pathselfeat_boruta):
     ##### RIDGE CLASSIFIER
     if os.path.exists(pathridge_boruta):
         ridge_boruta = joblib.load(pathridge_boruta)
-        ridge_boruta_pred = ridge_boruta.predict(test_featarray_boruta)
-        # print('ridge_boruta_pred : {}'.format(ridge_boruta_pred))
-        print("Accuracy of RIDGE BORUTA classifier:",
+        if displayclass_pred:
+            ridge_boruta_pred = ridge_boruta.predict(test_featarray_boruta)
+            print('ridge_boruta_pred : {}'.format(ridge_boruta_pred))
+        if displayclass_score:
+            print("Accuracy of RIDGE BORUTA classifier:",
               ridge_boruta.score(test_featarray_boruta, eval_clarray))
     ##### LOGISTIC REGRESSION
     if os.path.exists(pathlr_boruta):
         lr_boruta = joblib.load(pathlr_boruta)
-        lr_boruta_pred = lr_boruta.predict(test_featarray_boruta)
-        # print('lr_boruta_pred : {}'.format(lr_boruta_pred))
-        print("Accuracy of LOGISTIC BORUTA classifier:",
+        if displayclass_pred:
+            lr_boruta_pred = lr_boruta.predict(test_featarray_boruta)
+            print('lr_boruta_pred : {}'.format(lr_boruta_pred))
+        if displayclass_score:
+            print("Accuracy of LOGISTIC BORUTA classifier:",
               lr_boruta.score(test_featarray_boruta, eval_clarray))
     ##### RANDOM FOREST
     if os.path.exists(pathforest_boruta):
         forest_boruta = joblib.load(pathforest_boruta)
-        forest_boruta_pred = forest_boruta.predict(test_featarray_boruta)
-        # print('forest_boruta_pred : {}'.format(forest_boruta_pred))
-        print("Accuracy of RANDOM FOREST BORUTA classifier:",
+        if displayclass_pred:
+            forest_boruta_pred = forest_boruta.predict(test_featarray_boruta)
+            print('forest_boruta_pred : {}'.format(forest_boruta_pred))
+        if displayclass_score:
+            print("Accuracy of RANDOM FOREST BORUTA classifier:",
               forest_boruta.score(test_featarray_boruta, eval_clarray))
     ##### XGBOOST
+    if os.path.exists(pathxgboost_boruta):
+        xgboost_boruta = joblib.load(pathxgboost_boruta)
+        if displayclass_pred:
+            xgboost_boruta_pred = xgboost_boruta.predict(test_featarray_boruta)
+            print('xgboost_boruta_pred : {}'.format(xgboost_boruta_pred))
+        if displayclass_score:
+            print("Accuracy of XGBOOST BORUTA classifier:",
+              xgboost_boruta.score(test_featarray_boruta, eval_clarray))
     ##### LIGHT GBM
+    if os.path.exists(pathlgbm_boruta):
+        lgbm_boruta = joblib.load(pathlgbm_boruta)
+        if displayclass_pred:
+            lgbm_boruta_pred = lgbm_boruta.predict(test_featarray_boruta)
+            print('lgbm_boruta_pred : {}'.format(lgbm_boruta_pred))
+        if displayclass_score:
+            print("Accuracy of LIGHT GBM BORUTA classifier:",
+              lgbm_boruta.score(test_featarray_boruta, eval_clarray))
 
+
+#### Classification training with the features kept by mannwhitneyu
 
 if os.path.exists(pathorderedp_mannwhitneyu):
     test_featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(orderedp_mannwhitneyu)
@@ -219,23 +295,45 @@ if os.path.exists(pathorderedp_mannwhitneyu):
     ##### RIDGE CLASSIFIER
     if os.path.exists(pathridge_mannwhitney):
         ridge_mannwhitney = joblib.load(pathridge_mannwhitney)
-        ridge_mannwhitney_pred = ridge_mannwhitney.predict(test_featarray_mannwhitney)
-        # print('ridge_mannwhitney_pred : {}'.format(ridge_mannwhitney_pred))
-        print("Accuracy of RIDGE MANN WHITNEY classifier:",
+        if displayclass_pred:
+            ridge_mannwhitney_pred = ridge_mannwhitney.predict(test_featarray_mannwhitney)
+            print('ridge_mannwhitney_pred : {}'.format(ridge_mannwhitney_pred))
+        if displayclass_score:
+            print("Accuracy of RIDGE MANN WHITNEY classifier:",
               ridge_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))
     ##### LOGISTIC REGRESSION
     if os.path.exists(pathlr_mannwhitney):
         lr_mannwhitney = joblib.load(pathlr_mannwhitney)
-        lr_mannwhitney_pred = lr_mannwhitney.predict(test_featarray_mannwhitney)
-        # print('lr_mannwhitney_pred : {}'.format(lr_mannwhitney_pred))
-        print("Accuracy of LOGISTIC MANN WHITNEY classifier:",
+        if displayclass_pred:
+            lr_mannwhitney_pred = lr_mannwhitney.predict(test_featarray_mannwhitney)
+            print('lr_mannwhitney_pred : {}'.format(lr_mannwhitney_pred))
+        if displayclass_score:
+            print("Accuracy of LOGISTIC MANN WHITNEY classifier:",
               lr_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))
     ##### RANDOM FOREST
     if os.path.exists(pathforest_mannwhitney):
         forest_mannwhitney = joblib.load(pathforest_mannwhitney)
-        forest_mannwhitney_pred = forest_mannwhitney.predict(test_featarray_mannwhitney)
-        # print('forest_mannwhitney_pred : {}'.format(forest_mannwhitney_pred))
-        print("Accuracy of RANDOM FOREST MANN WHITNEY classifier:",
+        if displayclass_pred:
+            forest_mannwhitney_pred = forest_mannwhitney.predict(test_featarray_mannwhitney)
+            print('forest_mannwhitney_pred : {}'.format(forest_mannwhitney_pred))
+        if displayclass_score:
+            print("Accuracy of RANDOM FOREST MANN WHITNEY classifier:",
               forest_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))
     ##### XGBOOST
+    if os.path.exists(pathxgboost_mannwhitney):
+        xgboost_mannwhitney = joblib.load(pathxgboost_mannwhitney)
+        if displayclass_pred:
+            xgboost_mannwhitney_pred = xgboost_mannwhitney.predict(test_featarray_mannwhitney)
+            print('xgboost_mannwhitney_pred : {}'.format(xgboost_mannwhitney_pred))
+        if displayclass_score:
+            print("Accuracy of XGBOOST MANN WHITNEY classifier:",
+              xgboost_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))
     ##### LIGHT GBM
+    if os.path.exists(pathlgbm_mannwhitney):
+        lgbm_mannwhitney = joblib.load(pathlgbm_mannwhitney)
+        if displayclass_pred:
+            lgbm_mannwhitney_pred = lgbm_mannwhitney.predict(test_featarray_mannwhitney)
+            print('lgbm_mannwhitney_pred : {}'.format(lgbm_mannwhitney_pred))
+        if displayclass_score:
+            print("Accuracy of LIGHT GBM MANN WHITNEY classifier:",
+              lgbm_mannwhitney.score(test_featarray_mannwhitney, eval_clarray))

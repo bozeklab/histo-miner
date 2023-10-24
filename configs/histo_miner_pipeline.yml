@@ -78,6 +78,11 @@
     bool:
       classification_from_allfeatures: True
 
+      display_classification_predictions: False
+
+      display_classification_scores: True
+
+
     str:
       maskmap_ext: .png
 
