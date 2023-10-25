@@ -16,6 +16,7 @@ from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
 
+
 ###################################################################
 ## Load configs parameter
 ###################################################################
@@ -30,7 +31,6 @@ pathtofolder = config.paths.folders.feature_selection_main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 boruta_max_depth = config.parameters.int.boruta_max_depth
 boruta_random_state = config.parameters.int.nbr_keptfeat
-
 
 
 
