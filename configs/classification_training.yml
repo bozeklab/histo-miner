@@ -14,9 +14,9 @@
       classification_from_allfeatures: True
 
       saving_classifiers:
-        ridge: False
+        ridge: True
 
-        logistic_regression: False
+        logistic_regression: True
 
         random_forest: True
 
@@ -35,27 +35,64 @@
     ridge:
       # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
+      
+      random_state: 42
+
       alpha:  2
+
+      grid_dict: 
+          random_state: [0, 42, 84]
+          # random_state: [0, 42, 84]
+
+          alpha: [0, 0.1, 0.5, 1, 2, 4, 8, 16]
+          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
 
     logistic_regression:
       # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
+      random_state: 42
+
+      penalty: 'l2'
+
       solver: 'liblinear'
       # choice for binary classification
 
       multi_class: 'ovr'
       # choice for binary classification
 
+      class_weight: 'balanced'
+
+      grid_dict: 
+          random_state: [0, 42, 84]
+          # random_state: [0, 42, 84]
+
+          penalty: [‘l1’, ‘l2’]
+          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+
+          solver: ['liblinear']
+
+          multi_class: ['ovr']
+
+          class_weight: ['balanced']
+
+
     random_forest:
       # For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
+      
+      random_state: 42
+
       n_estimators: 100
       # The number of trees in the forest.
 
       class_weight: 'balanced'
 
       grid_dict: 
-          n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
+          random_state: [0, 42, 84]
+          # random_state: [0, 42, 84]
+
+          n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
 
           class_weight: ['balanced']
 
@@ -64,6 +101,9 @@
       # #https://xgboost.readthedocs.io/en/stable/parameter.html
       # and
       # #https://xgboost.readthedocs.io/en/stable/get_started.html
+      
+      random_state: 42
+
       n_estimators: 100
       # number of boosting iterations, should be = number of trees in the forest
 
@@ -73,9 +113,14 @@
       # choice to take for binary classification
 
       grid_dict:
-          n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
+          random_state: [0, 42, 84]
+          # random_state: [0, 42, 84]
 
-          learning_rate: [0.1, 0.8, 0.9, 1, 1.1, 1.2, 1.3] 
+          n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+         
+          learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]
+          # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]  
 
           objective: ['binary:logistic']
 
@@ -84,6 +129,9 @@
       # #https://lightgbm.readthedocs.io/en/stable/Parameters.html
       # and
       # #https://lightgbm.readthedocs.io/en/stable/Python-Intro.html
+      
+      random_state: 42
+
       n_estimators: 100 
       # number of boosting iterations, should be = number of trees in the forest
 
@@ -95,13 +143,19 @@
       num_leaves: 10
 
       grid_dict: 
-            n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
+            random_state: [0, 42, 84]
+            # random_state: [0, 42, 84]
 
-            learning_rate: [0.1, 0.8, 0.9, 1, 1.1, 1.2, 1.3]
+            n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+            # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+
+            learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]
+            # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2] 
 
             objective: ['binary']
 
             num_leaves: [2, 5, 10, 15, 20, 40]
+            # num_leaves: [2, 5, 10, 15, 20, 40]
  
 
 
