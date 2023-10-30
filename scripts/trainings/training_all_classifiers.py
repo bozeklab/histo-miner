@@ -306,7 +306,7 @@ train_clarray = train_clarray[permutation_index]
 
 
 
-
+print('***************cv=10***************')
 
 
 ##fro dev
@@ -328,7 +328,8 @@ if classification_from_allfeatures:
     # ridge_vanilla = ridgevanilla.fit(genfeatarray, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(ridge_param_grd):
         ridgevanilla.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
@@ -339,49 +340,72 @@ if classification_from_allfeatures:
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            ridgevanilla_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            ridge_vanilla_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            ridge_vanilla_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
     # if saveclassifier_ridge:
     #     joblib.dump(ridge_vanilla, pathridge_vanilla)
-    print('\nBest set of parameters for best_ridgevanilla is:',ridgevanilla_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    print('\n\n ** ridge_vanilla **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for ridge_vanilla_bestmaxset is:',
+            ridge_vanilla_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for ridge_vanilla_bestmeanset is:',
+            ridge_vanilla_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LOGISTIC REGRESSION
-    # # Initialize the Logistic Regression and fit (train) it to the data
-    # lrvanilla  = lr
-    # # lr_vanilla = lrvanilla.fit(genfeatarray, train_clarray)
-    # # use Grid Search to find the best set of HPs 
-    # # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    # cv_bestscore = 0 #cv stands for cross-validation 
-    # for paramset in ParameterGrid(lregression_param_grid):
-    #     lrvanilla.set_params(**paramset)
-    #     # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
-    #     #evaluate the model with cross validation
-    #     crossvalid_results = cross_val_score(lrvanilla, 
-    #                                          genfeatarray, 
-    #                                          train_clarray,  
-    #                                          cv=10,
-    #                                          scoring='balanced_accuracy')
-    #     crossvalid_meanscore = np.mean(crossvalid_results)
-    #     #save if best
-    #     if crossvalid_meanscore > cv_bestscore:
-    #         cv_bestscorevect = crossvalid_results
-    #         cv_bestscore = crossvalid_meanscore
-    #         lrvanilla_bestset = paramset
+    # Initialize the Logistic Regression and fit (train) it to the data
+    lrvanilla  = lr
+    # lr_vanilla = lrvanilla.fit(genfeatarray, train_clarray)
+    # use Grid Search to find the best set of HPs 
+    # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
+    for paramset in ParameterGrid(lregression_param_grid):
+        lrvanilla.set_params(**paramset)
+        # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
+        #evaluate the model with cross validation
+        crossvalid_results = cross_val_score(lrvanilla, 
+                                             genfeatarray, 
+                                             train_clarray,  
+                                             cv=10,
+                                             scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lr_vanilla_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lr_vanilla_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
-    # # If saving:
-    # # if saveclassifier_lr:
-    #     # joblib.dump(lr_vanilla, pathlr_vanilla)
-    # print('\nBest set of parameters for best_lr_vanilla is:',lrvanilla_bestset)
-    # print('The scores for all splits are:', cv_bestscorevect)
-    # print('The average accuracy is:',cv_bestscore) 
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lr_vanilla **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lr_vanilla_bestmaxset is:',
+            lr_vanilla_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lr_vanilla_bestmeanset is:',
+            lr_vanilla_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### RANDOM FOREST
@@ -390,7 +414,8 @@ if classification_from_allfeatures:
     # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(forest_param_grid):
         forestvanilla.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
@@ -401,18 +426,29 @@ if classification_from_allfeatures:
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            forest_vanilla_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            forest_vanilla_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            forest_vanilla_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
-    # if saveclassifier_forest:
-        # joblib.dump(best_forest_vanilla, pathforest_vanilla)
-    print('\nBest set of parameters for best_forest_vanilla is:',forest_vanilla_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** forest_vanilla **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for forest_vanilla_bestmaxset is:',
+            forest_vanilla_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for forest_vanilla_bestmeanset is:',
+            forest_vanilla_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### XGBOOST
@@ -420,7 +456,8 @@ if classification_from_allfeatures:
     # xgboost_vanilla = xgboostvanilla.fit(genfeatarray, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostvanilla.set_params(**paramset)
         # xgboost_vanilla = xgboostvanilla.fit(genfeatarray, train_clarray)
@@ -433,18 +470,29 @@ if classification_from_allfeatures:
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            xgboost_vanilla_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            xgboost_vanilla_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            xgboost_vanilla_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
-    # if saveclassifier_xgboost:
-        # joblib.dump(best_xgboost_vanilla, pathxgboost_vanilla)
-    print('\nBest set of parameters for best_xgboost_vanilla is:',xgboost_vanilla_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** xgboost_vanilla **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for xgboost_vanilla_bestmaxset is:',
+            xgboost_vanilla_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for xgboost_vanilla_bestmeanset is:',
+            xgboost_vanilla_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LIGHT GBM
@@ -457,8 +505,8 @@ if classification_from_allfeatures:
     # lgbm_vanilla = lightgbmvanilla.fit(genfeatarray, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0 
     for paramset in ParameterGrid(lgbm_param_grid):
         lightgbmvanilla.set_params(**paramset)
         # lgbm_vanilla = lightgbmvanilla.fit(genfeatarray, train_clarray)
@@ -471,21 +519,28 @@ if classification_from_allfeatures:
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            lgbm_vanilla_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lgbm_vanilla_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lgbm_vanilla_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
-    # if saveclassifier_lgbm:
-        # Don't know if joblib works
-        # joblib.dump(best_lgbm_vanilla, pathlgbm_vanilla)
-    print('\nBest set of parameters for best_lgbm_vanilla is:',lgbm_vanilla_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore)  
-
-
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla) print('\n\n ** lgbm__vanilla **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:',
+            lgbm_vanilla_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:',
+            lgbm_vanilla_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
 
@@ -517,7 +572,8 @@ if os.path.exists(pathselfeat_mrmr):
     #ridge_mrmr = ridgemrmr.fit(featarray_mrmr, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(ridge_param_grd):
         ridgemrmr.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
@@ -528,49 +584,72 @@ if os.path.exists(pathselfeat_mrmr):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            ridgemrmr_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            ridge_mrmr_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            ridge_mrmr_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
     # if saveclassifier_ridge:
-    #     joblib.dump(ridge_mrmr, pathridge_mrmr)
-    print('\nBest set of parameters for best_ridgemrmr is:',ridgemrmr_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** ridge_mrmr **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for ridge_mrmr_bestmaxset is:',
+            ridge_mrmr_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for ridge_mrmr_bestmeanset is:',
+            ridge_mrmr_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LOGISTIC REGRESSION
-    # # Initialize the Logistic Regression and fit (train) it to the data
-    # lrmrmr = lr
-    # #lr_mrmr = lrmrmr.fit(featarray_mrmr, train_clarray)
-    # # use Grid Search to find the best set of HPs 
-    # # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    # cv_bestscore = 0 #cv stands for cross-validation 
-    # for paramset in ParameterGrid(lregression_param_grid):
-    #     lrmrmr.set_params(**paramset)
-    #     # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
-    #     #evaluate the model with cross validation
-    #     crossvalid_results = cross_val_score(lrmrmr, 
-    #                                          featarray_mrmr, 
-    #                                          train_clarray,  
-    #                                          cv=10,  
-    #                                          scoring='balanced_accuracy')
-    #     crossvalid_meanscore = np.mean(crossvalid_results)
-    #     #save if best
-    #     if crossvalid_meanscore > cv_bestscore:
-    #         cv_bestscorevect = crossvalid_results
-    #         cv_bestscore = crossvalid_meanscore
-    #         lrmrmr_bestset = paramset
-           
-    # # # If saving:
-    # # if saveclassifier_lr:
-    # #     joblib.dump(lr_mrmr, pathlr_mrmr)    
-    # print('\nBest set of parameters for best_lrmrmr is:',lrmrmr_bestset)
-    # print('The scores for all splits are:', cv_bestscorevect)
-    # print('The average accuracy is:',cv_bestscore) 
+    # Initialize the Logistic Regression and fit (train) it to the data
+    lrmrmr = lr
+    #lr_mrmr = lrmrmr.fit(featarray_mrmr, train_clarray)
+    # use Grid Search to find the best set of HPs 
+    # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
+    for paramset in ParameterGrid(lregression_param_grid):
+        lrmrmr.set_params(**paramset)
+        # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
+        #evaluate the model with cross validation
+        crossvalid_results = cross_val_score(lrmrmr, 
+                                             featarray_mrmr, 
+                                             train_clarray,  
+                                             cv=10,  
+                                             scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lr_mrmr_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lr_mrmr_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lr_mrmr **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lr_mrmr_bestmaxset is:',
+            lr_mrmr_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lr_mrmr_bestmeanset is:',
+            lr_mrmr_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### RANDOM FOREST
@@ -579,7 +658,8 @@ if os.path.exists(pathselfeat_mrmr):
     # forest_mrmr = forestmrmr.fit(featarray_mrmr, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(forest_param_grid):
         forestmrmr.set_params(**paramset)
         # forest_mrmr = forestmrmr.fit(featarray_mrmr, train_clarray)
@@ -589,20 +669,30 @@ if os.path.exists(pathselfeat_mrmr):
                                              train_clarray,  
                                              cv=10,  
                                              scoring='balanced_accuracy')
-        # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-             cv_bestscorevect = crossvalid_results
-             cv_bestscore = crossvalid_meanscore
-             forest_mrmr_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            forest_mrmr_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            forest_mrmr_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
-    # if saveclassifier_forest:
-        # joblib.dump(best_forest_mrmr, pathforest_mrmr)
-    print('\nBest set of parameters for best_forest_mrmr is:',forest_mrmr_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** forest_mrmr **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for forest_mrmr_bestmaxset is:',
+            forest_mrmr_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for forest_mrmr_bestmeanset is:',
+            forest_mrmr_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
   
 
     ##### XGBOOST
@@ -610,12 +700,13 @@ if os.path.exists(pathselfeat_mrmr):
     # xgboost_mrmr = xgboostmrmr.fit(featarray_mrmr, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostmrmr.set_params(**paramset)
         # xgboost_mrmr = xgboostmrmr.fit(featarray_mrmr, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(xgboostmrmr, featarray_mrmr, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(xgboostmrmr, featarray_mrmr, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(xgboostmrmr, 
                                              featarray_mrmr, 
@@ -623,18 +714,29 @@ if os.path.exists(pathselfeat_mrmr):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscore = crossvalid_meanscore
-            cv_bestscore = crossvalid_meanscore
-            xgboost_mrmr_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            xgboost_mrmr_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            xgboost_mrmr_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
     # If saving:
-    # if saveclassifier_xgboost:
-        # joblib.dump(best_xgboost_mrmr, pathxgboost_mrmr)
-    print('\nBest set of parameters for best_xgboost_mrmr is:',xgboost_mrmr_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** xgboost_mrmr **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for xgboost_mrmr_bestmaxset is:',
+            xgboost_mrmr_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for xgboost_mrmr_bestmeanset is:',
+            xgboost_mrmr_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LIGHT GBM
@@ -642,13 +744,13 @@ if os.path.exists(pathselfeat_mrmr):
     # lgbm_mrmr = lightgbmmrmr.fit(featarray_mrmr, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(lgbm_param_grid):
         lightgbmmrmr.set_params(**paramset)
         # lgbm_mrmr = lightgbmmrmr.fit(featarray_mrmr, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(lightgbmmrmr, featarray_mrmr, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(lightgbmmrmr, featarray_mrmr, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(lightgbmmrmr, 
                                              featarray_mrmr, 
@@ -656,19 +758,30 @@ if os.path.exists(pathselfeat_mrmr):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            lgbm_mrmr_bestset = paramset
-           # best_lgbm_mrmr = lgbm_mrmr
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lgbm_mrmr_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lgbm_mrmr_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
     # If saving:
-    # if saveclassifier_lgbm:
-        # Don't know if joblib works
-        # joblib.dump(best_lgbm_mrmr, pathlgbm_mrmr)
-    print('\nBest set of parameters for best_lgbm_mrmr is:',lgbm_mrmr_bestset)    
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore)   
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lgbm_mrmr **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lgbm_mrmr_bestmaxset is:',
+            lgbm_mrmr_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lgbm_mrmr_bestmeanset is:',
+            lgbm_mrmr_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
+
 
 
 
@@ -694,7 +807,8 @@ if os.path.exists(pathselfeat_boruta):
     # ridge_boruta = ridgeboruta.fit(featarray_boruta, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(ridge_param_grd):
         ridgeboruta.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
@@ -705,49 +819,72 @@ if os.path.exists(pathselfeat_boruta):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            ridgeboruta_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            ridge_boruta_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            ridge_boruta_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
-    # # If saving:
+    # If saving:
     # if saveclassifier_ridge:
-    #     joblib.dump(ridge_boruta, pathridge_boruta)
-    print('\nBest set of parameters for best_ridgeboruta is:',ridgeboruta_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** ridge_boruta **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for ridge_boruta_bestmaxset is:',
+            ridge_boruta_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for ridge_boruta_bestmeanset is:',
+            ridge_boruta_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    # lrboruta = lr
-    # # lr_boruta = lrboruta.fit(featarray_boruta, train_clarray)
-    # # use Grid Search to find the best set of HPs 
-    # # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    # cv_bestscore = 0 #cv stands for cross-validation 
-    # for paramset in ParameterGrid(lregression_param_grid):
-    #     lrboruta.set_params(**paramset)
-    #     # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
-    #     #evaluate the model with cross validation
-    #     crossvalid_results = cross_val_score(lrboruta, 
-    #                                          featarray_boruta, 
-    #                                          train_clarray,  
-    #                                          cv=10,  
-    #                                          scoring='balanced_accuracy')
-    #     crossvalid_meanscore = np.mean(crossvalid_results)
-    #     #save if best
-    #     if crossvalid_meanscore > cv_bestscore:
-    #         cv_bestscorevect = crossvalid_results
-    #         cv_bestscore = crossvalid_meanscore
-    #         lrboruta_bestset = paramset
-           
-    # # # If saving:
-    # # if saveclassifier_lr:
-    # #     joblib.dump(lr_boruta, pathlr_boruta)
-    # print('\nBest set of parameters for best_lrboruta is:',lrboruta_bestset)
-    # print('The scores for all splits are:', cv_bestscorevect)
-    # print('The average accuracy is:',cv_bestscore) 
+    lrboruta = lr
+    # lr_boruta = lrboruta.fit(featarray_boruta, train_clarray)
+    # use Grid Search to find the best set of HPs 
+    # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
+    for paramset in ParameterGrid(lregression_param_grid):
+        lrboruta.set_params(**paramset)
+        # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
+        #evaluate the model with cross validation
+        crossvalid_results = cross_val_score(lrboruta, 
+                                             featarray_boruta, 
+                                             train_clarray,  
+                                             cv=10,  
+                                             scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lr_boruta_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lr_boruta_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lr_boruta **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lr_boruta_bestmaxset is:',
+            lr_boruta_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lr_boruta_bestmeanset is:',
+            lr_boruta_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
  
 
     ##### RANDOM FOREST
@@ -756,13 +893,13 @@ if os.path.exists(pathselfeat_boruta):
     # forest_boruta = forestboruta.fit(featarray_boruta, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(forest_param_grid):
         forestboruta.set_params(**paramset)
         # forest_boruta = forestboruta.fit(featarray_boruta, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(forestboruta, featarray_boruta, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(forestboruta, featarray_boruta, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(forestboruta, 
                                              featarray_boruta, 
@@ -770,18 +907,29 @@ if os.path.exists(pathselfeat_boruta):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            forest_boruta_bestset = paramset
-    #        best_forest_boruta = forest_boruta
-    # # If saving:
-    # if saveclassifier_forest:
-    #     joblib.dump(best_forest_boruta, pathforest_boruta)
-    print('\nBest set of parameters for best_forest_boruta is:',forest_boruta_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            forest_boruta_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            forest_boruta_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** forest_boruta **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for forest_boruta_bestmaxset is:',
+            forest_boruta_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for forest_boruta_bestmeanset is:',
+            forest_boruta_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
   
 
     ##### XGBOOST
@@ -789,13 +937,13 @@ if os.path.exists(pathselfeat_boruta):
     # xgboost_boruta = xgboostboruta.fit(featarray_boruta, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostboruta.set_params(**paramset)
         # xgboost_boruta = xgboostboruta.fit(featarray_boruta, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(xgboostboruta, featarray_boruta, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(xgboostboruta, featarray_boruta, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(xgboostboruta, 
@@ -804,18 +952,29 @@ if os.path.exists(pathselfeat_boruta):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            xgboost_boruta_bestset = paramset
-    #        best_xgboost_boruta = xgboost_boruta
-    # # If saving:
-    # if saveclassifier_xgboost:
-    #     joblib.dump(best_xgboost_boruta, pathxgboost_boruta)
-    print('\nBest set of parameters for best_xgboost_boruta is:',xgboost_boruta_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            xgboost_boruta_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            xgboost_boruta_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** xgboost_boruta **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for xgboost_boruta_bestmaxset is:',
+            xgboost_boruta_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for xgboost_boruta_bestmeanset is:',
+            xgboost_boruta_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LIGHT GBM
@@ -823,13 +982,13 @@ if os.path.exists(pathselfeat_boruta):
     # lgbm_boruta = lightgbmboruta.fit(featarray_boruta, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(lgbm_param_grid):
         lightgbmboruta.set_params(**paramset)
         # lgbm_boruta = lightgbmboruta.fit(featarray_boruta, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(lightgbmboruta, featarray_boruta, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(lightgbmboruta, featarray_boruta, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(lightgbmboruta, 
                                              featarray_boruta, 
@@ -837,19 +996,33 @@ if os.path.exists(pathselfeat_boruta):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            lgbm_boruta_bestset = paramset
-    #        best_lgbm_boruta = lgbm_boruta
-    # # If saving:
-    # if saveclassifier_lgbm:
-    #     # Don't know if joblib works
-    #     joblib.dump(best_lgbm_boruta, pathlgbm_boruta)
-    print('\nBest set of parameters for best_lgbm_boruta is:',lgbm_boruta_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore)  
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lgbm_boruta_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lgbm_boruta_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lgbm_boruta **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lgbm_boruta_bestmaxset is:',
+            lgbm_boruta_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lgbm_boruta_bestmeanset is:',
+            lgbm_boruta_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
+
+
+
+
 
 
 
@@ -872,7 +1045,8 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     # ridge_mannwhitney = ridgemannwhitney.fit(featarray_mannwhitney, train_clarray)
     # use Grid Search to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(ridge_param_grd):
         ridgemannwhitney.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
@@ -883,49 +1057,72 @@ if os.path.exists(pathselfeat_mannwhitneyu):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            ridgemannwhitney_bestset = paramset
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            ridge_mannwhitney_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            ridge_mannwhitney_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
 
-    # # If saving:
+    # If saving:
     # if saveclassifier_ridge:
-    #     joblib.dump(ridge_mannwhitney, pathridge_mannwhitney)
-    print('\nBest set of parameters for best_ridgemannwhitney is:',ridgemannwhitney_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** ridge_mannwhitney **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for ridge_mannwhitney_bestmaxset is:',
+            ridge_mannwhitney_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for ridge_mannwhitney_bestmeanset is:',
+            ridge_mannwhitney_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### LOGISTIC REGRESSION
     # Initialize the Logistic Regression and fit (train) it to the data
-    # lrmannwhitney = lr
-    # # lr_mannwhitney = lrmannwhitney.fit(featarray_mannwhitney, train_clarray)
-    # # use Gridsearch to find the best set of HPs 
-    # # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    # cv_bestscore = 0 #cv stands for cross-validation 
-    # for paramset in ParameterGrid(lregression_param_grid):
-    #     lrmannwhitney.set_params(**paramset)
-    #     # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
-    #     #evaluate the model with cross validation
-    #     crossvalid_results = cross_val_score(lrmannwhitney, 
-    #                                          featarray_mannwhitney, 
-    #                                          train_clarray,  
-    #                                          cv=10,  
-    #                                          scoring='balanced_accuracy')
-    #     crossvalid_meanscore = np.mean(crossvalid_results)
-    #     #save if best
-    #     if crossvalid_meanscore > cv_bestscore:
-    #         cv_bestscorevect = crossvalid_results
-    #         cv_bestscore = crossvalid_meanscore
-    #         lrmannwhitney_bestset = paramset
-           
-    # # # If saving:
-    # # if saveclassifier_lr:
-    # #     joblib.dump(lr_mannwhitney, pathlr_mannwhitney)
-    # print('\nBest set of parameters for best_lrmannwhitney is:',lrmannwhitney_bestset)
-    # print('The scores for all splits are:', cv_bestscorevect)
-    # print('The average accuracy is:',cv_bestscore) 
+    lrmannwhitney = lr
+    # lr_mannwhitney = lrmannwhitney.fit(featarray_mannwhitney, train_clarray)
+    # use Gridsearch to find the best set of HPs 
+    # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
+    for paramset in ParameterGrid(lregression_param_grid):
+        lrmannwhitney.set_params(**paramset)
+        # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
+        #evaluate the model with cross validation
+        crossvalid_results = cross_val_score(lrmannwhitney, 
+                                             featarray_mannwhitney, 
+                                             train_clarray,  
+                                             cv=10,  
+                                             scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lr_mannwhitney_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lr_mannwhitney_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lr_mannwhitney **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lr_mannwhitney_bestmaxset is:',
+            lr_mannwhitney_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lr_mannwhitney_bestmeanset is:',
+            lr_mannwhitney_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
     ##### RANDOM FOREST
@@ -934,13 +1131,13 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     # forest_mannwhitney = forestmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # use Gridsearch to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(forest_param_grid):
         forestmannwhitney.set_params(**paramset)
         # forest_mannwhitney = forestmannwhitney.fit(featarray_mannwhitney, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(forestmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(forestmannwhitney, featarray_mannwhitney, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(forestmannwhitney, 
                                              featarray_mannwhitney, 
@@ -948,32 +1145,43 @@ if os.path.exists(pathselfeat_mannwhitneyu):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscore = crossvalid_meanscore
-            forest_mannwhitney_bestset = paramset
-            cv_bestscorevect = crossvalid_results
-    #        best_forest_mannwhitney = forest_mannwhitney
-    # # If saving:
-    # if saveclassifier_forest:
-    #     joblib.dump(best_forest_mannwhitney, pathforest_mannwhitney)
-    print('\nBest set of parameter for best_forest_mannwhitney is:',forest_mannwhitney_bestset)
-    print('The scores for all splits are:', crossvalid_all_scores)
-    print('The average accuracy is:',crossvalid_meanscore) 
-   
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            forest_mannwhitney_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            forest_mannwhitney_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** forest_mannwhitney **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for forest_mannwhitney_bestmaxset is:',
+            forest_mannwhitney_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for forest_mannwhitney_bestmeanset is:',
+            forest_mannwhitney_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
+
 
     ##### XGBOOST
     xgboostmannwhitney = xgboost
     # xgboost_mannwhitney = xgboostmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # use Gridsearch to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostmannwhitney.set_params(**paramset)
         # xgboost_mannwhitney = xgboostmannwhitney.fit(featarray_mannwhitney, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(xgboostmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(xgboostmannwhitney, featarray_mannwhitney, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(xgboostmannwhitney, 
                                              featarray_mannwhitney, 
@@ -981,18 +1189,29 @@ if os.path.exists(pathselfeat_mannwhitneyu):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            xgboost_mannwhitney_bestset = paramset
-    #        best_xgboost_mannwhitney = xgboost_mannwhitney
-    # # If saving:
-    # if saveclassifier_xgboost:
-    #     joblib.dump(best_xgboost_mannwhitney, pathxgboost_mannwhitney)
-    print('\nBest set of parameters for best_xgboost_mannwhitney is:',xgboost_mannwhitney_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore) 
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            xgboost_mannwhitney_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            xgboost_mannwhitney_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** xgboost_mannwhitney **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for xgboost_mannwhitney_bestmaxset is:',
+            xgboost_mannwhitney_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for xgboost_mannwhitney_bestmeanset is:',
+            xgboost_mannwhitney_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
   
 
     ##### LIGHT GBM
@@ -1000,13 +1219,13 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     # lgbm_mannwhitney = lightgbmmannwhitney.fit(featarray_mannwhitney, train_clarray)
     # use Gridsearch to find the best set of HPs 
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-    cv_bestscore = 0 #cv stands for cross-validation
-    crossvalid_all_scores = 0 
+    cv_bestmean = 0 #cv stands for cross-validation 
+    cv_bestsplit = 0 
     for paramset in ParameterGrid(lgbm_param_grid):
         lightgbmmannwhitney.set_params(**paramset)
         # lgbm_mannwhitney = lightgbmmannwhitney.fit(featarray_mannwhitney, train_clarray)
         #evaluate the model with cross validation
-        # crossvalid_results = cross_validate(lightgbmmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
+        # crossvalid_results = cross_validate(lightgbmmannwhitney, featarray_mannwhitney, train_clarray, cv=10)
         # crossvalid_all_scores = crossvalid_results['test_score']
         crossvalid_results = cross_val_score(lightgbmmannwhitney, 
                                              featarray_mannwhitney, 
@@ -1014,18 +1233,29 @@ if os.path.exists(pathselfeat_mannwhitneyu):
                                              cv=10,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
-        #save if best
-        if crossvalid_meanscore > cv_bestscore:
-            cv_bestscorevect = crossvalid_results
-            cv_bestscore = crossvalid_meanscore
-            lgbm_mannwhitney_bestset = paramset
-    #        best_lgbm_mannwhitney = lgbm_mannwhitney
-    # # If saving:
-    # if saveclassifier_lgbm:
-    #     joblib.dump(best_lgbm_mannwhitney, pathlgbm_mannwhitney)
-    print('\nBest set of parameters for best_lgbm_mannwhitney is:',lgbm_mannwhitney_bestset)
-    print('The scores for all splits are:', cv_bestscorevect)
-    print('The average accuracy is:',cv_bestscore)
+        crossvalid_maxscore = np.max(crossvalid_results)
+        # Keep best trainings score and parameters set
+        if crossvalid_maxscore > cv_bestsplit:
+            cv_bestsplit = crossvalid_maxscore
+            lgbm_mannwhitney_bestmaxset = paramset
+            cv_bestmax_scorevect = crossvalid_results
+        if crossvalid_meanscore > cv_bestmean:
+            cv_bestmean = crossvalid_meanscore 
+            lgbm_mannwhitney_bestmeanset = paramset
+            cv_bestmean_scorevect = crossvalid_results   
+
+    # If saving:
+    # if saveclassifier_ridge:
+    #     joblib.dump(ridge_vanilla, pathridge_vanilla)
+    print('\n\n ** lgbm_mannwhitney **')
+    print('The best split average accuracy is:',cv_bestsplit)  
+    print('Corresponding set of parameters for lgbm_mannwhitney_bestmaxset is:',
+            lgbm_mannwhitney_bestmaxset)
+    print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+    print('The best mean average accuracy is:',cv_bestmean)
+    print('Corresponding set of parameters for lgbm_mannwhitney_bestmeanset is:',
+            lgbm_mannwhitney_bestmeanset)
+    print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
 # display_bestparam = True
