@@ -71,8 +71,8 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
             if extension == '.json' and 'analysed' in namewoext:
                 if not 'recurrence' in namewoext:
                     raise ValueError('Some features are not associated to a recurrence '
-                          <          'or norecurrence WSI classification. User must sort JSON and rename it'
-                                    ' with the corresponding reccurence and noreccurence caracters')
+                                     'or norecurrence WSI classification. User must sort JSON and rename it'
+                                     ' with the corresponding reccurence and noreccurence caracters')
                 else:
                     jsonfiles.append(filepath)
 
@@ -80,6 +80,8 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
 ######## Process the files
 print('Detected {} json files.'.format(len(jsonfiles)))
 feature_init = True
+# Sort the list by name of files
+jsonfiles.sort()
 # Means Initialisation of feature array not done yet
 for jsonfile in jsonfiles:
     with open(jsonfile, 'r') as filename:

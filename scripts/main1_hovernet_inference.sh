@@ -87,6 +87,7 @@ python run_infer.py \
     --output_dir$output_dir
 fi 
 
+# return to previous path and reeactivate histo-miner env for following steps
 conda deactivate
 conda activate histo-miner-env
 cd "$OLDPWD"

@@ -1,0 +1,31 @@
+# Parameters for inference:
+
+  inference:
+
+    gpu: 
+
+    samples_per_gpu:
+    
+    workers_per_gpu:   
+
+    paths:
+
+      checkpoints: "/path/to/checkpoints"
+
+      input_dir: "path/to/inference/data"
+
+      output_dir: "./data/UQ/data/shared/scc/data_conversion_downsampling/downsfactor-40/no_progress/Non-Melanoma/inference_output/"
+
+      
+
+
+
+
+
+
+
+
+
+# Parameters for training?
+
+## All the parameters inside schedule could be added here 
