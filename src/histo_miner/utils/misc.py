@@ -2,6 +2,7 @@
 
 import json
 import os
+import csv
 from collections import MutableMapping
 #depends on the env, could be
 # from collections.abd import MutableMapping
@@ -208,6 +209,20 @@ def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
     list_train_arrays = [trainfeatarray, trainclarray]
 
     return list_train_arrays, list_test_arrays
+
+
+
+def noheadercsv_to_dict(file_path):
+    """
+    Create a dictionnary from a csv file with 2 columns:
+    Generate first column items as keys and second column items as values
+    """
+    data_dict = {}
+    with open(file_path, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            data_dict[row[0]] = row[1]  
+    return data_dict
 
 
 

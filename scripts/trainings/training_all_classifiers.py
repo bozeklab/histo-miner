@@ -13,7 +13,7 @@ import lightgbm
 from attrdict import AttrDict as attributedict
 from sklearn import linear_model, ensemble, metrics
 from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
-cross_validate, cross_val_score
+cross_validate, cross_val_score, GroupKFold
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
@@ -33,6 +33,8 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 configfolder = attributedict(config)
 pathtofolder = configfolder.paths.folders.feature_selection_main
+patientid_csv = config.paths.files.patientid_csv
+patientid_disp = config.parameters.bool.patientid_disp
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -43,9 +45,6 @@ config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 perform_split = config.parameters.bool.perform_split
 split_pourcentage = config.parameters.int.split_pourcentage
-
-
-### THIS SO BIG, NEED A FUNCTION TO MAKE IT READABLE
 
 ridge_random_state = config.classifierparam.ridge.random_state
 ridge_alpha = config.classifierparam.ridge.alpha
@@ -199,23 +198,24 @@ print('Loading feature selected indexes done.')
 
 
 
-###########################################################
-## Load feat array and classification arrays
-############################################################
+################################################################
+## Load feat array, class arrays and IDs arrays (if applicable)
+################################################################
 
 #This is to check but should be fine
 path_featarray = pathfeatselect + 'featarray' + ext
 path_clarray = pathfeatselect + 'clarray' + ext
+path_patientids_array = pathfeatselect + 'patientids' + ext
 
 train_featarray = np.load(path_featarray)
 train_clarray = np.load(path_clarray)
 train_clarray = np.transpose(train_clarray)
+patientids = np.load(path_patientids_array)
 
 
-
-############################################################
+##############################################################
 ## Traininig Classifiers
-############################################################
+##############################################################
 
 
 # Define the classifiers
@@ -303,7 +303,9 @@ permutation_index = np.load(pathfeatselect + 'random_permutation_index_best.npy'
 
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
-
+### Shuffle patient IDs arrays using the permutation index 
+if patientid_disp:
+    patientids = patientids[permutation_index]
 
 
 print('***************cv=10***************')
@@ -337,7 +339,8 @@ if classification_from_allfeatures:
         crossvalid_results = cross_val_score(ridgevanilla, 
                                              genfeatarray, 
                                              train_clarray,  
-                                             cv=10,  
+                                             groups=patientids,
+                                             cv=GroupKFold(n_splits=10),  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)

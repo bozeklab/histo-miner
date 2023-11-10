@@ -5,13 +5,14 @@ sys.path.append('../')  # Only for Remote use on Clusters
 
 import json
 import os
+import csv
 
 import numpy as np
 import yaml
 from attrdict import AttrDict as attributedict
 
 from src.histo_miner.feature_selection import FeatureSelector
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict
 from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
@@ -28,18 +29,21 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.feature_selection_main
+patientid_csv = config.paths.files.patientid_csv
+patientid_disp = config.parameters.bool.patientid_disp
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 boruta_max_depth = config.parameters.int.boruta_max_depth
 boruta_random_state = config.parameters.int.nbr_keptfeat
 
 
 
-###################################################################
+#####################################################################
 ## Concatenate features and create Pandas DataFrames
-###################################################################
+## If applicable, create a list of Patient ID keeping feature columns order
+#####################################################################
 
 """Concatenate the quantification features all together 
-in pandas DataFrame and run the different feature selections"""
+in pandas DataFrame. Create a corresponding list of patient ID if provided"""
 
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
@@ -77,16 +81,27 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
                     jsonfiles.append(filepath)
 
 
+
+####### If applicable create a dict file from the patient ID csv file 
+# And initializa the futur ordered patient ID list
+if patientid_disp:
+    patientid_dict = noheadercsv_to_dict(patientid_csv)
+    patientid_list = list()
+
 ######## Process the files
 print('Detected {} json files.'.format(len(jsonfiles)))
+# If applicable, create a list of patient ID
 feature_init = True
 # Sort the list by name of files
 jsonfiles.sort()
-# Means Initialisation of feature array not done yet
 for jsonfile in jsonfiles:
     with open(jsonfile, 'r') as filename:
         pathwoext = os.path.splitext(jsonfile)[0]
         path_to_parentfolder, nameoffile = os.path.split(pathwoext)
+
+        # If applicable, create a list of patient ID with same order of feature array and clarray
+        if patientid_disp:
+            patientid_list.append(patientid_dict.get(nameoffile))
 
         # extract information of the JSON as a string
         analysisdata = filename.read()
@@ -241,6 +256,12 @@ pathfeatarray = pathoutput + 'featarray' + ext
 np.save(pathfeatarray, featarray)
 pathclarray = pathoutput + 'clarray' + ext
 np.save(pathclarray, clarray)
+
+# If applicable, save the patient_ID list as a ids array:
+if patientid_disp:
+    patientid_array = np.asarray(patientid_list)
+    pathpatientids =  pathoutput + 'patientids' + ext
+    np.save(pathpatientids, patientid_array)
 
 # We save the index of selected features for mrmr and mannwhitneyu 
 pathselfeat_mrmr = pathoutput + 'selfeat_mrmr_idx' + ext

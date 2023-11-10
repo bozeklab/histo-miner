@@ -78,6 +78,13 @@ for jsonfile in jsonfiles:
     print('\nAllcells_inWSI_dict generated as follow:', allcells_in_wsi_dict)
 
 
+    # Write information inside a json file about cell nbr per class and save it
+    with open(pathwoext + '_cellnbr.json', 'w') as outfile:
+        json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
+
+    print('Json file written :', pathwoext + '_cellnbr.json \n**********')
+
+
     # Create the path to Mask map binarized and Class JSON and save it into a variable
     if os.path.exists(jsonfile) and os.path.exists(jsonfile.replace('.json', maskmapext)):
 
@@ -110,12 +117,14 @@ for jsonfile in jsonfiles:
 
         print('Cellsdist_inmask_dict generated as follow:', cellsdist_inmask_dict)
 
+
     else:
         tumor_tot_area = 0
         cells_inmask_dict = None
         cellsdist_inmask_dict = None
         print('Cellsratio_inmask_dict not generated')
         print('Cellsdist_inmask_dict not generated')
+
 
     jsondata = analyser.hvn_outputproperties(
                                     allcells_in_wsi_dict,
@@ -126,10 +135,12 @@ for jsonfile in jsonfiles:
                                     selectedcls_ratio=selectedcls_ratio, 
                                     selectedcls_dist=selectedcls_dist)
 
-    # Write information inside a json file and save it
-    with open(pathwoext + '_analysed.json', 'w') as outfile:
-        json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
 
-    print('Json file written :', pathwoext + '_cellnbr.json \n**********')
+    # Write information inside a json file and save it for the whole analysis
+    with open(pathwoext + '_analysed.json', 'w') as outfile:
+        json.dump(jsondata, outfile, cls=NpEncoder)
+
+    print('Json file written :', pathwoext + '_analysed.json \n**********')
+
 
 print('Tissue Analysis Done')

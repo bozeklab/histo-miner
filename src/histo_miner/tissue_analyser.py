@@ -629,8 +629,8 @@ def multipro_distc2c(allnucl_info,
     # the lowest and delete the list
     allmindist = list()
     min_dist = []
-    for source_info in sourceclass_list:
-    # for source_info in tqdm(sourceclass_list):
+    # for source_info in sourceclass_list:
+    for source_info in tqdm(sourceclass_list):
         alldist = list()
         all_trgpoints = list()
         if cellfilter == 'Tumor' or cellfilter == 'TumorMargin':

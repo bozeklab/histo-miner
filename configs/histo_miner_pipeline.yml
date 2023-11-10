@@ -8,6 +8,9 @@
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/no_recurrence/Cologne/"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
         
+    files:
+      patientid_csv: 
+      #it is including extension of the file as well (.scv)
 
 
 # All parameters of string names
@@ -39,6 +42,8 @@
 
         newstr2_wsimode: >-
           }}
+
+
 
 # All not strings parameters
   parameters:
@@ -80,6 +85,8 @@
       display_classification_predictions: False
 
       display_classification_scores: True
+
+      patientid_disp: True
 
 
     str:
