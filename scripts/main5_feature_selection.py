@@ -101,7 +101,12 @@ for jsonfile in jsonfiles:
 
         # If applicable, create a list of patient ID with same order of feature array and clarray
         if patientid_disp:
-            patientid_list.append(patientid_dict.get(nameoffile))
+            if 'recurrence' in nameoffile:
+                if 'no_recurrence' in nameoffile:
+                    namesimplified = nameoffile.replace('_no_recurrence_analysed','')
+                else:
+                    namesimplified = nameoffile.replace('_recurrence_analysed','')
+            patientid_list.append(patientid_dict.get(namesimplified))
 
         # extract information of the JSON as a string
         analysisdata = filename.read()
@@ -169,9 +174,9 @@ print("Classification Vector is", clarray)
 
 
 
-# ###################################################################
-# ## Run Feature Selections
-# ###################################################################
+###################################################################
+## Run Feature Selections
+###################################################################
 
 FeatureSelector = FeatureSelector(featarray, clarray)
 
@@ -213,9 +218,9 @@ print('***** \n')
 
 
 
-# ############################################################
-# ## Save all numpy files
-# ############################################################
+############################################################
+## Save all numpy files
+############################################################
 
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
@@ -274,3 +279,27 @@ np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
 
 print('Saving done.')
 print('Path to the output files: {}'.format(pathoutput))
+
+
+##### DEV
+
+# ###################################################################
+# ## Calculate correlation matrix
+# ###################################################################
+
+# path_relevancemat = pathoutput + 'relevance_matrix' + ext
+# np.save(path_relevancemat, mrmr_relevance_matrix)
+# path_redundancymat = pathoutput + 'redundancy_matrix' + ext
+# np.save(path_redundancymat, mrmr_redundancy_matrix)
+
+# path_relevancemat_csv= pathoutput + 'relevance_matrix' + '.csv'
+# np.savetxt(path_relevancemat_csv, mrmr_relevance_matrix,  delimiter=",")
+# path_redundancymat_csv = pathoutput + 'redundancy_matrix' + '.csv'
+# np.savetxt(path_redundancymat_csv, mrmr_redundancy_matrix,  delimiter=",")
+
+
+corrmat =  np.corrcoef(featarray, clarray)
+path_corrmat = pathoutput + 'correlation_matrix' + ext
+np.save(path_corrmat, corrmat)
+path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
+np.savetxt(path_corrmat_csv, corrmat, delimiter=",")

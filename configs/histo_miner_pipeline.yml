@@ -5,12 +5,12 @@
     folders:
         inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/no_recurrence/Cologne/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
         
     files:
-      patientid_csv: 
-      #it is including extension of the file as well (.scv)
+      patientid_csv: "/data/shared/scc/histo-miner/data_analysis/crea_patient_ID_lst/AllCohorts_PatientIDs.csv"
+      #it is including extension of the file as well (.csv)
 
 
 # All parameters of string names

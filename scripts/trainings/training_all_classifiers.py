@@ -31,10 +31,10 @@ import joblib
 with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
-configfolder = attributedict(config)
-pathtofolder = configfolder.paths.folders.feature_selection_main
-patientid_csv = config.paths.files.patientid_csv
-patientid_disp = config.parameters.bool.patientid_disp
+confighm = attributedict(config)
+pathtofolder = confighm.paths.folders.feature_selection_main
+patientid_csv = confighm.paths.files.patientid_csv
+patientid_disp = confighm.parameters.bool.patientid_disp
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -210,7 +210,11 @@ path_patientids_array = pathfeatselect + 'patientids' + ext
 train_featarray = np.load(path_featarray)
 train_clarray = np.load(path_clarray)
 train_clarray = np.transpose(train_clarray)
-patientids = np.load(path_patientids_array)
+patientids_load = np.load(path_patientids_array, allow_pickle=True)
+patientids_list = list(patientids_load)
+patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
+patientids = np.asarray(patientids_convert)
+
 
 
 ##############################################################
@@ -308,7 +312,7 @@ if patientid_disp:
     patientids = patientids[permutation_index]
 
 
-print('***************cv=10***************')
+# print('***************cv=10***************')
 
 
 ##fro dev
@@ -536,6 +540,7 @@ if classification_from_allfeatures:
     # If saving:
     # if saveclassifier_ridge:
     #     joblib.dump(ridge_vanilla, pathridge_vanilla) print('\n\n ** lgbm__vanilla **')
+    print('\n\n ** lightgbm_vanilla **')
     print('The best split average accuracy is:',cv_bestsplit)  
     print('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:',
             lgbm_vanilla_bestmaxset)

@@ -78,12 +78,21 @@ class FeatureSelector:
         Parameters
         ----------
         class_weight: {“balanced”, “balanced_subsample”}, dict 
-            Weights associated with classes in the form {class_label: weight}. If not given, all classes are supposed to have weight one. For multi-output problems, a list of dicts can be provided in the same order as the columns of y.
-            Note that for multioutput (including multilabel) weights should be defined for each class of every column in its own dict. For example, for four-class multilabel classification weights should be [{0: 1, 1: 1}, {0: 1, 1: 5}, {0: 1, 1: 1}, {0: 1, 1: 1}] instead of [{1:1}, {2:5}, {3:1}, {4:1}].
-            The “balanced” mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data as n_samples / (n_classes * np.bincount(y))
-            The “balanced_subsample” mode is the same as “balanced” except that weights are computed based on the bootstrap sample for every tree grown.
+            Weights associated with classes in the form {class_label: weight}. 
+            If not given, all classes are supposed to have weight one. 
+            For multi-output problems, a list of dicts can be provided 
+            in the same order as the columns of y.
+            Note that for multioutput (including multilabel) weights should be defined 
+            for each class of every column in its own dict. For example, for four-class multilabel 
+            classification weights should be [{0: 1, 1: 1}, {0: 1, 1: 5}, {0: 1, 1: 1}, {0: 1, 1: 1}] 
+            instead of [{1:1}, {2:5}, {3:1}, {4:1}].
+            The “balanced” mode uses the values of y to automatically adjust weights inversely proportional 
+            to class frequencies in the input data as n_samples / (n_classes * np.bincount(y))
+            The “balanced_subsample” mode is the same as “balanced” except that weights are computed 
+            based on the bootstrap sample for every tree grown.
             For multi-output, the weights of each column of y will be multiplied.
-            Note that these weights will be multiplied with sample_weight (passed through the fit method) if sample_weight is specified.
+            Note that these weights will be multiplied with sample_weight (passed through the fit method) if 
+            sample_weight is specified.
         max_depth: int or None
             The maximum depth of the tree. If None, then nodes are expanded until all leaves are pure or 
             until all leaves contain less than min_samples_split samples.
@@ -240,3 +249,5 @@ class SelectedFeaturesMatrix:
         featarray_mannwhitney = np.transpose(self.feature_array)
         featarray_mannwhitney = featarray_mannwhitney[:, selfeat_mannwhitneyu_index]
         return featarray_mannwhitney
+
+

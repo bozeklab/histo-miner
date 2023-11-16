@@ -212,10 +212,15 @@ def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
 
 
 
-def noheadercsv_to_dict(file_path):
+def noheadercsv_to_dict(file_path: str):
     """
     Create a dictionnary from a csv file with 2 columns:
     Generate first column items as keys and second column items as values
+
+    Parameters:
+    -----------
+    file_path: str
+        Path to the csv file to process.
     """
     data_dict = {}
     with open(file_path, 'r') as file:
@@ -223,6 +228,37 @@ def noheadercsv_to_dict(file_path):
         for row in reader:
             data_dict[row[0]] = row[1]  
     return data_dict
+
+
+
+def convert_names_to_integers(name_list: list):
+    """
+    Convert a list of names into integers, 
+    ensuring identical names have the same integer representation.
+
+    Parameters:
+    -----------
+    name_list: list
+        A list of names to be converted.
+
+    Returns:
+    -----------
+    results: list
+        A list of integers representing the names in the same order as the input list.
+    """
+    name_to_integer = {}
+    for name in name_list:
+        # Use the hash function to generate an integer representation for the name
+        name_integer = hash(name)
+
+        # Store the mapping between the name and its integer representation
+        name_to_integer[name] = name_integer
+
+    # Create a list of integers based on the original order of names
+    result = [name_to_integer[name] for name in name_list]
+
+    return result
+
 
 
 
