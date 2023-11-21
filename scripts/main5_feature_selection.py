@@ -10,6 +10,7 @@ import csv
 import numpy as np
 import yaml
 from attrdict import AttrDict as attributedict
+import scipy
 
 from src.histo_miner.feature_selection import FeatureSelector
 from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict
@@ -30,7 +31,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 config = attributedict(config)
 pathtofolder = config.paths.folders.feature_selection_main
 patientid_csv = config.paths.files.patientid_csv
-patientid_disp = config.parameters.bool.patientid_disp
+patientid_avail = config.parameters.bool.patientid_avail
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 boruta_max_depth = config.parameters.int.boruta_max_depth
 boruta_random_state = config.parameters.int.nbr_keptfeat
@@ -84,7 +85,7 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
 
 ####### If applicable create a dict file from the patient ID csv file 
 # And initializa the futur ordered patient ID list
-if patientid_disp:
+if patientid_avail:
     patientid_dict = noheadercsv_to_dict(patientid_csv)
     patientid_list = list()
 
@@ -100,7 +101,7 @@ for jsonfile in jsonfiles:
         path_to_parentfolder, nameoffile = os.path.split(pathwoext)
 
         # If applicable, create a list of patient ID with same order of feature array and clarray
-        if patientid_disp:
+        if patientid_avail:
             if 'recurrence' in nameoffile:
                 if 'no_recurrence' in nameoffile:
                     namesimplified = nameoffile.replace('_no_recurrence_analysed','')
@@ -189,8 +190,8 @@ selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index]
 
 print('Selected Features Indexes: {}'.format(selfeat_mrmr_index))
 print('Selected Features Names: {}'.format(selfeat_mrmr_names))
-# print('Relevance Matrix: {}'.format(mrmr_relevance_matrix))
-# print('Redundancy Matrix: {}'.format(mrmr_redundancy_matrix))
+print('Relevance Matrix: {}'.format(mrmr_relevance_matrix))
+print('Redundancy Matrix: {}'.format(mrmr_redundancy_matrix))
 
 ## Boruta calculations
 print('Boruta calculations  (https://github.com/scikit-learn-contrib/boruta_py to have more info)'
@@ -199,7 +200,6 @@ selfeat_boruta_index = FeatureSelector.run_boruta(
     max_depth=boruta_max_depth, random_state=boruta_random_state)
 # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
 selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index] 
-
 print('Selected Features Indexes: {}'.format(selfeat_boruta_index))
 print('Selected Features Names: {}'.format(selfeat_boruta_names))
 
@@ -215,7 +215,6 @@ print('Output Ordered from best p-values to worst: {}'.format(orderedp_mannwhitn
 
 print('feature selection finished')
 print('***** \n')
-
 
 
 ############################################################
@@ -239,7 +238,8 @@ print('Saving feature array, classification array, summary of selected features 
 # every method
 summarystr_mrmr = '\n\nFor mR.MR calculations:\n' \
                   + str(selfeat_mrmr_index) + '\n' \
-                  + str(selfeat_mrmr_names)
+                  + str(selfeat_mrmr_names) \
+                  + str(mrmr_relevance_matrix)
 
 summarystr_boruta = '\n\nFor boruta calculations:\n' \
                   + str(selfeat_boruta_index) + '\n' \
@@ -247,8 +247,10 @@ summarystr_boruta = '\n\nFor boruta calculations:\n' \
 
 summarystr_mannwhitneyu = '\n\nFor Mann Whitney U calculations:\n' \
                           + str(selfeat_mannwhitneyu_index) + '\n' \
-                          + str(selfeat_mannwhitneyu_names)
+                          + str(selfeat_mannwhitneyu_names) \
+                          + str(orderedp_mannwhitneyu)
 
+# Was edited
 summarystr = summarystr_mrmr + summarystr_boruta + summarystr_mannwhitneyu
 
 # Open the file for writing and save it
@@ -256,14 +258,14 @@ summaryfile_path = pathoutput + 'selected_features.txt'
 with open(summaryfile_path, "w") as file:
     file.write(summarystr)
 
-#Save feature array and classification array
+# Save feature array and classification array
 pathfeatarray = pathoutput + 'featarray' + ext
 np.save(pathfeatarray, featarray)
 pathclarray = pathoutput + 'clarray' + ext
 np.save(pathclarray, clarray)
 
 # If applicable, save the patient_ID list as a ids array:
-if patientid_disp:
+if patientid_avail:
     patientid_array = np.asarray(patientid_list)
     pathpatientids =  pathoutput + 'patientids' + ext
     np.save(pathpatientids, patientid_array)
@@ -276,30 +278,38 @@ np.save(pathselfeat_boruta, selfeat_boruta_index)
 pathorderedp_mannwhitneyu = pathoutput + 'selfeat_mannwhitneyu_idx' + ext
 np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
 
+# # Calculate Pearson correlation regardless of the class recurrence, no-recurrence
+corrmat =  np.corrcoef(featarray)
+path_corrmat = pathoutput + 'correlation_matrix' + ext
+np.save(path_corrmat, corrmat)
+path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
+np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
+
 
 print('Saving done.')
 print('Path to the output files: {}'.format(pathoutput))
 
 
-##### DEV
-
-# ###################################################################
-# ## Calculate correlation matrix
-# ###################################################################
-
-# path_relevancemat = pathoutput + 'relevance_matrix' + ext
-# np.save(path_relevancemat, mrmr_relevance_matrix)
-# path_redundancymat = pathoutput + 'redundancy_matrix' + ext
-# np.save(path_redundancymat, mrmr_redundancy_matrix)
-
-# path_relevancemat_csv= pathoutput + 'relevance_matrix' + '.csv'
-# np.savetxt(path_relevancemat_csv, mrmr_relevance_matrix,  delimiter=",")
-# path_redundancymat_csv = pathoutput + 'redundancy_matrix' + '.csv'
-# np.savetxt(path_redundancymat_csv, mrmr_redundancy_matrix,  delimiter=",")
 
 
-corrmat =  np.corrcoef(featarray, clarray)
-path_corrmat = pathoutput + 'correlation_matrix' + ext
-np.save(path_corrmat, corrmat)
-path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
-np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
+# NOT TO KEEP For publicaton
+# # Calculate Pearson correlation for no-recurrence class
+# featarray_noreconly = [
+#     featarray[colindex] for colindex in  range(0, featarray.shape[0]) if clarray[colindex] == 0
+#     ]
+# corrmat_norec =  np.corrcoef(featarray_noreconly)
+# path_corrmat_norec = pathoutput + 'norecurrence_correlation_matrix' + ext
+# np.save(path_corrmat_norec, corrmat_norec)
+# path_corrmat_norec_csv = pathoutput + 'norecurrence_correlation_matrix.csv' 
+# np.savetxt(path_corrmat_norec_csv, corrmat_norec, delimiter=",")
+
+
+# # Calculate Person correlation for recurrence class
+# featarray_reconly = [
+#     featarray[colindex] for colindex in  range(0, featarray.shape[0]) if clarray[colindex] == 1 
+#     ]
+# corrmat_rec =  np.corrcoef(featarray_noreconly)
+# path_corrmat_rec = pathoutput + 'recurrence_correlation_matrix' + ext
+# np.save(path_corrmat_rec, corrmat_rec)
+# path_corrmat_rec_csv = pathoutput + 'recurrence_correlation_matrix.csv' 
+# np.savetxt(path_corrmat_rec_csv, corrmat_rec, delimiter=",")

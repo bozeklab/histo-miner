@@ -75,7 +75,9 @@
 
       nbr_keptfeat: 5
 
-      boruta_max_depth: 12
+      boruta_max_depth: 20
+      # boruta_max_depth: 12 kept in general
+      # boruta_max_depth: 6, 8, 10, 12, 14, 16, 18, 20
 
       boruta_random_state: 1
 
@@ -86,7 +88,7 @@
 
       display_classification_scores: True
 
-      patientid_disp: True
+      patientid_avail: True
 
 
     str:

@@ -34,7 +34,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
 patientid_csv = confighm.paths.files.patientid_csv
-patientid_disp = confighm.parameters.bool.patientid_disp
+patientid_avail = confighm.parameters.bool.patientid_avail
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -308,7 +308,7 @@ permutation_index = np.load(pathfeatselect + 'random_permutation_index_best.npy'
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
 ### Shuffle patient IDs arrays using the permutation index 
-if patientid_disp:
+if patientid_avail:
     patientids = patientids[permutation_index]
 
 
