@@ -9,7 +9,7 @@ import csv
 
 import numpy as np
 import yaml
-from attrdict import AttrDict as attributedict
+from attrdictionary import AttrDict as attributedict
 import scipy
 
 from src.histo_miner.feature_selection import FeatureSelector
@@ -259,16 +259,16 @@ with open(summaryfile_path, "w") as file:
     file.write(summarystr)
 
 # Save feature array and classification array
-pathfeatarray = pathoutput + 'featarray' + ext
-np.save(pathfeatarray, featarray)
-pathclarray = pathoutput + 'clarray' + ext
-np.save(pathclarray, clarray)
+# pathfeatarray = pathoutput + 'featarray' + ext
+# np.save(pathfeatarray, featarray)
+# pathclarray = pathoutput + 'clarray' + ext
+# np.save(pathclarray, clarray)
 
 # If applicable, save the patient_ID list as a ids array:
-if patientid_avail:
-    patientid_array = np.asarray(patientid_list)
-    pathpatientids =  pathoutput + 'patientids' + ext
-    np.save(pathpatientids, patientid_array)
+# if patientid_avail:
+#     patientid_array = np.asarray(patientid_list)
+#     pathpatientids =  pathoutput + 'patientids' + ext
+#     np.save(pathpatientids, patientid_array)
 
 # We save the index of selected features for mrmr and mannwhitneyu 
 pathselfeat_mrmr = pathoutput + 'selfeat_mrmr_idx' + ext
@@ -279,11 +279,11 @@ pathorderedp_mannwhitneyu = pathoutput + 'selfeat_mannwhitneyu_idx' + ext
 np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
 
 # # Calculate Pearson correlation regardless of the class recurrence, no-recurrence
-corrmat =  np.corrcoef(featarray)
-path_corrmat = pathoutput + 'correlation_matrix' + ext
-np.save(path_corrmat, corrmat)
-path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
-np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
+# corrmat =  np.corrcoef(featarray)
+# path_corrmat = pathoutput + 'correlation_matrix' + ext
+# np.save(path_corrmat, corrmat)
+# path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
+# np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
 
 
 print('Saving done.')

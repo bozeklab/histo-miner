@@ -17,7 +17,7 @@ import time
 
 
 import yaml
-from attrdict import AttrDict as attributedict
+
 
 
 

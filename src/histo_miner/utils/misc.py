@@ -3,7 +3,7 @@
 import json
 import os
 import csv
-from collections import MutableMapping
+from collections.abc import MutableMapping
 #depends on the env, could be
 # from collections.abd import MutableMapping
 import random

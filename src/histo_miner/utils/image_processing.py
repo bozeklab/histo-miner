@@ -21,7 +21,6 @@ import numpy as np
 import shapely.geometry
 import yaml
 from PIL import Image
-from attrdict import AttrDict as attributedict
 from skimage.measure import regionprops, label
 from skimage.util import view_as_blocks
 from sklearn.preprocessing import binarize

@@ -7,7 +7,7 @@ import json
 import os
 
 import yaml
-from attrdict import AttrDict as attributedict
+from attrdictionary import AttrDict as attributedict
 from tqdm import tqdm
 # import numpy as np
 # import scipy.stats

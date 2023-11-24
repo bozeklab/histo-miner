@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 import xgboost 
 import lightgbm
-from attrdict import AttrDict as attributedict
+from attrdictionary import AttrDict as attributedict
 from sklearn import linear_model, ensemble
 from sklearn.model_selection import train_test_split
  

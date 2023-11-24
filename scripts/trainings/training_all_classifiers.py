@@ -10,7 +10,7 @@ import time
 import yaml
 import xgboost 
 import lightgbm
-from attrdict import AttrDict as attributedict
+from attrdictionary import AttrDict as attributedict
 from sklearn import linear_model, ensemble, metrics
 from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
 cross_validate, cross_val_score, GroupKFold, StratifiedGroupKFold
@@ -321,12 +321,9 @@ train_clarray = train_clarray[permutation_index]
 if patientid_avail:
     patientids = patientids[permutation_index]
 
-
-# print('***************n_splits=10**************')
-
-
-##fro dev
-# print(sorted(metrics.SCORERS.keys()))
+### Create Stratified Group  instance to be used later 
+### for the cross validation:
+sgkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
 #### Classification training with all features kept 
 
@@ -350,7 +347,6 @@ if classification_from_allfeatures:
         ridgevanilla.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
-        sgkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
         cvsplit= sgkf.split(genfeatarray, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(ridgevanilla, 
                                              genfeatarray, 
@@ -396,11 +392,12 @@ if classification_from_allfeatures:
         lrvanilla.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(genfeatarray, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lrvanilla, 
                                              genfeatarray, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -440,11 +437,12 @@ if classification_from_allfeatures:
         forestvanilla.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(genfeatarray, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(forestvanilla, 
                                              genfeatarray, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -485,11 +483,12 @@ if classification_from_allfeatures:
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(xgboostvanilla, genfeatarray, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(genfeatarray, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(xgboostvanilla, 
                                              genfeatarray, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -535,11 +534,12 @@ if classification_from_allfeatures:
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(lightgbmvanilla, genfeatarray, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(genfeatarray, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lightgbmvanilla, 
                                              genfeatarray, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -602,11 +602,12 @@ if os.path.exists(pathselfeat_mrmr):
         ridgemrmr.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_mrmr, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(ridgemrmr, 
                                              featarray_mrmr, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -646,11 +647,12 @@ if os.path.exists(pathselfeat_mrmr):
         lrmrmr.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_mrmr, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lrmrmr, 
                                              featarray_mrmr, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -690,11 +692,12 @@ if os.path.exists(pathselfeat_mrmr):
         forestmrmr.set_params(**paramset)
         # forest_mrmr = forestmrmr.fit(featarray_mrmr, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_mrmr, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(forestmrmr, 
                                              featarray_mrmr, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -735,11 +738,12 @@ if os.path.exists(pathselfeat_mrmr):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(xgboostmrmr, featarray_mrmr, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_mrmr, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(xgboostmrmr, 
                                              featarray_mrmr, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -780,11 +784,12 @@ if os.path.exists(pathselfeat_mrmr):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(lightgbmmrmr, featarray_mrmr, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_mrmr, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lightgbmmrmr, 
                                              featarray_mrmr, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -842,11 +847,12 @@ if os.path.exists(pathselfeat_boruta):
         ridgeboruta.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_boruta, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(ridgeboruta, 
                                              featarray_boruta, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -886,11 +892,12 @@ if os.path.exists(pathselfeat_boruta):
         lrboruta.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_boruta, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lrboruta, 
                                              featarray_boruta, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -932,11 +939,12 @@ if os.path.exists(pathselfeat_boruta):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(forestboruta, featarray_boruta, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_boruta, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(forestboruta, 
                                              featarray_boruta, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -973,6 +981,7 @@ if os.path.exists(pathselfeat_boruta):
     cv_bestsplit = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostboruta.set_params(**paramset)
+        cvsplit= sgkf.split(featarray_boruta, train_clarray, groups=patientids)
         # xgboost_boruta = xgboostboruta.fit(featarray_boruta, train_clarray)
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(xgboostboruta, featarray_boruta, train_clarray, cv=5)
@@ -982,7 +991,7 @@ if os.path.exists(pathselfeat_boruta):
                                              featarray_boruta, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1023,11 +1032,12 @@ if os.path.exists(pathselfeat_boruta):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(lightgbmboruta, featarray_boruta, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_boruta, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lightgbmboruta, 
                                              featarray_boruta, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1085,11 +1095,12 @@ if os.path.exists(pathselfeat_mannwhitneyu):
         ridgemannwhitney.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_mannwhitney, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(ridgemannwhitney, 
                                              featarray_mannwhitney, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1129,11 +1140,12 @@ if os.path.exists(pathselfeat_mannwhitneyu):
         lrmannwhitney.set_params(**paramset)
         # forest_vanilla = forestvanilla.fit(genfeatarray, train_clarray)
         #evaluate the model with cross validation
+        cvsplit= sgkf.split(featarray_mannwhitney, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lrmannwhitney, 
                                              featarray_mannwhitney, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1171,6 +1183,7 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     cv_bestsplit = 0
     for paramset in ParameterGrid(forest_param_grid):
         forestmannwhitney.set_params(**paramset)
+        cvsplit= sgkf.split(featarray_mannwhitney, train_clarray, groups=patientids)
         # forest_mannwhitney = forestmannwhitney.fit(featarray_mannwhitney, train_clarray)
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(forestmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
@@ -1179,7 +1192,7 @@ if os.path.exists(pathselfeat_mannwhitneyu):
                                              featarray_mannwhitney, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1220,11 +1233,12 @@ if os.path.exists(pathselfeat_mannwhitneyu):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(xgboostmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_mannwhitney, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(xgboostmannwhitney, 
                                              featarray_mannwhitney, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1265,11 +1279,12 @@ if os.path.exists(pathselfeat_mannwhitneyu):
         #evaluate the model with cross validation
         # crossvalid_results = cross_validate(lightgbmmannwhitney, featarray_mannwhitney, train_clarray, cv=5)
         # crossvalid_all_scores = crossvalid_results['test_score']
+        cvsplit= sgkf.split(featarray_mannwhitney, train_clarray, groups=patientids)
         crossvalid_results = cross_val_score(lightgbmmannwhitney, 
                                              featarray_mannwhitney, 
                                              train_clarray,  
                                              groups=patientids,
-                                             cv=GroupKFold(n_splits=10),  
+                                             cv=cvsplit,  
                                              scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
@@ -1297,25 +1312,9 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
-# display_bestparam = True
-# if display_bestparam:
-#     print(f'\nBest parameters found by grid search for random forest - all features are: {forest_vanilla.best_params_}')
-#     print(f'\nBest parameters found by grid search for xgboost - all features are: {xgboost_vanilla.best_params_}')
-#     print(f'\nBest parameters found by grid search for light gbm - all features are: {lgbm_vanilla.best_params_}')
-#     print(f'\nBest parameters found by grid search for random forest - mrmr features are: {forest_mrmr.best_params_}')
-#     print(f'\nBest parameters found by grid search for xgboost - mrmr features are: {xgboost_mrmr.best_params_}')
-#     print(f'\nBest parameters found by grid search for light gbm - mrmr features are: {lgbm_mrmr.best_params_}')
-#     print(f'\nBest parameters found by grid search for random forest - boruta features are: {forest_boruta.best_params_}')
-#     print(f'\nBest parameters found by grid search for xgboost - boruta features are: {xgboost_boruta.best_params_}')
-#     print(f'\nBest parameters found by grid search for light gbm - boruta features are: {lgbm_boruta.best_params_}')
-#     print(f'\nBest parameters found by grid search for random forest - mann whitney features are: {forest_mannwhitney.best_params_}')
-#     print(f'\nBest parameters found by grid search for xgboost - mann whitney features are: {xgboost_mannwhitney.best_params_}')
-#     print(f'\nBest parameters found by grid search for light gbm - mann whitney features are: {lgbm_mannwhitney.best_params_}')
 
-
-
-# print('\nAll classifiers trained.')
-# print('Classifiers saved here: ', modelfolder)
-# print('Classifiers saved are the ones that have saving_classifiers set as True in the config.')
+print('\nAll classifiers trained.')
+print('Classifiers saved here: ', modelfolder)
+print('Classifiers saved are the ones that have saving_classifiers set as True in the config.')
 
 print('\nCross validation of all classifiers done.')
