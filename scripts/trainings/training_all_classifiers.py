@@ -5,6 +5,7 @@ sys.path.append('../../')  # Only for Remote use on Clusters
 
 import os.path
 
+from tqdm import tqdm
 import numpy as np
 import time
 import yaml
@@ -311,12 +312,12 @@ print('Start Classifiers trainings...')
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 
-
 ### Load permutation index not to have 0 and 1s not mixed
 permutation_index = np.load(pathfeatselect + 'random_permutation_index_best.npy')
 
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
+
 ### Shuffle patient IDs arrays using the permutation index 
 if patientid_avail:
     patientids = patientids[permutation_index]
@@ -333,6 +334,9 @@ if classification_from_allfeatures:
 
     #Shuffle feature arrays using the permutation index 
     genfeatarray = genfeatarray[permutation_index,:]
+
+    if patientid_avail:
+        patientids = patientids[permutation_index]
 
 
     ##### RIDGE CLASSIFIER
@@ -477,6 +481,7 @@ if classification_from_allfeatures:
     # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
     cv_bestmean = 0 #cv stands for cross-validation 
     cv_bestsplit = 0
+    cv_bestperm = 0
     for paramset in ParameterGrid(xgboost_param_grid):
         xgboostvanilla.set_params(**paramset)
         # xgboost_vanilla = xgboostvanilla.fit(genfeatarray, train_clarray)
@@ -500,7 +505,10 @@ if classification_from_allfeatures:
         if crossvalid_meanscore > cv_bestmean:
             cv_bestmean = crossvalid_meanscore 
             xgboost_vanilla_bestmeanset = paramset
-            cv_bestmean_scorevect = crossvalid_results   
+            cv_bestmean_scorevect = crossvalid_results 
+    if cv_bestsplit > cv_bestperm:
+        best_permutation_index = permutation_index
+
 
     # If saving:
     # if saveclassifier_ridge:
@@ -516,12 +524,12 @@ if classification_from_allfeatures:
     print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
-    ##### LIGHT GBM
-    # lgbm_traindata_vanilla = lightgbm.Dataset(genfeatarray, label=train_clarray) 
-    # #lgbm_valdata_vanilla = lgbm_traindata_vanilla.create_valid()
-    # lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
-    #                               lgbm_traindata_vanilla, 
-    #                               lgbm_n_estimators)
+    #### LIGHT GBM
+    lgbm_traindata_vanilla = lightgbm.Dataset(genfeatarray, label=train_clarray) 
+    #lgbm_valdata_vanilla = lgbm_traindata_vanilla.create_valid()
+    lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
+                                  lgbm_traindata_vanilla, 
+                                  lgbm_n_estimators)
     lightgbmvanilla = lightgbm
     # lgbm_vanilla = lightgbmvanilla.fit(genfeatarray, train_clarray)
     # use Grid Search to find the best set of HPs 
@@ -565,7 +573,6 @@ if classification_from_allfeatures:
     print('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:',
             lgbm_vanilla_bestmeanset)
     print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
-
 
 
 
@@ -1312,6 +1319,8 @@ if os.path.exists(pathselfeat_mannwhitneyu):
     print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
+
+# np.save(pathfeatselect + 'random_permutation_index_11_27_bestsplit.npy', best_permutation_index)
 
 print('\nAll classifiers trained.')
 print('Classifiers saved here: ', modelfolder)
