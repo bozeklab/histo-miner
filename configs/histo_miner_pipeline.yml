@@ -73,7 +73,7 @@
     int:
       maskmap_downfactor: 32
 
-      nbr_keptfeat: 5
+      nbr_keptfeat: 55
 
       boruta_max_depth: 20
       # boruta_max_depth: 12 kept in general

@@ -3,13 +3,14 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
+        main: "/data/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
+
+        classification_eval_folder: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
 
 # All not strings parameters
   parameters:
     bool:
-      perform_split: False
 
       classification_from_allfeatures: True
 
@@ -24,6 +25,10 @@
 
         light_gbm: True 
 
+      save_evaluations: True
+
+      search_bestsplit: False
+
 
     int:
       split_pourcentage: 15
@@ -36,9 +41,10 @@
       # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
       
-      random_state: 42
+      random_state: 0
 
-      alpha:  2
+      alpha:  0
+      # for best split: 0.1
 
       grid_dict: 
           random_state: [0, 42, 84]
@@ -52,7 +58,7 @@
     logistic_regression:
       # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
       # #https://scikit-learn.org/stable/modules/linear_model.html
-      random_state: 42
+      random_state: 0
 
       penalty: 'l2'
 
@@ -85,9 +91,11 @@
       # #https://scikit-learn.org/stable/modules/linear_model.html
       
       random_state: 42
+      # For best split 84
 
-      n_estimators: 100
+      n_estimators: 40
       # The number of trees in the forest.
+      # For best split: 100
 
       class_weight: 'balanced'
 
@@ -108,18 +116,20 @@
       # and
       # #https://xgboost.readthedocs.io/en/stable/get_started.html
       
-      random_state: 42
+      random_state: 0
 
-      n_estimators: 100
+      n_estimators: 40
       # number of boosting iterations, should be = number of trees in the forest
+      # for best split: 60
 
       learning_rate: 1
+      #for best split: 1.2
 
       objective: 'binary:logistic'
       # choice to take for binary classification
 
       grid_dict:
-          random_state: [0, 42]
+          random_state: [0, 42, 84]
           # random_state: [0, 42, 84]
           # for dev: [0]
 
@@ -127,7 +137,7 @@
           # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
           # for dev: [20, 100]
          
-          learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]   
+          learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]
           # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]  
           # for dev: [0.1, 1.2]
 
@@ -139,17 +149,20 @@
       # and
       # #https://lightgbm.readthedocs.io/en/stable/Python-Intro.html
       
-      random_state: 42
+      random_state: 0
 
-      n_estimators: 100 
+      n_estimators: 120 
       # number of boosting iterations, should be = number of trees in the forest
+      # for best split: 100
 
-      learning_rate: 1
+      learning_rate: 0.01
+      # best split: 0.8
 
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 10
+      num_leaves: 20
+      # num_leaves: 10
 
       grid_dict: 
             random_state: [0, 42, 84]
