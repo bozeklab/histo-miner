@@ -275,24 +275,23 @@ if classification_from_allfeatures:
 
 
 
-for k in range(55, 0, -1):
+#### Parse the featarray to the class SelectedFeaturesMatrix 
+SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
+
+
+for nbr_keptfeat in range(55, 0, -1):
 
     # Kept the selected features
     selfeat_mrmr = selfeat_mrmr[0:nbr_keptfeat]
-    selfeat_mannwhitneyu = selfeat_mrmr[0:nbr_keptfeat]
-    print('Refinement of feature selected indexes done.')
-
+    print('\n',selfeat_mrmr)
+    selfeat_mannwhitneyu = selfeat_mannwhitneyu[0:nbr_keptfeat]
+    print(selfeat_mannwhitneyu)
 
     #### Recall numberr of efatures kept:
-    print('\n\n {} features kept.'.format(nbr_keptfeat))
-
-    #### Parse the featarray to the class SelectedFeaturesMatrix 
-
-    SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
+    print('{} features kept.'.format(nbr_keptfeat))
 
 
     #### Classification training with the features kept by mrmr
-
     if os.path.exists(pathselfeat_mrmr):
         # Generate the matrix with selected feature for mrmr
         featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr(selfeat_mrmr)
@@ -394,11 +393,11 @@ if search_bestsplit:
 else: 
     print('xgbmean_aAcc_mrmr is', xgbmean_aAcc_mrmr)
     print('lgbmmean_aAcc_mrmr is', lgbmmean_aAcc_mrmr)
-    print('xgbbestsplit_aAcc_mannwhitneyu is', xgbbestsplit_aAcc_mannwhitneyu)
+    print('xgbmean_aAcc_mannwhitneyu is', xgbmean_aAcc_mannwhitneyu)
     print('lgbmmean_aAcc_mannwhitneyu is', lgbmmean_aAcc_mannwhitneyu)
     xgbmean_aAcc_mrmr = np.asarray(xgbmean_aAcc_mrmr)
     lgbmmean_aAcc_mrmr = np.asarray(lgbmmean_aAcc_mrmr)
-    xgbbestsplit_aAcc_mannwhitneyu = np.asarray(xgbbestsplit_aAcc_mannwhitneyu)
+    xgbmean_aAcc_mannwhitneyu = np.asarray(xgbmean_aAcc_mannwhitneyu)
     lgbmmean_aAcc_mannwhitneyu = np.asarray(lgbmmean_aAcc_mannwhitneyu)
 
 # Saving
@@ -420,8 +419,8 @@ else:
              xgbmean_aAcc_mrmr)
     np.save(save_results_path + 'lgbmmean_aAcc_mrmr' + save_ext,
         lgbmmean_aAcc_mrmr)
-    np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu' + save_ext,
-        xgbbestsplit_aAcc_mannwhitneyu)
+    np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu' + save_ext,
+        xgbmean_aAcc_mannwhitneyu)
     np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu' + save_ext,
         lgbmmean_aAcc_mannwhitneyu) 
 
@@ -430,7 +429,7 @@ else:
 
 ### BORUTA
 
-selfeat_boruta_folder = pathfeatselect + 'all_borutas'
+selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
 
 if os.path.exists(selfeat_boruta_folder):
     print('Check if depth_boruta list match the different files.')
@@ -441,11 +440,13 @@ if os.path.exists(selfeat_boruta_folder):
     for depth in depth_boruta:
 
         # Load the correctly selected features
-        pathselfeat_boruta = pathfeatselect + 'selfeat_boruta_idx_depth' + str(depth) + '.npy'
+        pathselfeat_boruta = selfeat_boruta_folder + 'selfeat_boruta_idx_depth' + str(depth) + '.npy'
         selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 
         # Check how many features are selected for this depth
         nbr_keptfeat = len(selfeat_boruta)
+        print('nbr_keptfeat:', nbr_keptfeat)
+        print('selfeat_boruta', selfeat_boruta)
         nbr_keptfeat_list.append(nbr_keptfeat)
 
         #### Classification training with the features kept by boruta

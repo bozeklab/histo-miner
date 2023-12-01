@@ -27,7 +27,7 @@
 
       save_evaluations: True
 
-      search_bestsplit: False
+      search_bestsplit: True
 
 
     int:
@@ -45,6 +45,7 @@
 
       alpha:  0
       # for best split: 0.1
+      # for best mean: 0
 
       grid_dict: 
           random_state: [0, 42, 84]
@@ -118,12 +119,14 @@
       
       random_state: 0
 
-      n_estimators: 40
+      n_estimators: 60
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 60
+      # for best mean: 40
 
-      learning_rate: 1
-      #for best split: 1.2
+      learning_rate: 1.2
+      # for best split: 1.2
+      # for best mean: 1
 
       objective: 'binary:logistic'
       # choice to take for binary classification
@@ -151,18 +154,21 @@
       
       random_state: 0
 
-      n_estimators: 120 
+      n_estimators: 100 
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
+      # for best mean: 120
 
-      learning_rate: 0.01
-      # best split: 0.8
+      learning_rate: 0.8
+      # for best split: 0.8
+      # for best mean: 0.01
 
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 20
-      # num_leaves: 10
+      num_leaves: 10
+      # for best split: 10
+      # for best mean: 20
 
       grid_dict: 
             random_state: [0, 42, 84]
