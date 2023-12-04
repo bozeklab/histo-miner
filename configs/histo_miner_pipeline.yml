@@ -6,6 +6,7 @@
         inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis"
+        classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 #        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
         
     files:
