@@ -3,9 +3,20 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        main: "/data/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
+      main: "/data/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
 
-        classification_eval_folder: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
+      classification_eval_folder: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
+
+
+# All parameters of string names
+  names:
+    permutation_idx:
+
+      perm_bestsplit: "random_permutation_index_11_28_xgboost_bestsplit"
+
+      perm_cvmean: "random_permutation_index_11_28_xgboost_bestmean"
+
+
 
 
 # All not strings parameters
@@ -27,7 +38,7 @@
 
       save_evaluations: True
 
-      search_bestsplit: True
+      search_bestsplit: False
 
 
     int:
@@ -119,12 +130,12 @@
       
       random_state: 0
 
-      n_estimators: 60
+      n_estimators: 40
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 60
       # for best mean: 40
 
-      learning_rate: 1.2
+      learning_rate: 1
       # for best split: 1.2
       # for best mean: 1
 
@@ -154,19 +165,19 @@
       
       random_state: 0
 
-      n_estimators: 100 
+      n_estimators: 120 
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
       # for best mean: 120
 
-      learning_rate: 0.8
+      learning_rate: 0.01
       # for best split: 0.8
       # for best mean: 0.01
 
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 10
+      num_leaves: 20
       # for best split: 10
       # for best mean: 20
 

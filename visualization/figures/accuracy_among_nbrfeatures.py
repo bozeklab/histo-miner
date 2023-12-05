@@ -111,3 +111,100 @@ plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 
 
 # Save the plot on the root classification_evaluation directory
 plt.savefig(pathtofolder + 'lgbm_result.png')
+plt.clf()
+
+
+
+
+
+
+
+#############################################################
+## PLot figures where features are removed in inverse order
+############################################################
+
+#### By default, the snippet is not running
+plot_inverse = True
+# this boolean is hardcoded because the following snippet is here 
+# to reproduce secondary figures of the paper, but shouldn't run in normal
+# use of the code. 
+
+if plot_inverse:
+
+    path2vectors = pathtofolder + '/TestofKs/' + 'AllCohorts/'
+    ext = '.npy'
+
+    # Load vectors from files
+    xgbmean_aAcc_mrmr = np.load(path2vectors + 'xgbmean_aAcc_mrmr_inversed' + ext)
+    xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbmean_aAcc_mannwhitneyu_inversed' + ext)
+    xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr_inversed' + ext)
+    xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu_inversed' + ext)
+    lgbmmean_aAcc_mrmr = np.load(path2vectors + 'lgbmmean_aAcc_mrmr_inversed' + ext)
+    lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmmean_aAcc_mannwhitneyu_inversed' + ext)
+    lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr_inversed' + ext)
+    lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu_inversed' + ext)
+
+
+    # Creating x coordinates for mrmr and mannwhtneyu
+    x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
+
+    # Creating x coordinats for 
+    xboruta = np.load(path2vectors + 'nbr_keptfeat_list' + ext)
+
+
+    ## PLot figure for xgboost
+    # Increase the figure width to make room for the legend
+    #plt.figure(figsize=(18, 8))
+    plt.figure(figsize=(6, 4))
+
+    # First figure with xgboost
+    plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+    plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
+    plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
+    plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
+    plt.xlim(max(x), min(x))
+
+    # Plot random classification binary accuracy
+    plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
+
+    # Add labels and a legend
+    plt.xlabel('Number of feature kept')
+    plt.ylabel('Balanced Accuracy of Classification')
+    plt.title('Effect of number of kept features in inverse order on xgboost balanced accuracy')
+    #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+    # Set the step on the y-axis
+    plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
+    plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
+
+    # Save the plot on the root classification_evaluation directory
+    plt.savefig(pathtofolder + 'xgboost_result_inverse_order.png')
+    plt.clf()
+
+
+    ## PLot figure for lgbm
+    plt.figure(figsize=(6, 4))
+
+    # First figure with xgboost
+    plt.plot(x, lgbmmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+    plt.plot(x, lgbmbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
+    plt.plot(x, lgbmmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
+    plt.plot(x, lgbmbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
+    plt.xlim(max(x), min(x))
+
+    # Plot random classification binary accuracy
+    plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
+
+    # Add labels and a legend
+    plt.xlabel('Number of feature kept')
+    plt.ylabel('Balanced Accuracy of Classification')
+    plt.title('Effect of number of kept features in inverse order on lgbm balanced accuracy')
+    #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+    # Set the step on the y-axis
+    plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
+    plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
+
+    # Save the plot on the root classification_evaluation directory
+    plt.savefig(pathtofolder + 'lgbm_result_inverse_order.png')
+    plt.clf()

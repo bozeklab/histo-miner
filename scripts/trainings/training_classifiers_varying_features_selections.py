@@ -23,11 +23,15 @@ import joblib
 
 # To reproduce the results of fig. opf the paper
 
+# Important to notice that with bolean search_bestsplit in config files
+# set as True, the code will not produce and save the same results as expected
 
+# The Hyperparameter set in the config also needs to be updates
 
 #############################################################
 ## Load configs parameter
 #############################################################
+
 
 
 # Import parameters values from config file by generating a dict.
@@ -50,6 +54,8 @@ config = attributedict(config)
 classification_eval_folder = config.paths.folders.classification_eval_folder
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 search_bestsplit = config.parameters.bool.search_bestsplit
+perm_bestsplit = config.names.permutation_idx.perm_bestsplit
+perm_cvmean = config.names.permutation_idx.perm_cvmean
 
 ridge_random_state = config.classifierparam.ridge.random_state
 ridge_alpha = config.classifierparam.ridge.alpha
@@ -97,12 +103,12 @@ print('Load feature selection numpy files...')
 
 # COULD ADD RAISE ERRROR IF IT IS NOT FIND!
 # Each time we check if the file exist because all selections are not forced to run
-pathselfeat_mrmr = pathfeatselect + 'selfeat_mrmr_idx' + ext
-if os.path.exists(pathselfeat_mrmr):
-    selfeat_mrmr = np.load(pathselfeat_mrmr, allow_pickle=True)
-pathselfeat_mannwhitneyu = pathfeatselect + 'selfeat_mannwhitneyu_idx' + ext
-if os.path.exists(pathselfeat_mannwhitneyu):
-    selfeat_mannwhitneyu = np.load(pathselfeat_mannwhitneyu, allow_pickle=True)
+path_selfeat_mrmr_idx = pathfeatselect + ' selfeat_mrmr_idx_idx' + ext
+if os.path.exists(path_selfeat_mrmr_idx):
+     selfeat_mrmr_idx = np.load(path_selfeat_mrmr_idx, allow_pickle=True)
+path_selfeat_mannwhitneyu_idx = pathfeatselect + 'selfeat_mannwhitneyu_idx_idx' + ext
+if os.path.exists(path_selfeat_mannwhitneyu_idx):
+    selfeat_mannwhitneyu_idx = np.load(path_selfeat_mannwhitneyu_idx, allow_pickle=True)
 print('Loading feature selected indexes done.')
 
 
@@ -179,9 +185,9 @@ print('Start Classifiers trainings...')
 
 ### Load permutation index not to have 0 and 1s not mixed
 if search_bestsplit:
-    permutation_index = np.load(pathfeatselect + 'random_permutation_index_11_28_xgboost_bestsplit.npy')
+    permutation_index = np.load(pathfeatselect + perm_bestsplit + '.npy')
 else: 
-    permutation_index = np.load(pathfeatselect + 'random_permutation_index_11_28_xgboost_bestmean.npy')
+    permutation_index = np.load(pathfeatselect + perm_cvmean + '.npy')
 
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
@@ -280,21 +286,32 @@ SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
 
 
 for nbr_keptfeat in range(55, 0, -1):
+# kept the selected features but in inverse order (for figures)
+# Uncomment only for reproducing secondary figures results
+# for nbr_keptfeat in range(56, 1, -1):
 
     # Kept the selected features
-    selfeat_mrmr = selfeat_mrmr[0:nbr_keptfeat]
-    print('\n',selfeat_mrmr)
-    selfeat_mannwhitneyu = selfeat_mannwhitneyu[0:nbr_keptfeat]
-    print(selfeat_mannwhitneyu)
+    selfeat_mrmr_idx =  selfeat_mrmr_idx[0:nbr_keptfeat]
+    print('\n', selfeat_mrmr_idx)
+    selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[0:nbr_keptfeat]
+    print(selfeat_mannwhitneyu_idx)
+
+    # kept the selected features but in inverse order (for figures)
+    # Uncomment only for reproducing secondary figures results
+    # selfeat_mrmr_idx =  selfeat_mrmr_idx[1:nbr_keptfeat]
+    # print('\n', selfeat_mrmr_idx)
+    # selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[1:nbr_keptfeat]
+    # print(selfeat_mannwhitneyu_idx)
+
 
     #### Recall numberr of efatures kept:
     print('{} features kept.'.format(nbr_keptfeat))
 
 
     #### Classification training with the features kept by mrmr
-    if os.path.exists(pathselfeat_mrmr):
+    if os.path.exists(path_selfeat_mrmr_idx):
         # Generate the matrix with selected feature for mrmr
-        featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr(selfeat_mrmr)
+        featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr( selfeat_mrmr_idx)
 
         #Shuffle feature arrays using the permutation index 
         featarray_mrmr = featarray_mrmr[permutation_index,:]
@@ -338,9 +355,9 @@ for nbr_keptfeat in range(55, 0, -1):
 
     #### Classification training with the features kept by mannwhitneyu
 
-    if os.path.exists(pathselfeat_mannwhitneyu):
+    if os.path.exists(path_selfeat_mannwhitneyu_idx):
         # Generate the matrix with selected feature for mannwhitney
-        featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu)
+        featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu_idx)
         
         #Shuffle feature arrays using the permutation index 
         featarray_mannwhitney = featarray_mannwhitney[permutation_index,:]
@@ -406,22 +423,22 @@ save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 if search_bestsplit:
-    np.save(save_results_path + 'xgbbestsplit_aAcc_mrmr' + save_ext,
+    np.save(save_results_path + 'xgbbestsplit_aAcc_mrmr_inversed' + save_ext,
              xgbbestsplit_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mrmr' + save_ext,
+    np.save(save_results_path + 'lgbmbestsplit_aAcc_mrmr_inversed' + save_ext,
         lgbmbestsplit_aAcc_mrmr)
-    np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu' + save_ext,
+    np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu_inversed' + save_ext,
         xgbbestsplit_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mannwhitneyu' + save_ext,
+    np.save(save_results_path + 'lgbmbestsplit_aAcc_mannwhitneyu_inversed' + save_ext,
         lgbmbestsplit_aAcc_mannwhitneyu)
 else:
-    np.save(save_results_path + 'xgbmean_aAcc_mrmr' + save_ext,
+    np.save(save_results_path + 'xgbmean_aAcc_mrmr_inversed' + save_ext,
              xgbmean_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmmean_aAcc_mrmr' + save_ext,
+    np.save(save_results_path + 'lgbmmean_aAcc_mrmr_inversed' + save_ext,
         lgbmmean_aAcc_mrmr)
-    np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu' + save_ext,
+    np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu_inversed' + save_ext,
         xgbmean_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu' + save_ext,
+    np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu_inversed' + save_ext,
         lgbmmean_aAcc_mannwhitneyu) 
 
 
