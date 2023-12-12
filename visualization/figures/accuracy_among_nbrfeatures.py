@@ -21,6 +21,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.classification_evaluation
+pathtosavefolder = config.paths.folders.visualizations
 
 
 #############################################################
@@ -80,7 +81,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtofolder + 'xgboost_result.png')
+plt.savefig(pathtosavefolder + 'xgboost_result.png')
 plt.clf()
 
 
@@ -110,7 +111,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtofolder + 'lgbm_result.png')
+plt.savefig(pathtosavefolder + 'lgbm_result.png')
 plt.clf()
 
 
@@ -124,7 +125,7 @@ plt.clf()
 ############################################################
 
 #### By default, the snippet is not running
-plot_inverse = True
+plot_inverse = False
 # this boolean is hardcoded because the following snippet is here 
 # to reproduce secondary figures of the paper, but shouldn't run in normal
 # use of the code. 

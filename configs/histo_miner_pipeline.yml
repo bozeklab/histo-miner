@@ -3,11 +3,14 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
+        main: "/data/shared/scc/histo-miner/data_analysis/"
+
         inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
-#        main: "/home/lsancere/These/CMMC/Ada_Mount/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
+        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
+      
         
     files:
       patientid_csv: "/data/shared/scc/histo-miner/data_analysis/crea_patient_ID_lst/AllCohorts_PatientIDs.csv"
@@ -44,6 +47,7 @@
         newstr2_wsimode: >-
           }}
 
+      example_json: "no_recurrence/147_21_no_recurrence_analysed.json"
 
 
 # All not strings parameters
@@ -90,6 +94,16 @@
       display_classification_scores: True
 
       patientid_avail: True
+
+      plot: 
+        boxplots: True
+
+        distributions: True
+
+        delete_outliers: False
+
+
+
 
 
     str:
