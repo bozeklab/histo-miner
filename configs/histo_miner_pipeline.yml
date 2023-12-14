@@ -96,11 +96,15 @@
       patientid_avail: True
 
       plot: 
-        boxplots: True
+        boxplots: False
 
-        distributions: True
+        distributions: False
 
-        delete_outliers: False
+        pca: False 
+
+        tsne: True 
+
+        delete_outliers: False 
 
 
 
