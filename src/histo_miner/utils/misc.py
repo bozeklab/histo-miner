@@ -261,6 +261,57 @@ def convert_names_to_integers(name_list: list):
 
 
 
+def convert_names_to_orderedint(name_list: list):
+    """
+    Convert a list of names into integers, 
+    ensuring identical names have the same integer representation.
+
+    Parameters:
+    -----------
+    name_list: list
+        A list of names to be converted.
+
+    Returns:
+    -----------
+    results: list
+        A list of ordered integers from 1 to N
+        representing the names in the same order as the input list.
+    """
+    mapping = {}
+    current_integer = 1
+    patientids_ordered = []
+
+    for num in name_list:
+        if num not in mapping:
+            mapping[num] = current_integer
+            current_integer += 1
+        patientids_ordered.append(mapping[num])
+
+    return patientids_ordered
+
+
+def get_indices_by_value(lst: list ):
+    """
+    To describe
+    
+
+    Parameters:
+    -----------
+    Returns:
+    -----------
+    """
+    indices_by_value = {}
+
+    for i, value in enumerate(lst):
+        if value in indices_by_value:
+            indices_by_value[value].append(i)
+        else:
+            indices_by_value[value] = [i]
+
+    return indices_by_value
+
+
+
 
 ### Utils Classes
 

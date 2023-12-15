@@ -113,7 +113,9 @@ class FeatureSelector:
         # https://github.com/scikit-learn-contrib/boruta_py/commit/e04d1a17de142679eabebebd8cedde202587fbf1
         # BorutaPy accepts nupy arrays only, maybe not the same as for mrmr
         # Use already generated numpy vectors instead of pandas dataframe
+       
         X = np.transpose(self.feature_array)  # need to have X transposed to have correct Boruta input
+        # X = self.feature_array  # need to have X transposed to have correct Boruta input
         y = self.classification_array
         method_boruta.fit(X, y)
         # Calculate index of Selected Featurs 
@@ -129,6 +131,8 @@ class FeatureSelector:
 
     def run_mannwhitney(self, nbr_keptfeat: int) -> dict:
         """
+        PROBABLY NEEDS UPDATES *************
+
         Mann-Whitney U rank test applied on each features
 
         Returns
@@ -206,6 +210,7 @@ class SelectedFeaturesMatrix:
         # Be sure to enter output from mrmr here
         mrmrselectedfeatures_idx = sorted(selfeat_mrmr_index)
         featarray_mrmr = np.transpose(self.feature_array)
+        # featarray_mrmr = self.feature_array
         featarray_mrmr = featarray_mrmr[:, mrmrselectedfeatures_idx ]
         return featarray_mrmr
 
@@ -227,6 +232,7 @@ class SelectedFeaturesMatrix:
         # Be sure to enter output from mrmr here
         borutaselectedfeatures_idx = sorted(selfeat_boruta_index)
         featarray_boruta = np.transpose(self.feature_array)
+        # featarray_boruta = self.feature_array
         featarray_boruta = featarray_boruta[:, borutaselectedfeatures_idx]
         return featarray_boruta
 
@@ -247,6 +253,7 @@ class SelectedFeaturesMatrix:
         """
         # Be sure to enter output from  Mann-Whitney U rank test here
         featarray_mannwhitney = np.transpose(self.feature_array)
+        # featarray_mannwhitney = self.feature_array
         featarray_mannwhitney = featarray_mannwhitney[:, selfeat_mannwhitneyu_index]
         return featarray_mannwhitney
 

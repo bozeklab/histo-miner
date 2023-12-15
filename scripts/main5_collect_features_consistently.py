@@ -13,9 +13,9 @@ from attrdictionary import AttrDict as attributedict
 import scipy
 
 from src.histo_miner.feature_selection import FeatureSelector
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict, \
+                                       convert_names_to_orderedint, get_indices_by_value
 from src.histo_miner.utils.filemanagment import anaylser2featselect
-
 
 
 
@@ -29,22 +29,29 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtofolder = config.paths.folders.feature_selection_main
+pathtofolder = config.paths.folders.main
+pathfeatselect = config.paths.folders.feature_selection_main
 patientid_csv = config.paths.files.patientid_csv
 patientid_avail = config.parameters.bool.patientid_avail
-nbr_keptfeat = config.parameters.int.nbr_keptfeat
-boruta_max_depth = config.parameters.int.boruta_max_depth
-boruta_random_state = config.parameters.int.nbr_keptfeat
+perpatient_feat = config.parameters.bool.perpatient_feat
 
 
 
 #####################################################################
 ## Concatenate features and create Pandas DataFrames
-## If applicable, create a list of Patient ID keeping feature columns order
 #####################################################################
 
+
 """Concatenate the quantification features all together 
-in pandas DataFrame. Create a corresponding list of patient ID if provided"""
+   in pandas DataFrame. Create a corresponding list of patient ID if provided.
+   2 options are possible: 
+        - have one feature column (feature vector) per WSI on the feature matrix
+        - have one feature column (feature vector) per patient on the feature matrix
+   If perpatient_feat config parameter == False only first option will be generated.
+   If perpatient_feat config parameter == True, then all the feature matrices will be produced.
+ """
+
+
 
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
@@ -82,12 +89,13 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
                     jsonfiles.append(filepath)
 
 
-
 ####### If applicable create a dict file from the patient ID csv file 
 # And initializa the futur ordered patient ID list
 if patientid_avail:
     patientid_dict = noheadercsv_to_dict(patientid_csv)
     patientid_list = list()
+
+
 
 ######## Process the files
 print('Detected {} json files.'.format(len(jsonfiles)))
@@ -174,47 +182,50 @@ print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
 
 
+### Maybe better to do the per patient column based on the previous matrix
+# just 
 
-###################################################################
-## Run Feature Selections
-###################################################################
+if perpatient_feat:
+    
+    """Concatenate the quantification features all together 
+       in pandas DataFrame. Create a corresponding list of patient ID.
+       There will be one feature column per patient, and not per WSI"""
 
-FeatureSelector = FeatureSelector(featarray, clarray)
+    if not patientid_avail:
+        raise ValueError(
+                'A patient ID csv file is needed to have a feature matrix with one column '
+                'per patient. The boolean patientid_avail must be set to True. ')
 
-## mr.MR calculations
-print('mR.MR calculations (see https://github.com/smazzanti/mrmr to have more info) '
-      'in progress...')
-selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = FeatureSelector.run_mrmr(nbr_keptfeat)
-# Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
-selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+    patientids_convert = convert_names_to_orderedint(patientid_list)
 
-print('Selected Features Indexes: {}'.format(selfeat_mrmr_index))
-print('Selected Features Names: {}'.format(selfeat_mrmr_names))
-print('Relevance Matrix: {}'.format(mrmr_relevance_matrix))
-print('Redundancy Matrix: {}'.format(mrmr_redundancy_matrix))
+    # Create a dict with keys being values of the ID and value the list of indexes
+    indexes_dict = get_indices_by_value(patientids_convert)
 
-## Boruta calculations
-print('Boruta calculations  (https://github.com/scikit-learn-contrib/boruta_py to have more info)'
-      ' in progress...')
-selfeat_boruta_index = FeatureSelector.run_boruta(
-    max_depth=boruta_max_depth, random_state=boruta_random_state)
-# Now associate the index of selected features (selfeat_boruta_index) to the list of names:
-selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index] 
-print('Selected Features Indexes: {}'.format(selfeat_boruta_index))
-print('Selected Features Names: {}'.format(selfeat_boruta_names))
+    #Create one vector per patient
+    patient_meanfeatlist = list()
+    patient_medianfeatlist = list()
+    patient_cllist = list() 
 
-## Mann Whitney U calculations
-print('Mann Whitney U calculations in progress...')
-selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney(nbr_keptfeat)
-# Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
-selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index] 
+    # We extract each set of indexes corresponding to one patient
+    for indexes_list in indexes_dict.values():
+        # Take only the columns corresponding to the patient
+        patient_matr = featarray[:,indexes_list]
+        columns_average = np.mean(patient_matr, axis=1)
+        columns_median = np.median(patient_matr, axis=1)
+        # Add to the list the mean and average columns
+        patient_meanfeatlist.append(columns_average)
+        patient_medianfeatlist.append(columns_median)
+        # Need also to updated the classification vector
+        corresponding_cls = clarray[min(indexes_list)]
+        patient_cllist.append(corresponding_cls)
 
-print('Selected Features Indexes: {}'.format(selfeat_mannwhitneyu_index))
-print('Selected Features Names: {}'.format(selfeat_mannwhitneyu_names))
-print('Output Ordered from best p-values to worst: {}'.format(orderedp_mannwhitneyu))
 
-print('feature selection finished')
-print('***** \n')
+    #Transform list into numpy arrays. The arrays will be transposed later on?
+    patient_mfeatarray = np.transpose(np.asarray(patient_meanfeatlist))
+    patient_medianfeatarray = np.transpose(np.asarray(patient_medianfeatlist))
+    patient_clarray = np.asarray(patient_cllist)
+
+
 
 
 ############################################################
@@ -224,92 +235,58 @@ print('***** \n')
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
 
-pathoutput = pathtofolder + '/feature_selection/'
+pathoutput = pathfeatselect
 ext = '.npy'
 
 # If the folder doesn't exist create it
 if not os.path.exists(pathoutput):
     os.makedirs(pathoutput)
 
+print('Saving feature array, classification array')
 
-print('Saving feature array, classification array, summary of selected features for each methods,'
-       ' as well as methods output in numpy format to be used for classification step...')
-# Create text files with name and indexes of selected feature for 
-# every method
-summarystr_mrmr = '\n\nFor mR.MR calculations:\n' \
-                  + str(selfeat_mrmr_index) + '\n' \
-                  + str(selfeat_mrmr_names) \
-                  + str(mrmr_relevance_matrix)
 
-summarystr_boruta = '\n\nFor boruta calculations:\n' \
-                  + str(selfeat_boruta_index) + '\n' \
-                  + str(selfeat_boruta_names)
+# Save feature names in a np file
+pathfeatnames = pathoutput + 'featnames' + ext
+featnames = np.asarray(featnameslist)
+np.save(pathfeatnames, featnames)
 
-summarystr_mannwhitneyu = '\n\nFor Mann Whitney U calculations:\n' \
-                          + str(selfeat_mannwhitneyu_index) + '\n' \
-                          + str(selfeat_mannwhitneyu_names) \
-                          + str(orderedp_mannwhitneyu)
+# Save feature arrays, classification arrays and featnames list
+# In the case of feature and classification arrays with one column per wsi
+path_perwsifeatarray = pathoutput + 'perwsi_featarray' + ext
+np.save(path_perwsifeatarray, featarray)
+path_perwsiclarray = pathoutput + 'perwsi_clarray' + ext
+np.save(path_perwsiclarray, clarray)
 
-# Was edited
-summarystr = summarystr_mrmr + summarystr_boruta + summarystr_mannwhitneyu
+if perpatient_feat:
+    # In the case of feature and classification arrays with one column per patient
+    # Calculated with the mean of each vectors
+    path_perpat_featarray = pathoutput + 'perpat_featarray' + ext
+    np.save(path_perpat_featarray, patient_mfeatarray)
+    path_perpat_clarray = pathoutput + 'perpat_clarray' + ext
+    np.save(path_perpat_clarray, patient_clarray)
+    # In the case of feature and classification arrays with one column per patient
+    # Calculated with the mediam of each vectors
+    path_perpat_median_featarray = pathoutput + 'perpat_median_featarray' + ext
+    np.save(path_perpat_median_featarray, patient_medianfeatarray)
 
-# Open the file for writing and save it
-summaryfile_path = pathoutput + 'selected_features.txt'
-with open(summaryfile_path, "w") as file:
-    file.write(summarystr)
 
-# Save feature array and classification array
-# pathfeatarray = pathoutput + 'featarray' + ext
-# np.save(pathfeatarray, featarray)
-# pathclarray = pathoutput + 'clarray' + ext
-# np.save(pathclarray, clarray)
 
 # If applicable, save the patient_ID list as a ids array:
-# if patientid_avail:
-#     patientid_array = np.asarray(patientid_list)
-#     pathpatientids =  pathoutput + 'patientids' + ext
-#     np.save(pathpatientids, patientid_array)
+if patientid_avail:
+    patientid_array = np.asarray(patientid_list)
+    pathpatientids =  pathoutput + 'patientids' + ext
+    np.save(pathpatientids, patientid_array)
 
-# We save the index of selected features for mrmr and mannwhitneyu 
-pathselfeat_mrmr = pathoutput + 'selfeat_mrmr_idx' + ext
-np.save(pathselfeat_mrmr, selfeat_mrmr_index)
-pathselfeat_boruta = pathoutput + 'selfeat_boruta_idx' + ext
-np.save(pathselfeat_boruta, selfeat_boruta_index)
-pathorderedp_mannwhitneyu = pathoutput + 'selfeat_mannwhitneyu_idx' + ext
-np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
 
-# # Calculate Pearson correlation regardless of the class recurrence, no-recurrence
-# corrmat =  np.corrcoef(featarray)
-# path_corrmat = pathoutput + 'correlation_matrix' + ext
-# np.save(path_corrmat, corrmat)
-# path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
-# np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
+# Calculate Pearson correlation regardless of the class recurrence, no-recurrence
+corrmat =  np.corrcoef(featarray)
+path_corrmat = pathoutput + 'correlation_matrix' + ext
+np.save(path_corrmat, corrmat)
+path_corrmat_csv = pathoutput + 'correlation_matrix.csv' 
+np.savetxt(path_corrmat_csv, corrmat, delimiter=",")
 
 
 print('Saving done.')
 print('Path to the output files: {}'.format(pathoutput))
 
 
-
-
-# NOT TO KEEP For publicaton
-# # Calculate Pearson correlation for no-recurrence class
-# featarray_noreconly = [
-#     featarray[colindex] for colindex in  range(0, featarray.shape[0]) if clarray[colindex] == 0
-#     ]
-# corrmat_norec =  np.corrcoef(featarray_noreconly)
-# path_corrmat_norec = pathoutput + 'norecurrence_correlation_matrix' + ext
-# np.save(path_corrmat_norec, corrmat_norec)
-# path_corrmat_norec_csv = pathoutput + 'norecurrence_correlation_matrix.csv' 
-# np.savetxt(path_corrmat_norec_csv, corrmat_norec, delimiter=",")
-
-
-# # Calculate Person correlation for recurrence class
-# featarray_reconly = [
-#     featarray[colindex] for colindex in  range(0, featarray.shape[0]) if clarray[colindex] == 1 
-#     ]
-# corrmat_rec =  np.corrcoef(featarray_noreconly)
-# path_corrmat_rec = pathoutput + 'recurrence_correlation_matrix' + ext
-# np.save(path_corrmat_rec, corrmat_rec)
-# path_corrmat_rec_csv = pathoutput + 'recurrence_correlation_matrix.csv' 
-# np.savetxt(path_corrmat_rec_csv, corrmat_rec, delimiter=",")

@@ -99,11 +99,13 @@ print('Feature feature arrays and class arrays loaded')
 if patientid_avail:
     patientids_load = np.load(path_patientids_array, allow_pickle=True)
     patientids_list = list(patientids_load)
-    patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
-    patientids = np.asarray(patientids_convert)
+    # patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
+    # patientids = np.asarray(patientids_convert)
     print('Patient IDs loaded')
 
 path_save_results = classification_eval_folder + 'classifiers_comparison_hpsearch.txt'
+
+
 
 ##############################################################
 ## Hyperparemeter Search and Cross-Validation of Classifiers
@@ -181,24 +183,15 @@ train_clarray = train_clarray[permutation_index]
 ### Shuffle patient IDs arrays using the permutation index 
 if patientid_avail:
     patientids = patientids[permutation_index]
-
     # Create a mapping of unique elements to positive integers
-    mapping = {}
-    current_integer = 1
-    patientids_ordered = []
+    patientids_ordered = utils_misc.convert_names_to_orderedint(patientids)
 
-    for num in patientids:
-        if num not in mapping:
-            mapping[num] = current_integer
-            current_integer += 1
-        patientids_ordered.append(mapping[num])
 
 ### Create Stratified Group  instance for the cross validation 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
 
 #### Classification training with all features kept 
-
 
 # Use all the feature (no selection) as input
 genfeatarray = np.transpose(train_featarray)
@@ -429,7 +422,7 @@ if save_evaluations:
         file.write('The best mean average accuracy is:' + str(cv_bestmean))
         file.write('Corresponding set of parameters for lr_vanilla_bestmeanset is:' 
             + str(lr_vanilla_bestmeanset))
-        file.write('Corresponding scores for all splits are:' + str( cv_bestmean_scorevect)
+        file.write('Corresponding scores for all splits are:' + str( cv_bestmean_scorevect))
         file.write('\n\n ** forest_vanilla **')
         file.write('The best split average accuracy is:' + str(cv_bestsplit))  
         file.write('Corresponding set of parameters for forest_vanilla_bestmaxset is:'
