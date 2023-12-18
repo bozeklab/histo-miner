@@ -95,14 +95,14 @@
 
       patientid_avail: True
 
-      perpatient_feat: True
+      perpatient_feat: True 
 
       plot: 
-        boxplots: True
+        boxplots: False
 
-        distributions: True 
+        distributions: False 
 
-        pca: False
+        pca: True
 
         tsne: False
 

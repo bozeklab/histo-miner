@@ -407,6 +407,35 @@ if pca:
     print('PCA saved.')
 
 
+        #### Initialize Scree Plot 2D
+    pca_scree = PCA(n_components=20)
+    # We need to fit but not to fit + transform!
+    # Plus we need more components then 2 or 3
+    pca2_result = pca_scree.fit(X_scaled)
+    
+    # Scree plot
+    PC_values = np.arange(pca_scree.n_components_) + 1
+    plt.plot(
+        PC_values, 
+        pca_scree.explained_variance_ratio_, 
+        'o-', 
+        linewidth=2, 
+        color='royalblue')
+    plt.xlabel('Principal Component')
+    plt.ylabel('Variance Explained')
+    plt.title("Scree Plot of SCC WSIs (selected features)")
+
+    #Create Name for saving
+    savename = 'ScreePlot_SCC_WSIs_selected_feature.png'
+
+    #Saving
+    if not os.path.exists(pathtosavefolder + '/PCA/'):
+        os.makedirs(pathtosavefolder + '/PCA/')
+    savedpca_path = pathtosavefolder + '/PCA/' + savename
+    plt.savefig(savedpca_path)
+    plt.clf()
+
+
 
 #############################################################
 ## T-SNE plots
