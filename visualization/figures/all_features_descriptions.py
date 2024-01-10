@@ -28,8 +28,6 @@ from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 # --> maybe load it here and then make it nicer with seaborn library
 
 
-
-
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -278,7 +276,7 @@ if distributions:
 # For an example of use
 
 if pca: 
-    #### PCA 2D
+    #### PCA 2D 
     pca = PCA(n_components=2)
     # Create vector for fit method
     X = pd.DataFrame(featarray)
@@ -410,67 +408,6 @@ if pca:
     plt.clf()
 
     print('Scree Plot saved.')
-
-
-    ### Biplot -> MAYBE TO KEEP TO SELECTED FEATURES ONLY
-    # Used https://statisticsglobe.com/biplot-pca-python
-    # Explanation 1 TO FILL
-    # We re use the pca not to do it again for nothing (see above)
-    principalc1 = pca.fit_transform(X_scaled)[:,0]
-    principalc2 = pca.fit_transform(X_scaled)[:,1]
-    ldngs = pca.components_
-    
-    # Explanation 2 TO FILL
-    scale_principalc1 = 1.0/(principalc1.max() - principalc1.min())
-    scale_principalc2 = 1.0/(principalc2.max() - principalc2.min())
-    features = featnames
-    
-    # Define target groups
-    target_groups = np.digitize(clarray, 
-                             np.quantile(clarray, 
-                                         [1/3, 2/3]))
-
-    # Plot 
-    fig, ax = plt.subplots(figsize=(14, 9))
-     
-    for i, feature in enumerate(features):
-        ax.arrow(0, 0, ldngs[0, i], 
-                 ldngs[1, i], 
-                 head_width=0.03, 
-                 head_length=0.03)
-        ax.text(ldngs[0, i] * 1.15, 
-                ldngs[1, i] * 1.15, 
-                features, fontsize = 18)
-     
-    scatter = ax.scatter(principalc1 * scale_principalc1, 
-                         principalc2 * scale_principalc2, 
-                         c=target_groups, 
-                         cmap='viridis')
-     
-    ax.set_xlabel('Principal Component 1', fontsize=20)
-    ax.set_ylabel('Principal Component 2', fontsize=20)
-    ax.set_title('Bitplot of SCC WSIs (all features kept) 3', fontsize=20)
-     
-    ax.legend(*scatter.legend_elements(),
-                        loc="lower left", 
-                        title="Groups")
-
-    #Create Name for saving
-    savename = 'Biplot_SCC_WSIs_all_features.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/PCA/'):
-        os.makedirs(pathtosavefolder + '/PCA/')
-    savedpca_path = pathtosavefolder + '/PCA/' + savename
-    plt.savefig(savedpca_path)
-    plt.clf()
-
-    print('Biplot saved.')
-
-
-
-
-
 
 
 #############################################################

@@ -121,7 +121,7 @@ featnames = [name for idx, name in enumerate(featnames) if idx in selfeat_idx_li
 
 
 #############################################################
-## Plot boxplots for every features
+## Plot boxplots for the selected features
 #############################################################
 
 if boxplots:
@@ -191,7 +191,7 @@ if boxplots:
 
 
 #############################################################
-## Plot Kernel Density distribution for every features
+## Plot Kernel Density distribution for the selected features
 #############################################################
 
 if distributions:
@@ -297,7 +297,7 @@ if distributions:
 
 
 #############################################################
-## PCA plots
+## PCA and biplots
 #############################################################
 
 # See https://scikit-learn.org/ Comparison of LDA and PCA 2D projection of Iris dataset
@@ -404,11 +404,12 @@ if pca:
     plt.savefig(savedpca_path)
     plt.clf()
 
-    print('PCA saved.')
+    print('PCAs saved.')
 
 
-        #### Initialize Scree Plot 2D
-    pca_scree = PCA(n_components=20)
+    #### Initialize Scree Plot 2D
+    pca_scree = PCA(n_components=4)
+    # Here 4 because we cannot have more PCA components than feat
     # We need to fit but not to fit + transform!
     # Plus we need more components then 2 or 3
     pca2_result = pca_scree.fit(X_scaled)
@@ -435,6 +436,63 @@ if pca:
     plt.savefig(savedpca_path)
     plt.clf()
 
+    print('Scree Plot saved.')
+
+
+    ### Biplot 
+    # Used https://statisticsglobe.com/biplot-pca-python
+    # Explanation 1 TO FILL
+    # We re use the pca not to do it again for nothing (see above)
+    principalc1 = pca.fit_transform(X_scaled)[:,0]
+    principalc2 = pca.fit_transform(X_scaled)[:,1]
+    ldngs = pca.components_
+    
+    # Explanation 2 TO FILL
+    scale_principalc1 = 1.0/(principalc1.max() - principalc1.min())
+    scale_principalc2 = 1.0/(principalc2.max() - principalc2.min())
+    features = featnames
+    
+    # Define target groups
+    target_groups = np.digitize(clarray, 
+                             np.quantile(clarray, 
+                                         [1/3, 2/3]))
+
+    # Plot 
+    fig, ax = plt.subplots(figsize=(14, 9))
+     
+    for i, feature in enumerate(features):
+        ax.arrow(0, 0, ldngs[0, i], 
+                 ldngs[1, i], 
+                 head_width=0.01, 
+                 head_length=0.01)
+        ax.text(ldngs[0, i] * 1.15, 
+                ldngs[1, i] * 1.15, 
+                feature, fontsize = 11)
+     
+    scatter = ax.scatter(principalc1 * scale_principalc1, 
+                         principalc2 * scale_principalc2, 
+                         c=target_groups, 
+                         cmap='viridis')
+     
+    ax.set_xlabel('Principal Component 1', fontsize=20)
+    ax.set_ylabel('Principal Component 2', fontsize=20)
+    ax.set_title('Bitplot of SCC WSIs (selected features)', fontsize=20)
+     
+    ax.legend(*scatter.legend_elements(),
+                        loc="lower left", 
+                        title="Groups")
+
+    #Create Name for saving
+    savename = 'Biplot_SCC_WSIs_selected_feature.png'
+
+    #Saving
+    if not os.path.exists(pathtosavefolder + '/PCA/'):
+        os.makedirs(pathtosavefolder + '/PCA/')
+    savedpca_path = pathtosavefolder + '/PCA/' + savename
+    plt.savefig(savedpca_path)
+    plt.clf()
+
+    print('Biplot saved.')
 
 
 #############################################################

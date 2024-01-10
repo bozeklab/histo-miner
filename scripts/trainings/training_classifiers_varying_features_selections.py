@@ -192,9 +192,7 @@ else:
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
 
-### Shuffle patient IDs arrays using the permutation index 
 if patientid_avail:
-    patientids = patientids[permutation_index]
 
     # Create a mapping of unique elements to positive integers
     mapping = {}
@@ -206,6 +204,9 @@ if patientid_avail:
             mapping[num] = current_integer
             current_integer += 1
         patientids_ordered.append(mapping[num])
+
+    ### Shuffle patient IDs arrays using the permutation index 
+    patientids_ordered = patientids_ordered[permutation_index]
 
 ### Create Stratified Group  instance for the cross validation 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)

@@ -175,7 +175,9 @@ print('Start Classifiers trainings...')
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 
 ### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathfeatselect + 'random_permutation_index_11_28_xgboost_bestmean.npy')
+permutation_index = np.load(pathfeatselect + 
+                            '/bestperm/' +
+                            'random_permutation_index_11_28_xgboost_bestmean.npy')
 
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
@@ -433,7 +435,7 @@ if save_evaluations:
             + str(forest_vanilla_bestmeanset))
         file.write('Corresponding scores for all splits are:' + str(cv_bestmean_scorevect))
         file.write('\n\n ** xgboost_vanilla **')
-        file.write('The best split average accuracy is:' + str(cv_bestsplit)  
+        file.write('The best split average accuracy is:' + str(cv_bestsplit))  
         file.write('Corresponding set of parameters for xgboost_vanilla_bestmaxset is:' 
             + str(xgboost_vanilla_bestmaxset))
         file.write('Corresponding scores for all splits are:' + str( cv_bestmax_scorevect))

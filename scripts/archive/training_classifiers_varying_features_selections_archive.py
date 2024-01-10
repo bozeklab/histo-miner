@@ -278,7 +278,7 @@ if patientid_avail:
             current_integer += 1
         patientids_ordered.append(mapping[num])
 
-### Create Stratified Group  instance for the cross validation 
+### Create Stratified Group instance for the cross validation 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
 
