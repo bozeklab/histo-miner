@@ -101,12 +101,8 @@ classarray_name = 'perwsi_clarray'
 ext = '.npy'
 
 train_featarray = np.load(pathfeatselect + featarray_name + ext)
-#train_featarray = np.transpose(train_featarray)
 train_clarray = np.load(pathfeatselect + classarray_name + ext)
 
-# ##!!!!!!! DEV TRICK
-# featarray_boruta = np.transpose(train_featarray)
-# #!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Load patient ids
 path_patientids_array = pathfeatselect + 'patientids' + ext
@@ -170,8 +166,12 @@ SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
 featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
 
 
-#Shuffle feature arrays using the permutation index 
+# Shuffle selected feature arrays using the permutation index 
 featarray_boruta = featarray_boruta[permutation_index,:]
+
+# Shuffle the all features arrays using the permutation index
+train_featarray = np.transpose(train_featarray)
+train_featarray = train_featarray[permutation_index,:]
 
 
 # Create a mapping of unique elements to positive integers
@@ -206,37 +206,38 @@ trained_models = []
 lgbm_slide_ranking = lightgbm
 xgboost_slide_ranking = xgboost
 
-# Training 5 lgbm models
-# for i, (train_index, test_index) in enumerate(stratgroupkf.split(featarray_boruta, 
-#                                                                  train_clarray, 
-#                                                                  groups=patientids_ordered)):
-#     # Generate training and test data from the indexes
-#     X_train, X_test = featarray_boruta[train_index], featarray_boruta[test_index]
-#     y_train, y_test = train_clarray[train_index], train_clarray[test_index]
 
-#     trainedmodel = lgbm_slide_ranking.fit(X_train, y_train, eval_set=[(X_test, y_test)])
-#     trained_models.append(trainedmodel)
+if classification_from_allfeatures:
+    # Create a list of splits indeces with all features 
+    splits_nested_list = list()
+    for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
+                                                                     train_clarray, 
+                                                                     groups=patientids_ordered)):
+        # Generate training and test data from the indexes
+        X_train, X_test = train_featarray[train_index], train_featarray[test_index]
+        y_train, y_test = train_clarray[train_index], train_clarray[test_index]
 
-# Training 5 xgboost models
-# for readibility we right another loop, complexity wise it is of course not good
-splits_nested_list = list()
-for i, (train_index, test_index) in enumerate(stratgroupkf.split(featarray_boruta, 
-                                                    train_clarray, 
-                                                    groups=patientids_ordered)):
-    # Generate training and test data from the indexes
-    X_train, X_test = featarray_boruta[train_index], featarray_boruta[test_index]
-    y_train, y_test = train_clarray[train_index], train_clarray[test_index]
+        splits_nested_list.append([X_train, y_train, X_test, y_test])
 
-    splits_nested_list.append([X_train, y_train, X_test, y_test])
+else:
+    # Create a list of splits indeces with the selected features 
+    splits_nested_list = list()
+    for i, (train_index, test_index) in enumerate(stratgroupkf.split(featarray_boruta, 
+                                                                     train_clarray, 
+                                                                     groups=patientids_ordered)):
+        # Generate training and test data from the indexes
+        X_train, X_test = featarray_boruta[train_index], featarray_boruta[test_index]
+        y_train, y_test = train_clarray[train_index], train_clarray[test_index]
 
-    # modelnames[i] = xgboost
-    # trainedmodel = modelnames[i].fit(X_train, y_train, eval_set=[(X_test, y_test)])
-    # trained_models.append(trainedmodel)
-    # devstop = 0 
+        splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+
 
 
 #!!!!!!!!!!!!!!!!!!!!!DEV
 # TRY TO HARD CODE WITHOUT THE LOOP TO SEE IF IT IT BETTER
+
+# XGBOOST - STILL TO UPDATE WITHOUT BOOLEANS NOT TO HAVE A TOO LONG CODE (dev)
 
 list_proba_predictions = []
 
@@ -249,7 +250,10 @@ xgboost_slide_ranking_1 = xgboost
 xgboost_slide_ranking_1 = xgboost_slide_ranking_1.fit(X_train_1, 
                                                       y_train_1, 
                                                       eval_set=[(X_test_1, y_test_1)])
-proba_predictions = xgboost_slide_ranking_1.predict_proba(featarray_boruta)
+if classification_from_allfeatures:
+    proba_predictions = xgboost_slide_ranking_1.predict_proba(train_featarray)
+else:
+    proba_predictions = xgboost_slide_ranking_1.predict_proba(featarray_boruta)
 # We keep only he highest of the 2 probabilities 
 highest_proba_prediction = np.max(proba_predictions, axis=1)
 list_proba_predictions.append((highest_proba_prediction))
@@ -263,7 +267,10 @@ xgboost_slide_ranking_2 = xgboost
 xgboost_slide_ranking_2 = xgboost_slide_ranking_2.fit(X_train_2, 
                                                       y_train_2, 
                                                       eval_set=[(X_test_2, y_test_2)])
-proba_predictions = xgboost_slide_ranking_2.predict_proba(featarray_boruta)
+if classification_from_allfeatures:
+    proba_predictions = xgboost_slide_ranking_2.predict_proba(train_featarray)
+else:
+    proba_predictions = xgboost_slide_ranking_2.predict_proba(featarray_boruta)
 # We keep only he highest of the 2 probabilities 
 highest_proba_prediction = np.max(proba_predictions, axis=1)
 list_proba_predictions.append((highest_proba_prediction))
@@ -277,7 +284,10 @@ xgboost_slide_ranking_3 = xgboost
 xgboost_slide_ranking_3 = xgboost_slide_ranking_3.fit(X_train_3, 
                                                       y_train_3, 
                                                       eval_set=[(X_test_3, y_test_3)])
-proba_predictions = xgboost_slide_ranking_3.predict_proba(featarray_boruta)
+if classification_from_allfeatures:
+    proba_predictions = xgboost_slide_ranking_3.predict_proba(train_featarray)
+else:
+    proba_predictions = xgboost_slide_ranking_3.predict_proba(featarray_boruta)
 # We keep only he highest of the 2 probabilities 
 highest_proba_prediction = np.max(proba_predictions, axis=1)
 list_proba_predictions.append((highest_proba_prediction))
@@ -291,7 +301,10 @@ xgboost_slide_ranking_4 = xgboost
 xgboost_slide_ranking_4 = xgboost_slide_ranking_4.fit(X_train_4, 
                                                       y_train_4, 
                                                       eval_set=[(X_test_4, y_test_4)])
-proba_predictions = xgboost_slide_ranking_4.predict_proba(featarray_boruta)
+if classification_from_allfeatures:
+    proba_predictions = xgboost_slide_ranking_4.predict_proba(train_featarray)
+else:
+    proba_predictions = xgboost_slide_ranking_4.predict_proba(featarray_boruta)
 # We keep only he highest of the 2 probabilities 
 highest_proba_prediction = np.max(proba_predictions, axis=1)
 list_proba_predictions.append((highest_proba_prediction))
@@ -305,34 +318,111 @@ xgboost_slide_ranking_5 = xgboost
 xgboost_slide_ranking_5 = xgboost_slide_ranking_5.fit(X_train_5, 
                                                       y_train_5, 
                                                       eval_set=[(X_test_5, y_test_5)])
-proba_predictions = xgboost_slide_ranking_5.predict_proba(featarray_boruta)
+if classification_from_allfeatures:
+    proba_predictions = xgboost_slide_ranking_5.predict_proba(train_featarray)
+else:
+    proba_predictions = xgboost_slide_ranking_5.predict_proba(featarray_boruta)
 # We keep only he highest of the 2 probabilities 
 highest_proba_prediction = np.max(proba_predictions, axis=1)
 list_proba_predictions.append((highest_proba_prediction))
 
-
 #!!!!!!!!!!!!!!!!!!!!!DEV
 
 
-
-##############################################################
-## Use classifier for prediction of patient slides 
-##############################################################
-
-
 #!!!!!!!!!!!!!!!!!!!!!DEV
+# TRY TO HARD CODE WITHOUT THE LOOP TO SEE IF IT IT BETTER
+
+# LGBM - STILL TO UPDATE WITHOUT BOOLEANS NOT TO HAVE A TOO LONG CODE (dev)
 
 # list_proba_predictions = []
 
-# for model in trained_models:
-#     # Predict class probabilities for the test set
-#     proba_predictions = model.predict_proba(featarray_boruta)
-#     # We keep only he highest of the 2 probabilities 
-#     highest_proba_prediction = np.max(proba_predictions, axis=1)
-#     list_proba_predictions.append((highest_proba_prediction))
-#     devstop = 0 
+
+# X_train_1 = splits_nested_list[0][0]
+# y_train_1 = splits_nested_list[0][1]
+# X_test_1 = splits_nested_list[0][2]
+# y_test_1 = splits_nested_list[0][3]
+# lgbm_slide_ranking_1 = lightgbm
+# lgbm_slide_ranking_1 = lgbm_slide_ranking_1.fit(X_train_1, 
+#                                                 y_train_1, 
+#                                                 eval_set=[(X_test_1, y_test_1)])
+# if classification_from_allfeatures:
+#     proba_predictions = lgbm_slide_ranking_1.predict_proba(train_featarray)
+# else:
+#     proba_predictions = lgbm_slide_ranking_1.predict_proba(featarray_boruta)
+# # We keep only he highest of the 2 probabilities 
+# highest_proba_prediction = np.max(proba_predictions, axis=1)
+# list_proba_predictions.append((highest_proba_prediction))
+
+
+# X_train_2 = splits_nested_list[1][0]
+# y_train_2 = splits_nested_list[1][1]
+# X_test_2 = splits_nested_list[1][2]
+# y_test_2 = splits_nested_list[1][3]
+# lgbm_slide_ranking_2 = lightgbm
+# lgbm_slide_ranking_2 = lgbm_slide_ranking_2.fit(X_train_2, 
+#                                                 y_train_2, 
+#                                                 eval_set=[(X_test_2, y_test_2)])
+# if classification_from_allfeatures:
+#     proba_predictions = lgbm_slide_ranking_2.predict_proba(train_featarray)
+# else:
+#     proba_predictions = lgbm_slide_ranking_2.predict_proba(featarray_boruta)
+# # We keep only he highest of the 2 probabilities 
+# highest_proba_prediction = np.max(proba_predictions, axis=1)
+# list_proba_predictions.append((highest_proba_prediction))
+
+
+# X_train_3 = splits_nested_list[2][0]
+# y_train_3 = splits_nested_list[2][1]
+# X_test_3 = splits_nested_list[2][2]
+# y_test_3 = splits_nested_list[2][3]
+# lgbm_slide_ranking_3 = lightgbm
+# lgbm_slide_ranking_3 = lgbm_slide_ranking_3.fit(X_train_3, 
+#                                                 y_train_3, 
+#                                                 eval_set=[(X_test_3, y_test_3)])
+# if classification_from_allfeatures:
+#     proba_predictions = lgbm_slide_ranking_3.predict_proba(train_featarray)
+# else:
+#     proba_predictions = lgbm_slide_ranking_3.predict_proba(featarray_boruta)
+# # We keep only he highest of the 2 probabilities 
+# highest_proba_prediction = np.max(proba_predictions, axis=1)
+# list_proba_predictions.append((highest_proba_prediction))
+
+
+# X_train_4 = splits_nested_list[3][0]
+# y_train_4 = splits_nested_list[3][1]
+# X_test_4 = splits_nested_list[3][2]
+# y_test_4 = splits_nested_list[3][3]
+# lgbm_slide_ranking_4 = lightgbm
+# lgbm_slide_ranking_4 = lgbm_slide_ranking_4.fit(X_train_4, 
+#                                                 y_train_4, 
+#                                                 eval_set=[(X_test_4, y_test_4)])
+# if classification_from_allfeatures:
+#     proba_predictions = lgbm_slide_ranking_4.predict_proba(train_featarray)
+# else:
+#     proba_predictions = lgbm_slide_ranking_4.predict_proba(featarray_boruta)
+# # We keep only he highest of the 2 probabilities 
+# highest_proba_prediction = np.max(proba_predictions, axis=1)
+# list_proba_predictions.append((highest_proba_prediction))
+
+
+# X_train_5 = splits_nested_list[4][0]
+# y_train_5 = splits_nested_list[4][1]
+# X_test_5 = splits_nested_list[4][2]
+# y_test_5 = splits_nested_list[4][3]
+# lgbm_slide_ranking_5 = lightgbm
+# lgbm_slide_ranking_5 = lgbm_slide_ranking_5.fit(X_train_5, 
+#                                                 y_train_5, 
+#                                                 eval_set=[(X_test_5, y_test_5)])
+# if classification_from_allfeatures:
+#     proba_predictions = lgbm_slide_ranking_5.predict_proba(train_featarray)
+# else:
+#     proba_predictions = lgbm_slide_ranking_5.predict_proba(featarray_boruta)
+# # We keep only he highest of the 2 probabilities 
+# highest_proba_prediction = np.max(proba_predictions, axis=1)
+# list_proba_predictions.append((highest_proba_prediction))
 
 #!!!!!!!!!!!!!!!!!!!!!DEV
+
 
 # Calculate the mean along axis 0
 mean_proba_predictions = np.mean(list_proba_predictions, axis=0)
@@ -349,7 +439,7 @@ idx_most_representative_slide_per_patient = []
 nbrpatient = max(patientids_ordered)
 
 # Iterate through groups
-for slide_index, patientid in enumerate(np.unique(patientids_ordered)):
+for patientid in np.unique(patientids_ordered):
     # Get the indices of samples belonging to the current group
     slide_indices = np.where(patientids_ordered == patientid)[0]
 
@@ -363,10 +453,31 @@ for slide_index, patientid in enumerate(np.unique(patientids_ordered)):
     idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
     devstop = 0 
 
+# FOR DEV
+idx_most_representative_slide_per_patient = [val - 1 for val 
+                                             in idx_most_representative_slide_per_patient]
+
+
+# Save ID of the most representative slides! (becareful to permute again) 
+# We need to permute again to retreive original order
+idx_most_representative_slides_export = [len(permutation_index) - index for index 
+                                         in idx_most_representative_slide_per_patient]
+idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)                         
+# np.save('path2find' + 'nametofind.npy', idx_most_representative_slides_export)
+
 # Generate new feature matrix and new classification array
-all_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
+# Generate classification array of only representative slides
 train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
-# Later save the matrix 
+
+
+# Generate the features of representatative slides with selected features
+feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+# Generate the features of representatative slides with selected features
+feat_representative_slides_boruta = featarray_boruta[idx_most_representative_slide_per_patient,:]
+
+
+
+
 
 
 
@@ -375,7 +486,7 @@ train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
 
 
 ##############################################################
-## Traininig and evaluating classifiers with selected instances
+## Cross validation of classifiers with selected instances
 ##############################################################
 
 # I have now  to either do the learning here with the kept sample 
@@ -384,54 +495,209 @@ train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
 lgbm_training = lightgbm
 xgboost_training = xgboost
 
-# Evaluate with cross validation for lgbm
-# crossvalid_results_refined = cross_val_score(lgbm_training, 
-#                                              all_representative_slides, 
-#                                              train_clarray_refined,  
-#                                              cv=10,  
-#                                              scoring='balanced_accuracy')
+### Evaluate with cross validation for xgboost
+if classification_from_allfeatures:
+    # Evaluate with cross validation for lgbm with selected features (representative slides)
+    crossvalid_results_refined = cross_val_score(xgboost_training, 
+                                                 feat_representative_slides, 
+                                                 train_clarray_refined,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
 
-# crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-# crossvalidref_maxscore = np.max(crossvalid_results_refined)
+    crossvalidref_meanscore = np.mean(crossvalid_results_refined)
+    crossvalidref_maxscore = np.max(crossvalid_results_refined)
 
-# # Evaluate with cross validation for lgbm (original ones)
-# train_featarray = np.transpose(train_featarray)
-# crossvalid_results_original = cross_val_score(lgbm_training, 
-#                                               train_featarray, 
-#                                               train_clarray,  
-#                                               cv=10,  
-#                                               scoring='balanced_accuracy')
+    # Evaluate with cross validation for lgbm with selected features (all slides)
+    crossvalid_results_original = cross_val_score(xgboost_training, 
+                                                  train_featarray, 
+                                                  train_clarray,  
+                                                  cv=10,  
+                                                  scoring='balanced_accuracy')
 
-# crossvalidor_meanscore = np.mean(crossvalid_results_original)
-# crossvalidor_maxscore = np.max(crossvalid_results_original)
-
-
-
-# Evaluate with cross validation for xfgboost
-crossvalid_results_refined = cross_val_score(xgboost_training, 
-                                             all_representative_slides, 
-                                             train_clarray_refined,  
-                                             cv=10,  
-                                             scoring='balanced_accuracy')
-
-crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-crossvalidref_maxscore = np.max(crossvalid_results_refined)
-
-# Evaluate with cross validation for lgbm (original ones)
-train_featarray = np.transpose(train_featarray)
-#Shuffle feature arrays using the permutation index 
-train_featarray = train_featarray[permutation_index,:]
-crossvalid_results_original = cross_val_score(xgboost_training, 
-                                              featarray_boruta, 
-                                              train_clarray,  
-                                              cv=10,  
-                                              scoring='balanced_accuracy')
-
-crossvalidor_meanscore = np.mean(crossvalid_results_original)
-crossvalidor_maxscore = np.max(crossvalid_results_original)
+    crossvalidor_meanscore = np.mean(crossvalid_results_original)
+    crossvalidor_maxscore = np.max(crossvalid_results_original)
 
 
 
+else:
+    # Evaluate with cross validation for lgbm with selected features (representative slides)
+    crossvalid_results_refined = cross_val_score(xgboost_training, 
+                                                 feat_representative_slides_boruta, 
+                                                 train_clarray_refined,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+
+    crossvalidref_meanscore = np.mean(crossvalid_results_refined)
+    crossvalidref_maxscore = np.max(crossvalid_results_refined)
+
+    # Evaluate with cross validation for lgbm with selected features (all slides)
+    crossvalid_results_original = cross_val_score(xgboost_training, 
+                                                  featarray_boruta, 
+                                                  train_clarray,  
+                                                  cv=10,  
+                                                  scoring='balanced_accuracy')
+
+    crossvalidor_meanscore = np.mean(crossvalid_results_original)
+    crossvalidor_maxscore = np.max(crossvalid_results_original)
 
 
+### Evaluate with cross validation for lgbm
+# if classification_from_allfeatures:
+#     # Evaluate with cross validation for lgbm with selected features (representative slides)
+#     crossvalid_results_refined = cross_val_score(lgbm_training, 
+#                                                  feat_representative_slides, 
+#                                                  train_clarray_refined,  
+#                                                  cv=10,  
+#                                                  scoring='balanced_accuracy')
+
+#     crossvalidref_meanscore = np.mean(crossvalid_results_refined)
+#     crossvalidref_maxscore = np.max(crossvalid_results_refined)
+
+#     # Evaluate with cross validation for lgbm with selected features (all slides)
+#     crossvalid_results_original = cross_val_score(lgbm_training, 
+#                                                   train_featarray, 
+#                                                   train_clarray,  
+#                                                   cv=10,  
+#                                                   scoring='balanced_accuracy')
+
+#     crossvalidor_meanscore = np.mean(crossvalid_results_original)
+#     crossvalidor_maxscore = np.max(crossvalid_results_original)
+
+
+
+# else:
+#     # Evaluate with cross validation for lgbm with selected features (representative slides)
+#     crossvalid_results_refined = cross_val_score(lgbm_training, 
+#                                                  feat_representative_slides_boruta, 
+#                                                  train_clarray_refined,  
+#                                                  cv=10,  
+#                                                  scoring='balanced_accuracy')
+
+#     crossvalidref_meanscore = np.mean(crossvalid_results_refined)
+#     crossvalidref_maxscore = np.max(crossvalid_results_refined)
+
+#     # Evaluate with cross validation for lgbm with selected features (all slides)
+#     crossvalid_results_original = cross_val_score(lgbm_training, 
+#                                                   featarray_boruta, 
+#                                                   train_clarray,  
+#                                                   cv=10,  
+#                                                   scoring='balanced_accuracy')
+
+#     crossvalidor_meanscore = np.mean(crossvalid_results_original)
+#     crossvalidor_maxscore = np.max(crossvalid_results_original)
+
+
+
+
+
+
+##############################################################
+## New search of best HPs
+##############################################################
+
+# Load grid of parameters for both classifiers trainings
+
+xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
+xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
+xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
+xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
+
+lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
+lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
+lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
+lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
+lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
+
+
+xgboost_param_grid = {
+                      'random_state': xgboost_param_grid_random_state,
+                      'n_estimators': xgboost_param_grid_n_estimators,
+                      'learning_rate': xgboost_param_grid_learning_rate,
+                      'objective': xgboost_param_grid_objective
+}
+lgbm_param_grid = {
+                    'random_state': lgbm_param_grid_random_state,
+                    'n_estimators': lgbm_param_grid_n_estimators,
+                    'learning_rate': lgbm_param_grid_learning_rate,
+                    'objective': lgbm_param_grid_objective,
+                    'num_leaves': lgbm_param_grid_num_leaves
+}
+
+
+ 
+# Start the HP search to maximize the mean balanced accuracy over splits
+# We only focus on the mean so far
+
+### With xgboost 
+if classification_from_allfeatures:
+    cv_bestmean_xgboost = 0 
+    for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+        xgboost_training.set_params(**paramset)
+        # Evaluate the model with cross validation
+        crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+                                                    feat_representative_slides, 
+                                                    train_clarray_refined,  
+                                                    cv=10,  
+                                                    scoring='balanced_accuracy')
+
+        crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+        if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+            cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+            bestmeanset_xgboost = paramset
+            cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+
+else:
+    cv_bestmean_xgboost = 0 
+    for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+        xgboost_training.set_params(**paramset)
+        # Evaluate the model with cross validation
+        crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+                                                    feat_representative_slides_boruta, 
+                                                    train_clarray_refined,  
+                                                    cv=10,  
+                                                    scoring='balanced_accuracy')
+
+        crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+        if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+            cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+            bestmeanset_xgboost = paramset
+            cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+
+### With lgbm
+# if classification_from_allfeatures:
+#     cv_bestmean_lgbm = 0 
+#     for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#         lgbm_training.set_params(**paramset)
+#         # Evaluate the model with cross validation
+#         crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                    feat_representative_slides, 
+#                                                    train_clarray_refined,  
+#                                                    cv=10,  
+#                                                    scoring='balanced_accuracy')
+
+#         crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#         if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#             cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#             bestmeanset_lgbm = paramset
+#             cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+
+# else:
+#     cv_bestmean_lgbm = 0 
+#     for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#         lgbm_training.set_params(**paramset)
+#         # Evaluate the model with cross validation
+#         crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                    feat_representative_slides_boruta, 
+#                                                    train_clarray_refined,  
+#                                                    cv=10,  
+#                                                    scoring='balanced_accuracy')
+
+#         crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#         if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#             cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#             bestmeanset_lgbm = paramset
+#             cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+
+
+# No need of printing as we debug uing pass
 pass
