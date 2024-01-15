@@ -23,7 +23,7 @@
   parameters:
     bool:
 
-      classification_from_allfeatures: False
+      classification_from_allfeatures: True
 
       saving_classifiers:
         ridge: True

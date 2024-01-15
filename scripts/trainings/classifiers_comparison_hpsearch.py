@@ -3,25 +3,15 @@
 import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
 
-import os.path
-
-from tqdm import tqdm
 import numpy as np
-import time
 import yaml
 import xgboost 
 import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn import linear_model, ensemble, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
-cross_validate, cross_val_score, GroupKFold, StratifiedGroupKFold
+from sklearn import linear_model, ensemble
+from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold
 
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
-import joblib
-
-
-
 
 #############################################################
 ## Load configs parameter
@@ -184,7 +174,7 @@ train_clarray = train_clarray[permutation_index]
 
 ### Shuffle patient IDs arrays using the permutation index 
 if patientid_avail:
-    patientids = patientids[permutation_index]
+    patientids = patientids_list[permutation_index]
     # Create a mapping of unique elements to positive integers
     patientids_ordered = utils_misc.convert_names_to_orderedint(patientids)
 
@@ -439,7 +429,7 @@ if save_evaluations:
         file.write('Corresponding set of parameters for xgboost_vanilla_bestmaxset is:' 
             + str(xgboost_vanilla_bestmaxset))
         file.write('Corresponding scores for all splits are:' + str( cv_bestmax_scorevect))
-        file.write('The best mean average accuracy is:' + str(cv_bestmean)
+        file.write('The best mean average accuracy is:' + str(cv_bestmean))
         file.write('Corresponding set of parameters for xgboost_vanilla_bestmeanset is:' 
             + str(xgboost_vanilla_bestmeanset))
         file.write('Corresponding scores for all splits are:' + str( cv_bestmean_scorevect))

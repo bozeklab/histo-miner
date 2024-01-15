@@ -5,21 +5,16 @@ sys.path.append('../../')  # Only for Remote use on Clusters
 
 import os
 
-from tqdm import tqdm
 import numpy as np
-import time
 import yaml
 import xgboost 
 import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn import linear_model, ensemble, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
-cross_validate, cross_val_score, GroupKFold, StratifiedGroupKFold
+from sklearn import linear_model, ensemble
+from sklearn.model_selection import cross_val_score, StratifiedGroupKFold
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
-import joblib
-
 
 # To reproduce the results of fig. opf the paper
 

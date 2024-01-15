@@ -3,20 +3,13 @@
 import sys
 sys.path.append('../')  # Only for Remote use on Clusters
 
-import json
 import os
-import csv
 
 import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
-import scipy
 
 from src.histo_miner.feature_selection import FeatureSelector
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict
-from src.histo_miner.utils.filemanagment import anaylser2featselect
-
-
 
 ###################################################################
 ## Load configs parameter
