@@ -15,7 +15,6 @@ import src.histo_miner.utils.misc as utils_misc
 
 
 
-
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -28,9 +27,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
-patientid_csv = confighm.paths.files.patientid_csv
 patientid_avail = confighm.parameters.bool.patientid_avail
-nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -38,9 +35,6 @@ with open("./../../configs/classification_training.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-perform_split = config.parameters.bool.perform_split
-split_pourcentage = config.parameters.int.split_pourcentage
 
 xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
 xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
@@ -52,7 +46,6 @@ lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n
 lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
 lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
 lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
-
 
 
 

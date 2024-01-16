@@ -30,7 +30,6 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
-nbr_keptfeat = config.parameters.int.nbr_keptfeat
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 displayclass_score = config.parameters.bool.display_classification_scores
 displayclass_pred = config.parameters.bool.display_classification_predictions

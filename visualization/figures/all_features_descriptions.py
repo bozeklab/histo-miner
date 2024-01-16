@@ -44,6 +44,7 @@ pathtoworkfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
 example_json = config.names.example_json
 
+wsi_selection = config.parameters.bool.wsi_selection
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
 pca = config.parameters.bool.plot.pca

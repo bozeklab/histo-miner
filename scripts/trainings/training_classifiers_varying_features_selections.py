@@ -36,7 +36,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
-patientid_csv = confighm.paths.files.patientid_csv
 patientid_avail = confighm.parameters.bool.patientid_avail
 nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
 
@@ -75,12 +74,6 @@ lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
 lgbm_lr = config.classifierparam.light_gbm.learning_rate
 lgbm_objective = config.classifierparam.light_gbm.objective
 lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
-
-saveclassifier_ridge = config.parameters.bool.saving_classifiers.ridge
-saveclassifier_lr = config.parameters.bool.saving_classifiers.logistic_regression
-saveclassifier_forest = config.parameters.bool.saving_classifiers.random_forest
-saveclassifier_xgboost = config.parameters.bool.saving_classifiers.xgboost
-saveclassifier_lgbm = config.parameters.bool.saving_classifiers.light_gbm 
 
 
 

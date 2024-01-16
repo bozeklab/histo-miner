@@ -95,18 +95,21 @@
 
       patientid_avail: True
 
-      perpatient_feat: True 
+      perpatient_feat: False
+      # Now this name is very missleading should be updated 
+
+      wsi_selection: True
 
       plot: 
-        boxplots: False
+        boxplots: True
 
-        distributions: False 
+        distributions: True 
 
         pca: True
 
-        tsne: False
+        tsne: True
 
-        delete_outliers: False 
+        delete_outliers: True 
 
 
 
