@@ -28,6 +28,18 @@ output_dir=$(yaml $config_path "['inference']['paths']['output_dir']")
 
 ############### SCRIPT
 
+
+
+
+
+# WE need to downsample by 32 the ndpi images I think here in the bash file. 
+
+
+
+
+
+
+
 conda deactivate
 conda activate mmsegmentation_submodule_test1
 

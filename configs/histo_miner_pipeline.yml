@@ -7,7 +7,7 @@
 
         inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
         visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
       
@@ -78,11 +78,12 @@
     int:
       maskmap_downfactor: 32
 
-      nbr_keptfeat: 55
+      nbr_keptfeat: 56
 
       boruta_max_depth: 20
-      # boruta_max_depth: 12 kept in general
-      # boruta_max_depth: 6, 8, 10, 12, 14, 16, 18, 20
+      # boruta_max_depth: 18 leading to best results so far
+      # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
+      # parenthesis are for Boruta applied to selected slides 
 
       boruta_random_state: 1
 
@@ -93,12 +94,13 @@
 
       display_classification_scores: True
 
-      patientid_avail: True
+      patientid_avail: False
 
       perpatient_feat: False
       # Now this name is very missleading should be updated 
 
       wsi_selection: True
+      # not sure it is needed so far
 
       plot: 
         boxplots: True

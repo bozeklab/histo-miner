@@ -37,7 +37,8 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
 patientid_avail = confighm.parameters.bool.patientid_avail
-nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
+wsi_selection = confighm.parameters.bool.wsi_selection
+# nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -82,7 +83,7 @@ lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
 ############################################################
 
 
-pathfeatselect = pathtofolder + '/feature_selection/'
+pathfeatselect = pathtofolder 
 ext = '.npy'
 
 print('Load feature selection numpy files...')
@@ -91,10 +92,10 @@ print('Load feature selection numpy files...')
 
 # COULD ADD RAISE ERRROR IF IT IS NOT FIND!
 # Each time we check if the file exist because all selections are not forced to run
-path_selfeat_mrmr_idx = pathfeatselect + ' selfeat_mrmr_idx_idx' + ext
+path_selfeat_mrmr_idx = pathfeatselect + 'selfeat_mrmr_idx' + ext
 if os.path.exists(path_selfeat_mrmr_idx):
      selfeat_mrmr_idx = np.load(path_selfeat_mrmr_idx, allow_pickle=True)
-path_selfeat_mannwhitneyu_idx = pathfeatselect + 'selfeat_mannwhitneyu_idx_idx' + ext
+path_selfeat_mannwhitneyu_idx = pathfeatselect + 'selfeat_mannwhitneyu_idx' + ext
 if os.path.exists(path_selfeat_mannwhitneyu_idx):
     selfeat_mannwhitneyu_idx = np.load(path_selfeat_mannwhitneyu_idx, allow_pickle=True)
 print('Loading feature selected indexes done.')
@@ -106,8 +107,8 @@ print('Loading feature selected indexes done.')
 ################################################################
 
 #This is to check but should be fine
-path_featarray = pathfeatselect + 'featarray' + ext
-path_clarray = pathfeatselect + 'clarray' + ext
+path_featarray = pathfeatselect + 'repslidesx_featarray' + ext
+path_clarray = pathfeatselect + 'repslidesx_clarray' + ext
 path_patientids_array = pathfeatselect + 'patientids' + ext
 
 train_featarray = np.load(path_featarray)
@@ -171,14 +172,17 @@ print('Start Classifiers trainings...')
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 
 
-### Load permutation index not to have 0 and 1s not mixed
-if search_bestsplit:
-    permutation_index = np.load(pathfeatselect + perm_bestsplit + '.npy')
-else: 
-    permutation_index = np.load(pathfeatselect + perm_cvmean + '.npy')
+### Load permutation index not to have 0 and 1s not mixed if the slide are not 
+### pre-selected
+if not wsi_selection:
+    if search_bestsplit:
+        permutation_index = np.load(pathfeatselect + perm_bestsplit + '.npy')
+    else: 
+        permutation_index = np.load(pathfeatselect + perm_cvmean + '.npy')
 
 ### Shuffle classification arrays using the permutation index
-train_clarray = train_clarray[permutation_index]
+if not wsi_selection:
+    train_clarray = train_clarray[permutation_index]
 
 if patientid_avail:
 
@@ -223,8 +227,9 @@ if classification_from_allfeatures:
     # Use all the feature (no selection) as input
     genfeatarray = np.transpose(train_featarray)
 
-    #Shuffle feature arrays using the permutation index 
-    genfeatarray = genfeatarray[permutation_index,:]
+    #Shuffle feature arrays using the permutation index
+    if not wsi_selection:
+        genfeatarray = genfeatarray[permutation_index,:]
 
     #### XGBOOST
     xgboostvanilla = xgboost
@@ -274,17 +279,19 @@ if classification_from_allfeatures:
 SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
 
 
-for nbr_keptfeat in range(55, 0, -1):
+for nbr_keptfeat_idx in range(55, 0, -1):
+# previous dev:
 # kept the selected features but in inverse order (for figures)
 # Uncomment only for reproducing secondary figures results
 # for nbr_keptfeat in range(56, 1, -1):
 
     # Kept the selected features
-    selfeat_mrmr_idx =  selfeat_mrmr_idx[0:nbr_keptfeat]
+    selfeat_mrmr_idx =  selfeat_mrmr_idx[0:nbr_keptfeat_idx]
     print('\n', selfeat_mrmr_idx)
-    selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[0:nbr_keptfeat]
+    selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[0:nbr_keptfeat_idx]
     print(selfeat_mannwhitneyu_idx)
 
+    # previous dev:
     # kept the selected features but in inverse order (for figures)
     # Uncomment only for reproducing secondary figures results
     # selfeat_mrmr_idx =  selfeat_mrmr_idx[1:nbr_keptfeat]
@@ -294,7 +301,7 @@ for nbr_keptfeat in range(55, 0, -1):
 
 
     #### Recall numberr of efatures kept:
-    print('{} features kept.'.format(nbr_keptfeat))
+    print('{} features kept.'.format(nbr_keptfeat_idx))
 
 
     #### Classification training with the features kept by mrmr
@@ -303,16 +310,24 @@ for nbr_keptfeat in range(55, 0, -1):
         featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr( selfeat_mrmr_idx)
 
         #Shuffle feature arrays using the permutation index 
-        featarray_mrmr = featarray_mrmr[permutation_index,:]
+        if not wsi_selection:
+            featarray_mrmr = featarray_mrmr[permutation_index,:]
 
         ##### XGBOOST
         xgboostmrmr = xgboost
-        crossvalid_results = cross_val_score(xgboostmrmr, 
-                                             featarray_mrmr, 
-                                             train_clarray,  
-                                             groups=patientids_ordered,
-                                             cv=stratgroupkf,  
-                                             scoring='balanced_accuracy')
+        if wsi_selection:
+            crossvalid_results = cross_val_score(xgboostmrmr, 
+                                                 featarray_mrmr, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(xgboostmrmr, 
+                                                featarray_mrmr, 
+                                                train_clarray,  
+                                                groups=patientids_ordered,
+                                                cv=stratgroupkf,  
+                                                scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
         
@@ -324,12 +339,19 @@ for nbr_keptfeat in range(55, 0, -1):
 
         ##### LIGHT GBM
         lightgbmmrmr = lightgbm
-        crossvalid_results = cross_val_score(lightgbmmrmr, 
-                                             featarray_mrmr, 
-                                             train_clarray,  
-                                             groups=patientids_ordered,
-                                             cv=stratgroupkf,  
-                                             scoring='balanced_accuracy')
+        if wsi_selection:
+            crossvalid_results = cross_val_score(lightgbmmrmr, 
+                                                 featarray_mrmr, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(lightgbmmrmr, 
+                                                 featarray_mrmr, 
+                                                 train_clarray,  
+                                                 groups=patientids_ordered,
+                                                 cv=stratgroupkf,  
+                                                 scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
 
@@ -349,16 +371,24 @@ for nbr_keptfeat in range(55, 0, -1):
         featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu_idx)
         
         #Shuffle feature arrays using the permutation index 
-        featarray_mannwhitney = featarray_mannwhitney[permutation_index,:]
+        if not wsi_selection:
+            featarray_mannwhitney = featarray_mannwhitney[permutation_index,:]
 
         ##### XGBOOST
         xgboostmannwhitney = xgboost
-        crossvalid_results = cross_val_score(xgboostmannwhitney, 
-                                             featarray_mannwhitney, 
-                                             train_clarray,  
-                                             groups=patientids_ordered,
-                                             cv=stratgroupkf,  
-                                             scoring='balanced_accuracy')
+        if wsi_selection:
+            crossvalid_results = cross_val_score(xgboostmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(xgboostmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 groups=patientids_ordered,
+                                                 cv=stratgroupkf,  
+                                                 scoring='balanced_accuracy')
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
 
@@ -370,12 +400,19 @@ for nbr_keptfeat in range(55, 0, -1):
 
         ##### LIGHT GBM
         lightgbmmannwhitney = lightgbm
-        crossvalid_results = cross_val_score(lightgbmmannwhitney, 
-                                             featarray_mannwhitney, 
-                                             train_clarray,  
-                                             groups=patientids_ordered,
-                                             cv=stratgroupkf,  
-                                             scoring='balanced_accuracy')        
+        if wsi_selection:
+            crossvalid_results = cross_val_score(lightgbmmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(lightgbmmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 groups=patientids_ordered,
+                                                 cv=stratgroupkf,  
+                                                 scoring='balanced_accuracy')        
         crossvalid_meanscore = np.mean(crossvalid_results)
         crossvalid_maxscore = np.max(crossvalid_results)
 
@@ -412,22 +449,22 @@ save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 if search_bestsplit:
-    np.save(save_results_path + 'xgbbestsplit_aAcc_mrmr_inversed' + save_ext,
+    np.save(save_results_path + 'xgbbestsplit_aAcc_mrmr' + save_ext,
              xgbbestsplit_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mrmr_inversed' + save_ext,
+    np.save(save_results_path + 'lgbmbestsplit_aAcc_mrmr' + save_ext,
         lgbmbestsplit_aAcc_mrmr)
-    np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu_inversed' + save_ext,
+    np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu' + save_ext,
         xgbbestsplit_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mannwhitneyu_inversed' + save_ext,
+    np.save(save_results_path + 'lgbmbestsplit_aAcc_mannwhitneyu' + save_ext,
         lgbmbestsplit_aAcc_mannwhitneyu)
 else:
-    np.save(save_results_path + 'xgbmean_aAcc_mrmr_inversed' + save_ext,
+    np.save(save_results_path + 'xgbmean_aAcc_mrmr' + save_ext,
              xgbmean_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmmean_aAcc_mrmr_inversed' + save_ext,
+    np.save(save_results_path + 'lgbmmean_aAcc_mrmr' + save_ext,
         lgbmmean_aAcc_mrmr)
-    np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu_inversed' + save_ext,
+    np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu' + save_ext,
         xgbmean_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu_inversed' + save_ext,
+    np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu' + save_ext,
         lgbmmean_aAcc_mannwhitneyu) 
 
 
@@ -461,17 +498,25 @@ if os.path.exists(selfeat_boruta_folder):
             # Generate the matrix with selected feature for boruta
             featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
 
-            #Shuffle feature arrays using the permutation index 
-            featarray_boruta = featarray_boruta[permutation_index,:]
+            #Shuffle feature arrays using the permutation index
+            if not wsi_selection: 
+                featarray_boruta = featarray_boruta[permutation_index,:]
           
             ##### XGBOOST
             xgboostboruta = xgboost
-            crossvalid_results = cross_val_score(xgboostboruta, 
-                                                 featarray_boruta, 
-                                                 train_clarray,  
-                                                 groups=patientids_ordered,
-                                                 cv=stratgroupkf,  
-                                                 scoring='balanced_accuracy')
+            if wsi_selection:
+                crossvalid_results = cross_val_score(xgboostboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     cv=10,  
+                                                     scoring='balanced_accuracy')
+            else:
+                crossvalid_results = cross_val_score(xgboostboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     groups=patientids_ordered,
+                                                     cv=stratgroupkf,  
+                                                     scoring='balanced_accuracy')
             crossvalid_meanscore = np.mean(crossvalid_results)
             crossvalid_maxscore = np.max(crossvalid_results)
 
@@ -483,12 +528,19 @@ if os.path.exists(selfeat_boruta_folder):
 
             ##### LIGHT GBM
             lightgbmboruta = lightgbm
-            crossvalid_results = cross_val_score(lightgbmboruta, 
-                                                 featarray_boruta, 
-                                                 train_clarray,  
-                                                 groups=patientids_ordered,
-                                                 cv=stratgroupkf,  
-                                                 scoring='balanced_accuracy')
+            if wsi_selection:
+                crossvalid_results = cross_val_score(lightgbmboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     cv=10,  
+                                                     scoring='balanced_accuracy')
+            else:
+                crossvalid_results = cross_val_score(lightgbmboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     groups=patientids_ordered,
+                                                     cv=stratgroupkf,  
+                                                     scoring='balanced_accuracy')
             crossvalid_meanscore = np.mean(crossvalid_results)
             crossvalid_maxscore = np.max(crossvalid_results)
 

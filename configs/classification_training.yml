@@ -12,9 +12,9 @@
   names:
     permutation_idx:
 
-      perm_bestsplit: "random_permutation_index_11_28_xgboost_bestsplit"
+      perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
 
-      perm_cvmean: "random_permutation_index_11_28_xgboost_bestmean"
+      perm_cvmean: "bestperm/random_permutation_index_11_28_xgboost_bestmean"
 
 
 
@@ -23,16 +23,16 @@
   parameters:
     bool:
 
-      classification_from_allfeatures: True
+      classification_from_allfeatures: False
 
       run_classifiers:
-        ridge: True
+        ridge: False
 
-        logistic_regression: True
+        logistic_regression: False
 
-        random_forest: True
+        random_forest: False
 
-        xgboost: True 
+        xgboost: False
 
         light_gbm: True 
 

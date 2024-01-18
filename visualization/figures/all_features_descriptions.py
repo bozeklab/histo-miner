@@ -44,7 +44,6 @@ pathtoworkfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
 example_json = config.names.example_json
 
-wsi_selection = config.parameters.bool.wsi_selection
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
 pca = config.parameters.bool.plot.pca
@@ -54,7 +53,7 @@ delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
 
-#############################################################
+#############################################################repslidesx_selectfeat
 ## Load correlation matrix
 #############################################################
 
@@ -69,8 +68,8 @@ matrix_path = '/correlations/correlation_matrix.npy'
 #############################################################
 
 
-featarray_name = 'perpat_featarray'
-classarray_name = 'perpat_clarray'
+featarray_name = 'repslidesx_featarray'
+classarray_name = 'repslidesx_clarray'
 ext = '.npy'
 
 featarray = np.load(pathtoworkfolder + featarray_name + ext)

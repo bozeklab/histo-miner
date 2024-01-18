@@ -9,15 +9,13 @@
 
     paths:
       
-      checkpoints: "/data/lsancere/checkpoints_temp/hvn_bestweights.tar"
+      checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/hvn_bestweights.tar"
 
-      input_dir: "/data/shared/scc/progress/Cologne/"
+      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI/"
 
-      output_dir: "/data/shared/scc/hovernet_prediction/opt4set5extended_wsimode/test/"
-
+      output_dir: "/data//lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
+      
       cache_path: "/dev/shm/cachelucas/"
-
-
 
 
 

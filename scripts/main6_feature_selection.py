@@ -21,11 +21,12 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
+pathmain = config.paths.folders.main
 pathfeatselect = config.paths.folders.feature_selection_main
 patientid_avail = config.parameters.bool.patientid_avail
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 boruta_max_depth = config.parameters.int.boruta_max_depth
-boruta_random_state = config.parameters.int.nbr_keptfeat
+boruta_random_state = config.parameters.int.boruta_random_state
 
 
 
@@ -35,8 +36,8 @@ boruta_random_state = config.parameters.int.nbr_keptfeat
 
 ext = '.npy'
 
-pathfeatarray = pathfeatselect + 'featarray' + ext
-pathclarray = pathfeatselect + 'clarray' + ext
+pathfeatarray = pathfeatselect + 'repslidesx_featarray' + ext
+pathclarray = pathfeatselect + 'repslidesx_clarray' + ext
 pathfeatnames = pathfeatselect + 'featnames' + ext
 featarray = np.load(pathfeatarray)
 clarray = np.load(pathclarray)
@@ -104,7 +105,7 @@ print('***** \n')
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
 
-pathoutput = pathfeatselect
+pathoutput = pathmain + 'feature_selection_selectedslides/'
 ext = '.npy'
 
 # If the folder doesn't exist create it
@@ -141,7 +142,7 @@ with open(summaryfile_path, "w") as file:
 # We save the index of selected features for mrmr and mannwhitneyu 
 pathselfeat_mrmr = pathoutput + 'selfeat_mrmr_idx' + ext
 np.save(pathselfeat_mrmr, selfeat_mrmr_index)
-pathselfeat_boruta = pathoutput + 'selfeat_boruta_idx' + ext
+pathselfeat_boruta = pathoutput + 'selfeat_boruta_idx_depth20' + ext
 np.save(pathselfeat_boruta, selfeat_boruta_index)
 pathorderedp_mannwhitneyu = pathoutput + 'selfeat_mannwhitneyu_idx' + ext
 np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
@@ -149,6 +150,9 @@ np.save(pathorderedp_mannwhitneyu, selfeat_mannwhitneyu_index)
 
 print('Saving done.')
 print('Path to the output files: {}'.format(pathoutput))
+
+
+
 
 
 

@@ -21,7 +21,6 @@ import src.histo_miner.utils.misc as utils_misc
 #############################################################
 
 
-
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
 with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
@@ -304,16 +303,15 @@ for patientid in np.unique(patientids_ordered):
 idx_most_representative_slide_per_patient = [val for val 
                                              in idx_most_representative_slide_per_patient]
 
-
 # Generate new feature matrix and new classification array
 # Generate classification array of only representative slides
 train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
-
 
 # Generate the features of representatative slides with all features
 feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
 # Generate the features of representatative slides with selected features
 feat_representative_slides_boruta = featarray_boruta[idx_most_representative_slide_per_patient,:]
+
 
 
 ##############################################################
@@ -329,29 +327,63 @@ idx_most_representative_slides_export = np.asarray(idx_most_representative_slide
 
 # saving
 if run_xgboost and not run_lgbm:
-    np.save(pathtomain + 
-            'most_representative_slides_all_features_xgboost_idx.npy', 
-            idx_most_representative_slides_export) 
-elif run_lgbm and not run_xgboost:
-    np.save(pathtomain + 
-             'most_representative_slides_lgbm_idx.npy', 
-             idx_most_representative_slides_export)
+    
+    if classification_from_allfeatures:
+        np.save(pathfeatselect + 
+                'most_representative_slides_all_features_xgboost_idx.npy', 
+                 idx_most_representative_slides_export) 
+    else:    
+        np.save(pathfeatselect + 
+                'most_representative_slides_selfeatures_xgboost_idx.npy', 
+                idx_most_representative_slides_export) 
 
-# Save new arrays
+elif run_lgbm and not run_xgboost:
+
+    if classification_from_allfeatures:
+        np.save(pathfeatselect + 
+                'most_representative_slides_all_features_lgbm_idx.npy', 
+                 idx_most_representative_slides_export) 
+    else:    
+        np.save(pathfeatselect + 
+                'most_representative_slides_selfeatures_lgbm_idx.npy', 
+                idx_most_representative_slides_export) 
+
+
+# Save new arrays (feature and classification)
 if run_xgboost and not run_lgbm:
-    if classification_from_allfeatures:
-        np.save(pathfeatselect + 'repslidesx_featarray.npy', 
-                feat_representative_slides) 
+    np.save(pathfeatselect + 'repslidesx_clarray.npy', 
+                train_clarray_refined)
 
+    if classification_from_allfeatures:
+        feat_representative_slides_export = np.transpose(
+            feat_representative_slides
+            )
+        np.save(pathfeatselect + 'repslidesx_featarray.npy', 
+                feat_representative_slides_export)
     else:
-        pass
+        feat_representative_slides_boruta_export = np.transpose(
+            feat_representative_slides_boruta
+            )
+        np.save(pathfeatselect + 'repslidesx_selectfeat.npy', 
+                feat_representative_slides_boruta_export)
+
 
 elif run_lgbm and not run_xgboost:
+    np.save(pathfeatselect + 'repslidesl_clarray.npy', 
+                train_clarray_refined)
+
     if classification_from_allfeatures:
-                np.save(pathfeatselect + 'repslidesl_featarray.npy', 
-                feat_representative_slides) 
+        feat_representative_slides_export = np.transpose(
+            feat_representative_slides
+            )
+        np.save(pathfeatselect + 'repslidesl_featarray.npy', 
+                feat_representative_slides_export) 
     else:
-          pass
+        feat_representative_slides_boruta_export = np.transpose(
+            feat_representative_slides_boruta
+            )
+        np.save(pathfeatselect + 'repslidesl_selectfeat.npy', 
+                feat_representative_slides_boruta_export) 
 
 
 

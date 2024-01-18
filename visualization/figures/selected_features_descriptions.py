@@ -46,7 +46,6 @@ pathtoworkfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
 example_json = config.names.example_json
 
-wsi_selection = config.parameters.bool.wsi_selection
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
 pca = config.parameters.bool.plot.pca
@@ -71,8 +70,8 @@ matrix_path = '/correlations/correlation_matrix.npy'
 #############################################################
 
 
-featarray_name = 'perwsi_featarray'
-classarray_name = 'perwsi_clarray'
+featarray_name = 'repslidesx_selectfeat'
+classarray_name = 'repslidesx_clarray'
 ext = '.npy'
 
 featarray = np.load(pathtoworkfolder + featarray_name + ext)
@@ -106,15 +105,15 @@ selection_idx_name = 'selfeat_boruta_idx_depth18'
 selfeat = np.load(pathtoworkfolder + selection_idx_name + ext)
 selfeat_idx_list = list(selfeat)
 
-# Update feature matrix
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(featarray)
-featarray = SelectedFeaturesMatrix.boruta_matr(selfeat)
-featarray = np.transpose(featarray)
+# # Update feature matrix - SEE HOW TO CODE THIS LATER ON
+# SelectedFeaturesMatrix = SelectedFeaturesMatrix(featarray)
+# featarray = SelectedFeaturesMatrix.boruta_matr(selfeat)
+# featarray = np.transpose(featarray)
 
-#Update classification array and classification array list
-# clarray_list = [label for idx, label in enumerate(clarray_list) if idx in selfeat_idx_list ]
-# clarray = np.asarray(clarray_list)
-# clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in clarray_list]
+# #Update classification array and classification array list - SEE HOW TO CODE THIS LATER ON
+# # clarray_list = [label for idx, label in enumerate(clarray_list) if idx in selfeat_idx_list ]
+# # clarray = np.asarray(clarray_list)
+# # clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in clarray_list]
 
 # Update featnames
 featnames = [name for idx, name in enumerate(featnames) if idx in selfeat_idx_list]
@@ -160,9 +159,9 @@ if boxplots:
             savename = featname + '_boxplot_filterquartile.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/selected_feat/'):
-                os.makedirs(pathtosavefolder + '/boxplots/selected_feat/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/selected_feat/' + savename
+            if not os.path.exists(pathtosavefolder + '/boxplots/'):
+                os.makedirs(pathtosavefolder + '/boxplots/')
+            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
             boxplot.save(saveboxplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
@@ -184,9 +183,9 @@ if boxplots:
             savename = featname + '_boxplot.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/selected_feat/'):
-                os.makedirs(pathtosavefolder + '/boxplots/selected_feat/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/selected_feat/' + savename
+            if not os.path.exists(pathtosavefolder + '/boxplots/'):
+                os.makedirs(pathtosavefolder + '/boxplots/')
+            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
             boxplot.save(saveboxplot_path, dpi=300)
 
 
@@ -254,9 +253,9 @@ if distributions:
             savename = featname + '_distribution_filterquartile.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/selected_feat/'):
-                os.makedirs(pathtosavefolder + '/density/selected_feat/')
-            savedensplot_path = pathtosavefolder + '/density/selected_feat/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/'):
+                os.makedirs(pathtosavefolder + '/density/')
+            savedensplot_path = pathtosavefolder + '/density/' + savename
             density_plot.save(savedensplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
@@ -290,9 +289,9 @@ if distributions:
             savename = featname + '_distribution.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/selected_feat/'):
-                os.makedirs(pathtosavefolder + '/density/selected_feat/')
-            savedensplot_path = pathtosavefolder + '/density/selected_feat/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/'):
+                os.makedirs(pathtosavefolder + '/density/')
+            savedensplot_path = pathtosavefolder + '/density/' + savename
             density_plot.save(savedensplot_path, dpi=300)
 
 
