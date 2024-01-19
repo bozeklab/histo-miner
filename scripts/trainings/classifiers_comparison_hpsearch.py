@@ -25,6 +25,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
+classification_eval_folder = confighm.paths.folders.classification_evaluation
 patientid_avail = confighm.parameters.bool.patientid_avail
 
 # Import parameters values from config file by generating a dict.
@@ -34,7 +35,6 @@ with open("./../../configs/classification_training.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 save_evaluations = config.parameters.bool.save_evaluations
-classification_eval_folder = config.parameters.paths.folders.classification_eval_folder
 
 ridge_param_grid_random_state = list(config.classifierparam.ridge.grid_dict.random_state)
 ridge_param_grid_alpha = list(config.classifierparam.ridge.grid_dict.alpha)

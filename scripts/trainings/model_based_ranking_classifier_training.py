@@ -552,6 +552,11 @@ if run_xgboost and not run_lgbm:
                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
                 bestmeanset_xgboost = paramset
                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+        print('\n\n ** xgboost (all features) **')
+        print('The best mean average accuracy is:',cv_bestmean_xgboost)
+        print('Corresponding set of parameters for xgboost on all features is:',
+               bestmeanset_xgboost)
+        print('Edit the configuration file consequently')            
 
     else:
         cv_bestmean_xgboost = 0 
@@ -569,6 +574,12 @@ if run_xgboost and not run_lgbm:
                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
                 bestmeanset_xgboost = paramset
                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+        print('\n\n ** xgboost (selected features) **')
+        print('The best mean average accuracy is:',cv_bestmean_xgboost)
+        print('Corresponding set of parameters for xgboost on selected features is:',
+               bestmeanset_xgboost)
+        print('Edit the configuration file consequently')            
+
 
 
 # -- LGBM --
@@ -589,6 +600,11 @@ elif run_lgbm and not run_xgboost:
                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
                 bestmeanset_lgbm = paramset
                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+        print('\n\n ** lgbm (all features) **')
+        print('The best mean average accuracy is:',cv_bestmean_lgbm)
+        print('Corresponding set of parameters for xgboost on all features is:',
+               bestmeanset_lgbm)
+        print('Edit the configuration file consequently')     
 
     else:
         cv_bestmean_lgbm = 0 
@@ -606,6 +622,11 @@ elif run_lgbm and not run_xgboost:
                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
                 bestmeanset_lgbm = paramset
                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+        print('\n\n ** lgbm (selected features) **')
+        print('The best mean average accuracy is:',cv_bestmean_lgbm)
+        print('Corresponding set of parameters for xgboost on selected features is:',
+               bestmeanset_lgbm)
+        print('Edit the configuration file consequently')    
 
 # dev ink for dev
 devink = 0

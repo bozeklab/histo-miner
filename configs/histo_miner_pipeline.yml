@@ -6,9 +6,14 @@
         main: "/data/shared/scc/histo-miner/data_analysis/"
 
         inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
+
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
+
+        # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
+
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
+
         visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
       
         

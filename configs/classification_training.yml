@@ -5,7 +5,6 @@
     folders:
       main: "/data/lsancere/Data_General/histo-miner/testdataorga/tissue_analyses/"
 
-      classification_eval_folder: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
 
 # All parameters of string names
@@ -18,12 +17,11 @@
 
 
 
-
 # All not strings parameters
   parameters:
     bool:
 
-      classification_from_allfeatures: False
+      classification_from_allfeatures: True
 
       run_classifiers:
         ridge: False
@@ -32,9 +30,9 @@
 
         random_forest: False
 
-        xgboost: False
+        xgboost: True
 
-        light_gbm: True 
+        light_gbm: False 
 
       save_evaluations: True
 

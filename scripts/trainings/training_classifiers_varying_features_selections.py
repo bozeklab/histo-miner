@@ -36,9 +36,9 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
+classification_eval_folder = confighm.paths.folders.classification_evaluation
 patientid_avail = confighm.parameters.bool.patientid_avail
 wsi_selection = confighm.parameters.bool.wsi_selection
-# nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -46,7 +46,6 @@ with open("./../../configs/classification_training.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-classification_eval_folder = config.paths.folders.classification_eval_folder
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 search_bestsplit = config.parameters.bool.search_bestsplit
 perm_bestsplit = config.names.permutation_idx.perm_bestsplit
@@ -221,62 +220,75 @@ else:
     lgbmmean_aAcc_boruta = list()
 
 
-#### Classification training with all features kept 
+#### Parse the featarray to the class SelectedFeaturesMatrix 
+SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
 
-if classification_from_allfeatures:
-    # Use all the feature (no selection) as input
-    genfeatarray = np.transpose(train_featarray)
 
-    #Shuffle feature arrays using the permutation index
-    if not wsi_selection:
-        genfeatarray = genfeatarray[permutation_index,:]
+#### Classification training (decreasing number of features left, starting with all)
 
-    #### XGBOOST
-    xgboostvanilla = xgboost
+
+# Use all the feature (no selection) as input
+genfeatarray = np.transpose(train_featarray)
+
+#Shuffle feature arrays using the permutation index
+if not wsi_selection:
+    genfeatarray = genfeatarray[permutation_index,:]
+
+#### XGBOOST
+xgboostvanilla = xgboost
+if wsi_selection:
+    crossvalid_results = cross_val_score(xgboostvanilla, 
+                                         genfeatarray, 
+                                         train_clarray,  
+                                         cv=10,  
+                                         scoring='balanced_accuracy')
+else:
     crossvalid_results = cross_val_score(xgboostvanilla, 
                                          genfeatarray, 
                                          train_clarray,  
                                          groups=patientids_ordered,
                                          cv=stratgroupkf,  
                                          scoring='balanced_accuracy')
-    crossvalid_meanscore = np.mean(crossvalid_results)
-    crossvalid_maxscore = np.max(crossvalid_results)
+crossvalid_meanscore = np.mean(crossvalid_results)
+crossvalid_maxscore = np.max(crossvalid_results)
 
-    # Insert results in the corresponding lists
-    if search_bestsplit:
-        xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-        xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-        xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-    else:
-        xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
-        xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-        xgbmean_aAcc_boruta.append(crossvalid_meanscore) 
+# Insert results in the corresponding lists
+if search_bestsplit:
+    xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
+    xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
+    xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+else:
+    xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
+    xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
+    xgbmean_aAcc_boruta.append(crossvalid_meanscore) 
 
-    #### LIGHT GBM
-    lightgbmvanilla = lightgbm
+#### LIGHT GBM
+lightgbmvanilla = lightgbm
+if wsi_selection:
+    crossvalid_results = cross_val_score(lightgbmvanilla, 
+                                         genfeatarray, 
+                                         train_clarray,  
+                                         cv=10,  
+                                         scoring='balanced_accuracy')
+else:
     crossvalid_results = cross_val_score(lightgbmvanilla, 
                                          genfeatarray, 
                                          train_clarray,  
                                          groups=patientids_ordered,
                                          cv=stratgroupkf,  
                                          scoring='balanced_accuracy')
-    crossvalid_meanscore = np.mean(crossvalid_results)
-    crossvalid_maxscore = np.max(crossvalid_results)
+crossvalid_meanscore = np.mean(crossvalid_results)
+crossvalid_maxscore = np.max(crossvalid_results)
 
-    # Insert results in the corresponding lists
-    if search_bestsplit:
-        lgbmbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-        lgbmbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-        lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-    else:
-        lgbmmean_aAcc_mrmr.append(crossvalid_meanscore)
-        lgbmmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-        lgbmmean_aAcc_boruta.append(crossvalid_meanscore) 
-
-
-
-#### Parse the featarray to the class SelectedFeaturesMatrix 
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
+# Insert results in the corresponding lists
+if search_bestsplit:
+    lgbmbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
+    lgbmbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
+    lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+else:
+    lgbmmean_aAcc_mrmr.append(crossvalid_meanscore)
+    lgbmmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
+    lgbmmean_aAcc_boruta.append(crossvalid_meanscore) 
 
 
 for nbr_keptfeat_idx in range(55, 0, -1):
@@ -469,7 +481,6 @@ else:
 
 
 
-
 ### BORUTA
 
 selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
@@ -477,7 +488,8 @@ selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
 if os.path.exists(selfeat_boruta_folder):
     print('Check if depth_boruta list match the different files.')
 
-    depth_boruta = [6, 8, 10, 12, 14, 16, 18, 20]
+    depth_boruta = [2, 4, 6, 20]
+    # depth_boruta = [6, 8, 10, 12, 14, 16, 18, 20]
     nbr_keptfeat_list = [56]
 
     for depth in depth_boruta:
