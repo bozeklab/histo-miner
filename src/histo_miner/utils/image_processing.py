@@ -123,3 +123,47 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') 
     # save
     print('saving...')
     imageresized.save(savepath)
+
+
+######## ADD CODE TO DOWNSAMPLE ALL IMAGES DURING SEGEMENTER INFERENCE
+
+def downsample_image_segmenter(imagepath: str, 
+                               downfactor: int = 32, 
+                               savename: str = '') -> None:
+    """
+    Downsample an image with format compatible with PILLOW and save the output image. Use of
+    PILLOW to read and process images (because it can read big images, AND CV2 CANNOT).
+
+    Parameters
+    ----------
+    imagepath: str
+        Path to the image to downsample
+    downfactor: int
+        Value of the downsampling factor.
+    savename: str, optional
+        Suffix of the name of the file to save.
+    Returns
+    -------
+    """
+    # loop over all images
+
+    # apply downsample function
+
+    # save new images in a new folder / downsample folder
+
+    # later save segmenter output not there but where it is define in config
+
+
+
+
+    image = Image.open(imagepath)
+    width, height = image.size[0], image.size[1]
+    new_width = width // downfactor
+    new_height = height // downfactor
+    # Downsampling Operation
+    image.thumbnail((new_width, new_height))
+    # Now save the downsampled image
+    pathtofolder, filename = os.path.split(imagepath)
+    filenamecore, ext = os.path.splitext(filename)
+    savepath = pathtofolder + '/' + filenamecore + savename + ext
+    image.save(savepath)

@@ -297,11 +297,11 @@ for patientid in np.unique(patientids_ordered):
 
     # Store the index in the dictionary
     idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
-    devstop = 0 
 
-# FOR DEV
-idx_most_representative_slide_per_patient = [val for val 
+
+idx_most_representative_slide_per_patient = [val - 1 for val 
                                              in idx_most_representative_slide_per_patient]
+
 
 # Generate new feature matrix and new classification array
 # Generate classification array of only representative slides
@@ -321,9 +321,15 @@ feat_representative_slides_boruta = featarray_boruta[idx_most_representative_sli
 # Save ID of the most representative slides! (becareful to permute again) 
 # We need to permute again to retreive original order
 # The - 1 is needed to find back the original indexes starting to 0 and not 1
-idx_most_representative_slides_export = [len(permutation_index) - index - 1 for index 
-                                         in idx_most_representative_slide_per_patient]
-idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)                         
+idx_most_representative_slides_export = [
+    permutation_index[idx_most_representative_slide_per_patient]
+    ][0]
+# idx_most_representative_slides_export = [len(permutation_index) - index - 1 for index 
+#                                          in idx_most_representative_slide_per_patient]
+idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)
+
+# this export whould be tested back by loading the indeces here and check 
+# if the result are similar*                         
 
 # saving
 if run_xgboost and not run_lgbm:
@@ -347,6 +353,21 @@ elif run_lgbm and not run_xgboost:
         np.save(pathfeatselect + 
                 'most_representative_slides_selfeatures_lgbm_idx.npy', 
                 idx_most_representative_slides_export) 
+
+
+### HERE IS THE WAY TO LOAD THE INDEXES AND MAKE THEM COMPTAIBLE WITH THE PERMUTATIONS (IN OTHER CODES)
+# idx_mostrepr_test = np.load(pathfeatselect + 
+#                 'most_representative_slides_all_features_xgboost_idx.npy')
+# # idx_mostrepr_test2 = [i for i in range(len(permutation_index)) if permutation_index[i] in idx_mostrepr_test ]
+
+# idx_mostrepr_test2 = list()
+# for value in idx_mostrepr_test:
+#     if value in permutation_index:
+#         new_index = np.where(permutation_index == value)[0]
+#         idx_mostrepr_test2.append(new_index)
+
+# idx_mostrepr_test2 = np.asarray(idx_mostrepr_test2)
+# idx_mostrepr_test2 = idx_mostrepr_test2[:,0]
 
 
 # Save new arrays (feature and classification)
@@ -411,8 +432,8 @@ if run_xgboost and not run_lgbm:
                                                      cv=10,  
                                                      scoring='balanced_accuracy')
 
-        crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidref_maxscore = np.max(crossvalid_results_refined)
+        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
+        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
 
         # Evaluate with cross validation for lgbm with selected features (all slides)
         crossvalid_results_original = cross_val_score(xgboost_training, 
@@ -434,8 +455,8 @@ if run_xgboost and not run_lgbm:
                                                      cv=10,  
                                                      scoring='balanced_accuracy')
 
-        crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidref_maxscore = np.max(crossvalid_results_refined)
+        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
+        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
 
         # Evaluate with cross validation for lgbm with selected features (all slides)
         crossvalid_results_original = cross_val_score(xgboost_training, 
@@ -459,8 +480,8 @@ elif run_lgbm and not run_xgboost:
                                                      cv=10,  
                                                      scoring='balanced_accuracy')
 
-        crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidref_maxscore = np.max(crossvalid_results_refined)
+        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
+        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
 
         # Evaluate with cross validation for lgbm with selected features (all slides)
         crossvalid_results_original = cross_val_score(lgbm_training, 
@@ -482,8 +503,8 @@ elif run_lgbm and not run_xgboost:
                                                      cv=10,  
                                                      scoring='balanced_accuracy')
 
-        crossvalidref_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidref_maxscore = np.max(crossvalid_results_refined)
+        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
+        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
 
         # Evaluate with cross validation for lgbm with selected features (all slides)
         crossvalid_results_original = cross_val_score(lgbm_training, 

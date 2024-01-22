@@ -9,8 +9,8 @@
 
         tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
 
-        # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
+        # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
 
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
@@ -93,8 +93,6 @@
       boruta_random_state: 1
 
     bool:
-      classification_from_allfeatures: True
-
       display_classification_predictions: False
 
       display_classification_scores: True

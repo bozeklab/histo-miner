@@ -1,4 +1,8 @@
 
+# Could be just classifiation the name of file becasue I think it is not 
+# used only for training (to check)
+
+
 # All path related parameters
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
@@ -30,9 +34,9 @@
 
         random_forest: False
 
-        xgboost: True
+        xgboost: False
 
-        light_gbm: False 
+        light_gbm: True  
 
       save_evaluations: True
 
@@ -128,14 +132,16 @@
       
       random_state: 0
 
-      n_estimators: 40
+      n_estimators: 140
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 60
       # for best mean: 40
+      # for best mean, slides selected: 140
 
       learning_rate: 1
       # for best split: 1.2
       # for best mean: 1
+      # for best mean, slides selected: 1
 
       objective: 'binary:logistic'
       # choice to take for binary classification
@@ -163,21 +169,24 @@
       
       random_state: 0
 
-      n_estimators: 120 
+      n_estimators: 60 
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
       # for best mean: 120
+      # for best mean, slides selected: 60
 
-      learning_rate: 0.01
+      learning_rate: 0.1
       # for best split: 0.8
       # for best mean: 0.01
+      # for best mean, slides selected:  0.1
 
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 20
+      num_leaves: 15
       # for best split: 10
       # for best mean: 20
+      # for best mean, slides selected: 15
 
       grid_dict: 
             random_state: [0, 42, 84]
