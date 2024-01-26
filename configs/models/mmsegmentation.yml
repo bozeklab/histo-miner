@@ -2,6 +2,8 @@
 
   inference:
 
+    downsample_needed: True
+
     gpu: 1
 
     samples_per_gpu: 1 
@@ -16,14 +18,7 @@
 
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_segmenteroutput/"
 
-      
-
-
-
-
-
-
-
+  
 
 
 # Parameters for training?

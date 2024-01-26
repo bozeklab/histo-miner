@@ -131,10 +131,48 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') 
     imageresized.save(savepath)
 
 
-######## ADD CODE TO DOWNSAMPLE ALL IMAGES DURING SEGEMENTER INFERENCE
+
+def downsample_wsi(filename, 
+                   output_path,  
+                   target_downsample,
+                   thumbnail_extension):
+    """ 
+    Based on Juan Pisula code.
+
+    Save thumbnail of WSI.
+    
+    Args:
+
+    Returns:
+        tuple: The input filename and a boolean indicating success.
+    """
+    input_path, wsi_fn = os.path.split(filename)[0], os.path.split(filename)[1]
+    thumbnail_extension = '.' + thumbnail_extension
+
+    thumbnail_path = os.path.join(output_path, wsi_fn.replace(
+        '.{}'.format(wsi_fn.split('.')[-1]), thumbnail_extension))
+    if os.path.exists(thumbnail_path):
+        return wsi_fn, True
+    try:
+        slide = OpenSlide(os.path.join(input_path, wsi_fn))
+    except BaseException as err:
+        return wsi_fn, False
+
+
+    target_zoom_level = slide.get_best_level_for_downsample(target_downsample)
+    zoom_dims = slide.level_dimensions[target_zoom_level]
+    rgba_img = slide.read_region((0, 0), target_zoom_level, zoom_dims)
+    rgb_img = rgba_img.convert('RGB')
+    os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
+    rgb_img.save(thumbnail_path)
+    return wsi_fn, True
+
+
+
 
 def downsample_image_segmenter(pathtofolder: str,
-                               fileext: str = 'ndpi', 
+                               fileext: str = 'ndpi',
+                               outputext: str = 'tif', 
                                downfactor: int = 32, 
                                savefolder: str = 'downsampling/',
                                savename: str = '') -> None:
@@ -162,10 +200,10 @@ def downsample_image_segmenter(pathtofolder: str,
     # later save segmenter output not there but where it is define in config
     files = os.path.join(pathtofolder, '*.'+ fileext)
     files = glob.glob(files)
+    output_path = pathtofolder + '/' + savefolder
     for fname in tqdm(files):
         if os.path.exists(fname):
-            downsample_image(fname, 
-                             downfactor=downfactor,
-                             savefolder=savefolder,
-                             savename=savename
-                             )
+            downsample_wsi(filename = fname, 
+                           output_path=output_path,
+                           target_downsample=downfactor,
+                           thumbnail_extension=outputext)

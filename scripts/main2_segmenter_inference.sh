@@ -28,14 +28,12 @@ output_dir=$(yaml $config_path "['inference']['paths']['output_dir']")
 
 ############### SCRIPT
 
+echo "Downsample images..."
 
-echo "input_dir: $input_dir"
+python -c "import sys; sys.path.append('../')
+from src.histo_miner.utils.image_processing import downsample_image_segmenter
+downsample_image_segmenter('$input_dir')"
 
-{
-python -c "import sys; sys.path.append('../');" \
-          "from src.histo_miner.utils.image_processing import downsample_image_segmenter;" \
-          "downsample_image_segmenter("$input_dir")"
-}
 
 conda deactivate
 conda activate mmsegmentation_submodule_test1
@@ -59,6 +57,9 @@ export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/hovernet_submodule_test1/
 
 # Change input dir to the downsampled images now:
 input_dir="$input_dir/downsampling/"
+# Name of folder "downsmapling" is based on the name chosen on
+# src.histo_miner.utils.image_processing.downsample_image_segmenter function arg*
+
 
 echo "Run mmsegmentation submodule inference..."
 
