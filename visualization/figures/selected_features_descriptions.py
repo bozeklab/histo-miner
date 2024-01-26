@@ -101,7 +101,7 @@ featnames = list(analysisdataflat.keys())
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 
 
-selection_idx_name = 'selfeat_boruta_idx_depth18'
+selection_idx_name = 'all_borutas/selfeat_boruta_idx_depth20'
 selfeat = np.load(pathtoworkfolder + selection_idx_name + ext)
 selfeat_idx_list = list(selfeat)
 

@@ -53,7 +53,7 @@ delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
 
-#############################################################repslidesx_selectfeat
+#############################################################
 ## Load correlation matrix
 #############################################################
 

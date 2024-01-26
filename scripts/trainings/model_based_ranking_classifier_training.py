@@ -10,6 +10,7 @@ import xgboost
 import lightgbm
 from attrdictionary import AttrDict as attributedict
 from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold
+from sklearn.metrics import balanced_accuracy_score
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
@@ -55,7 +56,8 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 # elif run_lgbm and not run_xgboost:
 # else: RAISE error
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+              
+
 ############################################################
 ## Load feature selection numpy files
 ############################################################
@@ -100,7 +102,7 @@ print('Number of patient is:', num_unique_elements)
 
 
 ##############################################################
-## Traininig Classifiers to obtain instance prediction score
+## Load Classifiers
 ##############################################################
 
 
@@ -124,6 +126,47 @@ lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
 # See parameters documentation to learn about the other verbosity available. 
 
+
+
+##############################################################
+## Load sets of hyper-parameters to do a HP search  
+##############################################################
+
+
+# Load grid of parameters for both classifiers trainings
+
+xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
+xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
+xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
+xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
+
+lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
+lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
+lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
+lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
+lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
+
+
+xgboost_param_grid = {
+                      'random_state': xgboost_param_grid_random_state,
+                      'n_estimators': xgboost_param_grid_n_estimators,
+                      'learning_rate': xgboost_param_grid_learning_rate,
+                      'objective': xgboost_param_grid_objective
+}
+lgbm_param_grid = {
+                    'random_state': lgbm_param_grid_random_state,
+                    'n_estimators': lgbm_param_grid_n_estimators,
+                    'learning_rate': lgbm_param_grid_learning_rate,
+                    'objective': lgbm_param_grid_objective,
+                    'num_leaves': lgbm_param_grid_num_leaves
+}
+
+
+
+
+##############################################################
+## Traininig Classifiers to obtain instance prediction score
+##############################################################
 
 
 print('Start Classifiers trainings...')
@@ -189,60 +232,140 @@ xgboost_slide_ranking = xgboost
 
 
 if classification_from_allfeatures:
-    # Create a list of splits indeces with all features 
+    # Create a list of splits with all features 
     splits_nested_list = list()
+    # Create a list of patient IDs corresponding of the splits:
+    splits_patientID_list = list()
     for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
                                                                      train_clarray, 
                                                                      groups=patientids_ordered)):
         # Generate training and test data from the indexes
-        X_train, X_test = train_featarray[train_index], train_featarray[test_index]
-        y_train, y_test = train_clarray[train_index], train_clarray[test_index]
+        X_train = train_featarray[train_index]
+        X_test = train_featarray[test_index]
+        y_train = train_clarray[train_index]
+        y_test = train_clarray[test_index]
 
         splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+        # Generate the corresponding list for patient ids
+        X_train_patID = patientids_ordered[train_index]
+        X_test_patID = patientids_ordered[test_index]
+
+        splits_patientID_list.append([X_train_patID, X_test_patID])
 
 else:
     # Create a list of splits indeces with the selected features 
     splits_nested_list = list()
+    # Create a list of patient IDs corresponding of the splits:
+    splits_patientID_list = list()
     for i, (train_index, test_index) in enumerate(stratgroupkf.split(featarray_boruta, 
                                                                      train_clarray, 
                                                                      groups=patientids_ordered)):
         # Generate training and test data from the indexes
-        X_train, X_test = featarray_boruta[train_index], featarray_boruta[test_index]
-        y_train, y_test = train_clarray[train_index], train_clarray[test_index]
+        X_train = featarray_boruta[train_index]
+        X_test = featarray_boruta[test_index]
+        y_train = train_clarray[train_index]
+        y_test = train_clarray[test_index]
 
         splits_nested_list.append([X_train, y_train, X_test, y_test])
 
+        # Generate the corresponding list for patient ids
+        X_train_patID = patientids_ordered[train_index]
+        X_test_patID = patientids_ordered[test_index]
+
+        splits_patientID_list.append([X_train_patID, X_test_patID])
+
+
+
+# With the new version of slide selection, everything should be done in one loop,
+# with beginning of the loop beeing the slide selection I think
 
 # -- XGBOOST --
+
+nbr_of_splits = 10 # Assuming 10 splits
+
 if run_xgboost and not run_lgbm:
 
-    list_proba_predictions = []
+    balanced_accuracies = []
+    list_proba_predictions_slideselect = []
 
-    for i in range(10):  # Assuming you have 10 splits
+    for i in range(nbr_of_splits):  
         X_train = splits_nested_list[i][0]
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
         
         xgboost_slide_ranking = xgboost
-        xgboost_slide_ranking = xgboost_slide_ranking.fit(X_train, 
-                                                          y_train, 
-                                                          eval_set=[(X_test, y_test)])
+        xgboost_slide_ranking = xgboost_slide_ranking.fit(X_train, y_train)
         
-        if classification_from_allfeatures:
-            proba_predictions = xgboost_slide_ranking.predict_proba(train_featarray)
-        else:
-            proba_predictions = xgboost_slide_ranking.predict_proba(featarray_boruta)
+        proba_predictions = xgboost_slide_ranking.predict_proba(X_train)
         
         # Keep only the highest of the 2 probabilities 
         highest_proba_prediction = np.max(proba_predictions, axis=1)
-        list_proba_predictions.append(highest_proba_prediction)
+        list_proba_predictions_slideselect.append(highest_proba_prediction)
+
+        # Now we should keep one slide per patient of the training set
+        # load the corresponding ID lists
+        X_train_patID = splits_patientID_list[i][0]
+        X_test_patID = splits_patientID_list[i][1]
+        
+        # Dictionary to store the index of the highest probability score for each group
+        idx_most_representative_slide_per_patient = []
+
+        # Iterate through groups
+        for patientid in np.unique(X_train_patID):
+            # Get the indices of samples belonging to the current group
+            slide_indices = np.where(X_train_patID == patientid)[0]
+
+            # Get the probability predictions for each slides of the patient
+            patietn_slides_probas = list_proba_predictions_slideselect[slide_indices]
+
+            # Find the index of the maximum probability score
+            max_proba_index = np.argmax(patietn_slides_probas)
+
+            # Store the index in the dictionary
+            idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
+
+
+        # TODO: always check (at elast experimentaly) that the indexing is correct    
+        idx_most_representative_slide_per_patient = [val - 1 for val 
+                                                     in idx_most_representative_slide_per_patient]
+
+
+        # Generate new feature matrix and new classification array
+        # Generate classification array of only representative slides
+        train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
+
+        # Generate the features of representatative slides with all features
+        feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+       
+
+        ## Evaluate on the test split of the cross-validation run
+        
+        # Train again but this time only with the selected slides 
+
+        # ---- maybe a selection of HP is also necessary start without ---
+        # --- check where exactly to include the HP search in this loop not to have biased --
+        # a nested list for the HP search can make sense now ?
+
+        xgboost_training = xgboost
+        xgboost_training = xgboost_training.fit(feat_representative_slides, train_clarray_refined) 
+
+        # Make predictions on the test set
+        y_pred = xgboost_training.predict(X_test)
+
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracies.append(balanced_accuracy)
+        
 
 
 # -- LGBM --
+
 elif run_lgbm and not run_xgboost:
 
-    list_proba_predictions = []
+    balanced_accuracies = []
+    list_proba_predictions_slideselect = []
 
     for i in range(10):  # Assuming you have 10 splits
         X_train = splits_nested_list[i][0]
@@ -251,18 +374,69 @@ elif run_lgbm and not run_xgboost:
         y_test = splits_nested_list[i][3]
         
         lgbm_slide_ranking = lightgbm
-        lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, 
-                                                    y_train, 
-                                                    eval_set=[(X_test, y_test)])
+        lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, y_train)
         
-        if classification_from_allfeatures:
-            proba_predictions = lgbm_slide_ranking.predict_proba(train_featarray)
-        else:
-            proba_predictions = lgbm_slide_ranking.predict_proba(featarray_boruta)
+        proba_predictions = lgbm_slide_ranking.predict_proba(X_train)
         
         # Keep only the highest of the 2 probabilities 
         highest_proba_prediction = np.max(proba_predictions, axis=1)
-        list_proba_predictions.append(highest_proba_prediction)
+        list_proba_predictions_slideselect.append(highest_proba_prediction)
+
+        # Now we should keep one slide per patient of the training set
+        # load the corresponding ID lists
+        X_train_patID = splits_patientID_list[i][0]
+        X_test_patID = splits_patientID_list[i][1]
+        
+        # Dictionary to store the index of the highest probability score for each group
+        idx_most_representative_slide_per_patient = []
+
+        # Iterate through groups
+        for patientid in np.unique(X_train_patID):
+            # Get the indices of samples belonging to the current group
+            slide_indices = np.where(X_train_patID == patientid)[0]
+
+            # Get the probability predictions for each slides of the patient
+            patietn_slides_probas = list_proba_predictions_slideselect[slide_indices]
+
+            # Find the index of the maximum probability score
+            max_proba_index = np.argmax(patietn_slides_probas)
+
+            # Store the index in the dictionary
+            idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
+
+
+        # TODO: always check (at elast experimentaly) that the indexing is correct    
+        idx_most_representative_slide_per_patient = [val - 1 for val 
+                                                     in idx_most_representative_slide_per_patient]
+
+
+        # Generate new feature matrix and new classification array
+        # Generate classification array of only representative slides
+        train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
+
+        # Generate the features of representatative slides with all features
+        feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+       
+
+        ## Evaluate on the test split of the cross-validation run
+        
+        # Train again but this time only with the selected slides 
+
+        # ---- maybe a selection of HP is also necessary start without ---
+        # --- check where exactly to include the HP search in this loop not to have biased --
+        # a nested list for the HP search can make sense now ?
+
+        lightgbm_training = lightgbm
+        lightgbm_training = lightgbm_training.fit(feat_representative_slides, train_clarray_refined) 
+
+        # Make predictions on the test set
+        y_pred = lightgbm_training.predict(X_test)
+
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracies.append(balanced_accuracy)
+
+
 
 else:
     raise ValueError('run_xgboost and run_lgbm cannot be both True or both False for'
@@ -270,251 +444,9 @@ else:
 
 
 
-# Calculate the mean along axis 0
-mean_proba_predictions = np.mean(list_proba_predictions, axis=0)
 
 
 
-##############################################################
-## Keep highest score for each patient
-##############################################################
-
-
-# Dictionary to store the index of the highest probability score for each group
-idx_most_representative_slide_per_patient = []
-nbrpatient = max(patientids_ordered)
-
-# Iterate through groups
-for patientid in np.unique(patientids_ordered):
-    # Get the indices of samples belonging to the current group
-    slide_indices = np.where(patientids_ordered == patientid)[0]
-
-    # Get the mean probability predictions for the current group
-    patient_mean_probas = mean_proba_predictions[slide_indices]
-
-    # Find the index of the maximum probability score
-    max_proba_index = np.argmax(patient_mean_probas)
-
-    # Store the index in the dictionary
-    idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
-
-
-idx_most_representative_slide_per_patient = [val - 1 for val 
-                                             in idx_most_representative_slide_per_patient]
-
-
-# Generate new feature matrix and new classification array
-# Generate classification array of only representative slides
-train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
-
-# Generate the features of representatative slides with all features
-feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
-# Generate the features of representatative slides with selected features
-feat_representative_slides_boruta = featarray_boruta[idx_most_representative_slide_per_patient,:]
-
-
-
-##############################################################
-## Save idx and feat array of most representative slides 
-##############################################################
-
-# Save ID of the most representative slides! (becareful to permute again) 
-# We need to permute again to retreive original order
-# The - 1 is needed to find back the original indexes starting to 0 and not 1
-idx_most_representative_slides_export = [
-    permutation_index[idx_most_representative_slide_per_patient]
-    ][0]
-# idx_most_representative_slides_export = [len(permutation_index) - index - 1 for index 
-#                                          in idx_most_representative_slide_per_patient]
-idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)
-
-# this export whould be tested back by loading the indeces here and check 
-# if the result are similar*                         
-
-# saving
-if run_xgboost and not run_lgbm:
-    
-    if classification_from_allfeatures:
-        np.save(pathfeatselect + 
-                'most_representative_slides_all_features_xgboost_idx.npy', 
-                 idx_most_representative_slides_export) 
-    else:    
-        np.save(pathfeatselect + 
-                'most_representative_slides_selfeatures_xgboost_idx.npy', 
-                idx_most_representative_slides_export) 
-
-elif run_lgbm and not run_xgboost:
-
-    if classification_from_allfeatures:
-        np.save(pathfeatselect + 
-                'most_representative_slides_all_features_lgbm_idx.npy', 
-                 idx_most_representative_slides_export) 
-    else:    
-        np.save(pathfeatselect + 
-                'most_representative_slides_selfeatures_lgbm_idx.npy', 
-                idx_most_representative_slides_export) 
-
-
-### HERE IS THE WAY TO LOAD THE INDEXES AND MAKE THEM COMPTAIBLE WITH THE PERMUTATIONS (IN OTHER CODES)
-# idx_mostrepr_test = np.load(pathfeatselect + 
-#                 'most_representative_slides_all_features_xgboost_idx.npy')
-# # idx_mostrepr_test2 = [i for i in range(len(permutation_index)) if permutation_index[i] in idx_mostrepr_test ]
-
-# idx_mostrepr_test2 = list()
-# for value in idx_mostrepr_test:
-#     if value in permutation_index:
-#         new_index = np.where(permutation_index == value)[0]
-#         idx_mostrepr_test2.append(new_index)
-
-# idx_mostrepr_test2 = np.asarray(idx_mostrepr_test2)
-# idx_mostrepr_test2 = idx_mostrepr_test2[:,0]
-
-
-# Save new arrays (feature and classification)
-if run_xgboost and not run_lgbm:
-    np.save(pathfeatselect + 'repslidesx_clarray.npy', 
-                train_clarray_refined)
-
-    if classification_from_allfeatures:
-        feat_representative_slides_export = np.transpose(
-            feat_representative_slides
-            )
-        np.save(pathfeatselect + 'repslidesx_featarray.npy', 
-                feat_representative_slides_export)
-    else:
-        feat_representative_slides_boruta_export = np.transpose(
-            feat_representative_slides_boruta
-            )
-        np.save(pathfeatselect + 'repslidesx_selectfeat.npy', 
-                feat_representative_slides_boruta_export)
-
-
-elif run_lgbm and not run_xgboost:
-    np.save(pathfeatselect + 'repslidesl_clarray.npy', 
-                train_clarray_refined)
-
-    if classification_from_allfeatures:
-        feat_representative_slides_export = np.transpose(
-            feat_representative_slides
-            )
-        np.save(pathfeatselect + 'repslidesl_featarray.npy', 
-                feat_representative_slides_export) 
-    else:
-        feat_representative_slides_boruta_export = np.transpose(
-            feat_representative_slides_boruta
-            )
-        np.save(pathfeatselect + 'repslidesl_selectfeat.npy', 
-                feat_representative_slides_boruta_export) 
-
-
-
-### SEPERATE THIS PART IN A NEAR FUTURE ?
-
-
-##############################################################
-## Cross validation of classifiers with selected instances
-##############################################################
-
-# I have now  to either do the learning here with the kept sample 
-
-# Need another instance of the classifier
-lgbm_training = lightgbm
-xgboost_training = xgboost
-
-# -- XGBOOST --
-### Evaluate with cross validation for xgboost
-if run_xgboost and not run_lgbm:
-    if classification_from_allfeatures:
-        # Evaluate with cross validation for lgbm with selected features (representative slides)
-        crossvalid_results_refined = cross_val_score(xgboost_training, 
-                                                     feat_representative_slides, 
-                                                     train_clarray_refined,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-
-        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
-
-        # Evaluate with cross validation for lgbm with selected features (all slides)
-        crossvalid_results_original = cross_val_score(xgboost_training, 
-                                                      train_featarray, 
-                                                      train_clarray,  
-                                                      cv=10,  
-                                                      scoring='balanced_accuracy')
-
-        crossvalidor_meanscore = np.mean(crossvalid_results_original)
-        crossvalidor_maxscore = np.max(crossvalid_results_original)
-
-
-
-    else:
-        # Evaluate with cross validation for lgbm with selected features (representative slides)
-        crossvalid_results_refined = cross_val_score(xgboost_training, 
-                                                     feat_representative_slides_boruta, 
-                                                     train_clarray_refined,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-
-        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
-
-        # Evaluate with cross validation for lgbm with selected features (all slides)
-        crossvalid_results_original = cross_val_score(xgboost_training, 
-                                                      featarray_boruta, 
-                                                      train_clarray,  
-                                                      cv=10,  
-                                                      scoring='balanced_accuracy')
-
-        crossvalidor_meanscore = np.mean(crossvalid_results_original)
-        crossvalidor_maxscore = np.max(crossvalid_results_original)
-
-
-# -- LGBM --
-### Evaluate with cross validation for lgbm
-elif run_lgbm and not run_xgboost:
-    if classification_from_allfeatures:
-        # Evaluate with cross validation for lgbm with selected features (representative slides)
-        crossvalid_results_refined = cross_val_score(lgbm_training, 
-                                                     feat_representative_slides, 
-                                                     train_clarray_refined,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-
-        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
-
-        # Evaluate with cross validation for lgbm with selected features (all slides)
-        crossvalid_results_original = cross_val_score(lgbm_training, 
-                                                      train_featarray, 
-                                                      train_clarray,  
-                                                      cv=10,  
-                                                      scoring='balanced_accuracy')
-
-        crossvalidor_meanscore = np.mean(crossvalid_results_original)
-        crossvalidor_maxscore = np.max(crossvalid_results_original)
-
-
-
-    else:
-        # Evaluate with cross validation for lgbm with selected features (representative slides)
-        crossvalid_results_refined = cross_val_score(lgbm_training, 
-                                                     feat_representative_slides_boruta, 
-                                                     train_clarray_refined,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-
-        crossvalidrep_meanscore = np.mean(crossvalid_results_refined)
-        crossvalidrep_maxscore = np.max(crossvalid_results_refined)
-
-        # Evaluate with cross validation for lgbm with selected features (all slides)
-        crossvalid_results_original = cross_val_score(lgbm_training, 
-                                                      featarray_boruta, 
-                                                      train_clarray,  
-                                                      cv=10,  
-                                                      scoring='balanced_accuracy')
-
-        crossvalidor_meanscore = np.mean(crossvalid_results_original)
-        crossvalidor_maxscore = np.max(crossvalid_results_original)
 
 
 
@@ -523,33 +455,6 @@ elif run_lgbm and not run_xgboost:
 ##############################################################
 
 # Load grid of parameters for both classifiers trainings
-
-xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
-xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
-xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
-xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
-
-lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
-lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
-lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
-lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
-lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
-
-
-xgboost_param_grid = {
-                      'random_state': xgboost_param_grid_random_state,
-                      'n_estimators': xgboost_param_grid_n_estimators,
-                      'learning_rate': xgboost_param_grid_learning_rate,
-                      'objective': xgboost_param_grid_objective
-}
-lgbm_param_grid = {
-                    'random_state': lgbm_param_grid_random_state,
-                    'n_estimators': lgbm_param_grid_n_estimators,
-                    'learning_rate': lgbm_param_grid_learning_rate,
-                    'objective': lgbm_param_grid_objective,
-                    'num_leaves': lgbm_param_grid_num_leaves
-}
-
 
  
 # Start the HP search to maximize the mean balanced accuracy over splits
@@ -651,3 +556,106 @@ elif run_lgbm and not run_xgboost:
 
 # dev ink for dev
 devink = 0
+
+
+
+
+
+
+
+
+
+
+# Kept it here for now
+
+# ############################################################
+# ## Save idx and feat array of most representative slides 
+# ##############################################################
+
+# # Save ID of the most representative slides! (becareful to permute again) 
+# # We need to permute again to retreive original order
+# # The - 1 is needed to find back the original indexes starting to 0 and not 1
+# idx_most_representative_slides_export = [
+#     permutation_index[idx_most_representative_slide_per_patient]
+#     ][0]
+# # idx_most_representative_slides_export = [len(permutation_index) - index - 1 for index 
+# #                                          in idx_most_representative_slide_per_patient]
+# idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)
+
+# # this export whould be tested back by loading the indeces here and check 
+# # if the result are similar*                         
+
+# # saving
+# if run_xgboost and not run_lgbm:
+    
+#     if classification_from_allfeatures:
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_all_features_xgboost_idx.npy', 
+#                  idx_most_representative_slides_export) 
+#     else:    
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_selfeatures_xgboost_idx.npy', 
+#                 idx_most_representative_slides_export) 
+
+# elif run_lgbm and not run_xgboost:
+
+#     if classification_from_allfeatures:
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_all_features_lgbm_idx.npy', 
+#                  idx_most_representative_slides_export) 
+#     else:    
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_selfeatures_lgbm_idx.npy', 
+#                 idx_most_representative_slides_export) 
+
+
+# ### HERE IS THE WAY TO LOAD THE INDEXES AND MAKE THEM COMPTAIBLE WITH THE PERMUTATIONS (IN OTHER CODES)
+# # idx_mostrepr_test = np.load(pathfeatselect + 
+# #                 'most_representative_slides_all_features_xgboost_idx.npy')
+# # # idx_mostrepr_test2 = [i for i in range(len(permutation_index)) if permutation_index[i] in idx_mostrepr_test ]
+
+# # idx_mostrepr_test2 = list()
+# # for value in idx_mostrepr_test:
+# #     if value in permutation_index:
+# #         new_index = np.where(permutation_index == value)[0]
+# #         idx_mostrepr_test2.append(new_index)
+
+# # idx_mostrepr_test2 = np.asarray(idx_mostrepr_test2)
+# # idx_mostrepr_test2 = idx_mostrepr_test2[:,0]
+
+
+# # Save new arrays (feature and classification)
+# if run_xgboost and not run_lgbm:
+#     np.save(pathfeatselect + 'repslidesx_clarray.npy', 
+#                 train_clarray_refined)
+
+#     if classification_from_allfeatures:
+#         feat_representative_slides_export = np.transpose(
+#             feat_representative_slides
+#             )
+#         np.save(pathfeatselect + 'repslidesx_featarray.npy', 
+#                 feat_representative_slides_export)
+#     else:
+#         feat_representative_slides_boruta_export = np.transpose(
+#             feat_representative_slides_boruta
+#             )
+#         np.save(pathfeatselect + 'repslidesx_selectfeat.npy', 
+#                 feat_representative_slides_boruta_export)
+
+
+# elif run_lgbm and not run_xgboost:
+#     np.save(pathfeatselect + 'repslidesl_clarray.npy', 
+#                 train_clarray_refined)
+
+#     if classification_from_allfeatures:
+#         feat_representative_slides_export = np.transpose(
+#             feat_representative_slides
+#             )
+#         np.save(pathfeatselect + 'repslidesl_featarray.npy', 
+#                 feat_representative_slides_export) 
+#     else:
+#         feat_representative_slides_boruta_export = np.transpose(
+#             feat_representative_slides_boruta
+#             )
+#         np.save(pathfeatselect + 'repslidesl_selectfeat.npy', 
+#                 feat_representative_slides_boruta_export) 

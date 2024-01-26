@@ -14,7 +14,7 @@ config_path=../configs/models/hovernet.yml
 
 # We need yaml lib so we reactivate histo-miner env if it was not done befre
 conda deactivate
-conda activate histo-miner-env
+conda activate histo-miner-env-2
 
 # We extract all parameters now:
 yaml() {
@@ -89,5 +89,5 @@ fi
 
 # return to previous path and reeactivate histo-miner env for following steps
 conda deactivate
-conda activate histo-miner-env
+conda activate histo-miner-env-2
 cd "$OLDPWD"

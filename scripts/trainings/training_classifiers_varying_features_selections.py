@@ -236,32 +236,32 @@ if not wsi_selection:
     genfeatarray = genfeatarray[permutation_index,:]
 
 #### XGBOOST
-# xgboostvanilla = xgboost
-# if wsi_selection:
-#     crossvalid_results = cross_val_score(xgboostvanilla, 
-#                                          genfeatarray, 
-#                                          train_clarray,  
-#                                          cv=10,  
-#                                          scoring='balanced_accuracy')
-# else:
-#     crossvalid_results = cross_val_score(xgboostvanilla, 
-#                                          genfeatarray, 
-#                                          train_clarray,  
-#                                          groups=patientids_ordered,
-#                                          cv=stratgroupkf,  
-#                                          scoring='balanced_accuracy')
-# crossvalid_meanscore = np.mean(crossvalid_results)
-# crossvalid_maxscore = np.max(crossvalid_results)
+xgboostvanilla = xgboost
+if wsi_selection:
+    crossvalid_results = cross_val_score(xgboostvanilla, 
+                                         genfeatarray, 
+                                         train_clarray,  
+                                         cv=10,  
+                                         scoring='balanced_accuracy')
+else:
+    crossvalid_results = cross_val_score(xgboostvanilla, 
+                                         genfeatarray, 
+                                         train_clarray,  
+                                         groups=patientids_ordered,
+                                         cv=stratgroupkf,  
+                                         scoring='balanced_accuracy')
+crossvalid_meanscore = np.mean(crossvalid_results)
+crossvalid_maxscore = np.max(crossvalid_results)
 
-# # Insert results in the corresponding lists
-# if search_bestsplit:
-#     xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-#     xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-#     xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-# else:
-#     xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
-#     xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-#     xgbmean_aAcc_boruta.append(crossvalid_meanscore) 
+# Insert results in the corresponding lists
+if search_bestsplit:
+    xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
+    xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
+    xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+else:
+    xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
+    xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
+    xgbmean_aAcc_boruta.append(crossvalid_meanscore) 
 
 #### LIGHT GBM
 lightgbmvanilla = lightgbm
@@ -327,28 +327,28 @@ for nbr_keptfeat_idx in range(55, 0, -1):
             featarray_mrmr = featarray_mrmr[permutation_index,:]
 
         ##### XGBOOST
-        # xgboostmrmr = xgboost
-        # if wsi_selection:
-        #     crossvalid_results = cross_val_score(xgboostmrmr, 
-        #                                          featarray_mrmr, 
-        #                                          train_clarray,  
-        #                                          cv=10,  
-        #                                          scoring='balanced_accuracy')
-        # else:
-        #     crossvalid_results = cross_val_score(xgboostmrmr, 
-        #                                         featarray_mrmr, 
-        #                                         train_clarray,  
-        #                                         groups=patientids_ordered,
-        #                                         cv=stratgroupkf,  
-        #                                         scoring='balanced_accuracy')
-        # crossvalid_meanscore = np.mean(crossvalid_results)
-        # crossvalid_maxscore = np.max(crossvalid_results)
+        xgboostmrmr = xgboost
+        if wsi_selection:
+            crossvalid_results = cross_val_score(xgboostmrmr, 
+                                                 featarray_mrmr, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(xgboostmrmr, 
+                                                featarray_mrmr, 
+                                                train_clarray,  
+                                                groups=patientids_ordered,
+                                                cv=stratgroupkf,  
+                                                scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
         
-        # # Insert results in the corresponding lists
-        # if search_bestsplit:
-        #     xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-        # else: 
-        #     xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
+        # Insert results in the corresponding lists
+        if search_bestsplit:
+            xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
+        else: 
+            xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
 
         ##### LIGHT GBM
         lightgbmmrmr = lightgbm
@@ -388,28 +388,28 @@ for nbr_keptfeat_idx in range(55, 0, -1):
             featarray_mannwhitney = featarray_mannwhitney[permutation_index,:]
 
         ##### XGBOOST
-        # xgboostmannwhitney = xgboost
-        # if wsi_selection:
-        #     crossvalid_results = cross_val_score(xgboostmannwhitney, 
-        #                                          featarray_mannwhitney, 
-        #                                          train_clarray,  
-        #                                          cv=10,  
-        #                                          scoring='balanced_accuracy')
-        # else:
-        #     crossvalid_results = cross_val_score(xgboostmannwhitney, 
-        #                                          featarray_mannwhitney, 
-        #                                          train_clarray,  
-        #                                          groups=patientids_ordered,
-        #                                          cv=stratgroupkf,  
-        #                                          scoring='balanced_accuracy')
-        # crossvalid_meanscore = np.mean(crossvalid_results)
-        # crossvalid_maxscore = np.max(crossvalid_results)
+        xgboostmannwhitney = xgboost
+        if wsi_selection:
+            crossvalid_results = cross_val_score(xgboostmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 cv=10,  
+                                                 scoring='balanced_accuracy')
+        else:
+            crossvalid_results = cross_val_score(xgboostmannwhitney, 
+                                                 featarray_mannwhitney, 
+                                                 train_clarray,  
+                                                 groups=patientids_ordered,
+                                                 cv=stratgroupkf,  
+                                                 scoring='balanced_accuracy')
+        crossvalid_meanscore = np.mean(crossvalid_results)
+        crossvalid_maxscore = np.max(crossvalid_results)
 
-        # # Insert results in the corresponding lists
-        # if search_bestsplit:
-        #     xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-        # else: 
-        #     xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
+        # Insert results in the corresponding lists
+        if search_bestsplit:
+            xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
+        else: 
+            xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
 
         ##### LIGHT GBM
         lightgbmmannwhitney = lightgbm
@@ -516,28 +516,28 @@ if os.path.exists(selfeat_boruta_folder):
                 featarray_boruta = featarray_boruta[permutation_index,:]
           
             ##### XGBOOST
-            # xgboostboruta = xgboost
-            # if wsi_selection:
-            #     crossvalid_results = cross_val_score(xgboostboruta, 
-            #                                          featarray_boruta, 
-            #                                          train_clarray,  
-            #                                          cv=10,  
-            #                                          scoring='balanced_accuracy')
-            # else:
-            #     crossvalid_results = cross_val_score(xgboostboruta, 
-            #                                          featarray_boruta, 
-            #                                          train_clarray,  
-            #                                          groups=patientids_ordered,
-            #                                          cv=stratgroupkf,  
-            #                                          scoring='balanced_accuracy')
-            # crossvalid_meanscore = np.mean(crossvalid_results)
-            # crossvalid_maxscore = np.max(crossvalid_results)
+            xgboostboruta = xgboost
+            if wsi_selection:
+                crossvalid_results = cross_val_score(xgboostboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     cv=10,  
+                                                     scoring='balanced_accuracy')
+            else:
+                crossvalid_results = cross_val_score(xgboostboruta, 
+                                                     featarray_boruta, 
+                                                     train_clarray,  
+                                                     groups=patientids_ordered,
+                                                     cv=stratgroupkf,  
+                                                     scoring='balanced_accuracy')
+            crossvalid_meanscore = np.mean(crossvalid_results)
+            crossvalid_maxscore = np.max(crossvalid_results)
 
-            # # Insert results in the corresponding lists
-            # if search_bestsplit:
-            #     xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-            # else: 
-            #     xgbmean_aAcc_boruta.append(crossvalid_meanscore)
+            # Insert results in the corresponding lists
+            if search_bestsplit:
+                xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+            else: 
+                xgbmean_aAcc_boruta.append(crossvalid_meanscore)
 
             ##### LIGHT GBM
             lightgbmboruta = lightgbm

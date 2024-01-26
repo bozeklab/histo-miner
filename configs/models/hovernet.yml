@@ -13,7 +13,7 @@
 
       input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI/"
 
-      output_dir: "/data//lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
+      output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
       
       cache_path: "/dev/shm/cachelucas/"
 

@@ -33,7 +33,9 @@ PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
 
 ## Functions
 
-def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsampled') -> None:
+def downsample_image(imagepath: str, downfactor: int, 
+                     savename: str = '_downsampled',
+                     savefolder: str= '') -> None:
     """
     Downsample an image with format compatible with PILLOW and save the output image. Use of
     PILLOW to read and process images (because it can read big images, AND CV2 CANNOT).
@@ -45,7 +47,11 @@ def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsamp
     downfactor: int
         Value of the downsampling factor.
     savename: str, optional
-        Suffix of the name of the file to save.
+        Suffix of the name of the file to save. Image will be saved as png.
+    savefolder: str, optional
+        Name of the subfolder where to save the image. 
+        By default there is no name and so the output image will be saved
+        In the same folder as the input image.
     Returns
     -------
     """
@@ -59,7 +65,7 @@ def downsample_image(imagepath: str, downfactor: int, savename: str = '_downsamp
     # Now save the downsampled image
     pathtofolder, filename = os.path.split(imagepath)
     filenamecore, ext = os.path.splitext(filename)
-    savepath = pathtofolder + '/' + filenamecore + savename + ext
+    savepath = pathtofolder + '/' + savefolder + filenamecore + savename + ext
     image.save(savepath)
 
 
@@ -127,8 +133,10 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') 
 
 ######## ADD CODE TO DOWNSAMPLE ALL IMAGES DURING SEGEMENTER INFERENCE
 
-def downsample_image_segmenter(imagepath: str, 
+def downsample_image_segmenter(pathtofolder: str,
+                               fileext: str = 'ndpi', 
                                downfactor: int = 32, 
+                               savefolder: str = 'downsampling/',
                                savename: str = '') -> None:
     """
     Downsample an image with format compatible with PILLOW and save the output image. Use of
@@ -152,18 +160,12 @@ def downsample_image_segmenter(imagepath: str,
     # save new images in a new folder / downsample folder
 
     # later save segmenter output not there but where it is define in config
-
-
-
-
-    image = Image.open(imagepath)
-    width, height = image.size[0], image.size[1]
-    new_width = width // downfactor
-    new_height = height // downfactor
-    # Downsampling Operation
-    image.thumbnail((new_width, new_height))
-    # Now save the downsampled image
-    pathtofolder, filename = os.path.split(imagepath)
-    filenamecore, ext = os.path.splitext(filename)
-    savepath = pathtofolder + '/' + filenamecore + savename + ext
-    image.save(savepath)
+    files = os.path.join(pathtofolder, '*.'+ fileext)
+    files = glob.glob(files)
+    for fname in tqdm(files):
+        if os.path.exists(fname):
+            downsample_image(fname, 
+                             downfactor=downfactor,
+                             savefolder=savefolder,
+                             savename=savename
+                             )

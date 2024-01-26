@@ -2,19 +2,19 @@
 
   inference:
 
-    gpu: 
+    gpu: 1
 
-    samples_per_gpu:
+    samples_per_gpu: 1 
     
-    workers_per_gpu:   
+    workers_per_gpu: 8 
 
     paths:
 
-      checkpoints: "/path/to/checkpoints"
+      checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/segmenter_bestweights.pth"
 
-      input_dir: "path/to/inference/data"
+      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI/"
 
-      output_dir: "./data/UQ/data/shared/scc/data_conversion_downsampling/downsfactor-40/no_progress/Non-Melanoma/inference_output/"
+      output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_segmenteroutput/"
 
       
 
