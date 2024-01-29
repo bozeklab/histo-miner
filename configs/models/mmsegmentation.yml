@@ -2,7 +2,8 @@
 
   inference:
 
-    downsample_needed: True
+    downsample_needed: "false"
+    # boolean in bash is without capital 
 
     gpu: 1
 
@@ -12,13 +13,23 @@
 
     paths:
 
-      checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/segmenter_bestweights.pth"
+      checkpoints: /data/lsancere/bestcheckpoints-histo-miner/segmenter_bestweights.pth
 
-      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI/"
+      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI/downsampling/"
 
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_segmenteroutput/"
 
-  
+     
+    run_on_slurm: "true" 
+    # boolean in bash is without capital
+
+    slurm_param:
+      # to know name of partititon and have more info run:
+      # sinfo -N -r -l
+      # on SLURM
+      partition: debug
+
+      job_name: seginf
 
 
 # Parameters for training?
