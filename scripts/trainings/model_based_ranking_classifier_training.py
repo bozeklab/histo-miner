@@ -67,7 +67,7 @@ ext = '.npy'
 print('Load feature selection numpy files...')
 
 # Load feature selection numpy files
-pathselfeat_boruta = pathfeatselect + 'selfeat_boruta_idx_depth18' + ext
+pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
 selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 print('Loading feature selected indexes done.')
 
@@ -318,7 +318,7 @@ if run_xgboost and not run_lgbm:
             slide_indices = np.where(X_train_patID == patientid)[0]
 
             # Get the probability predictions for each slides of the patient
-            patietn_slides_probas = list_proba_predictions_slideselect[slide_indices]
+            patietn_slides_probas = list_proba_predictions_slideselect[i][slide_indices]
 
             # Find the index of the maximum probability score
             max_proba_index = np.argmax(patietn_slides_probas)
@@ -336,9 +336,13 @@ if run_xgboost and not run_lgbm:
         # Generate classification array of only representative slides
         train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
 
-        # Generate the features of representatative slides with all features
-        feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
-       
+
+        # Generate the features of representatative slides with all features or with selected ones
+        if classification_from_allfeatures:
+            
+            feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+        else:
+            feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
 
         ## Evaluate on the test split of the cross-validation run
         
@@ -357,6 +361,14 @@ if run_xgboost and not run_lgbm:
         # Calculate balanced accuracy for the current split
         balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
         balanced_accuracies.append(balanced_accuracy)
+
+    # Have the mean of balanced accuracies
+    balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+
+    mean_bacc = np.mean(balanced_accuracies_numpy)
+    print('slpits balanced accuracies:', balanced_accuracies)
+    print('mean balanced accuracy: {}'.format(mean_bacc))
         
 
 
@@ -396,7 +408,7 @@ elif run_lgbm and not run_xgboost:
             slide_indices = np.where(X_train_patID == patientid)[0]
 
             # Get the probability predictions for each slides of the patient
-            patietn_slides_probas = list_proba_predictions_slideselect[slide_indices]
+            patietn_slides_probas = list_proba_predictions_slideselect[i][slide_indices]
 
             # Find the index of the maximum probability score
             max_proba_index = np.argmax(patietn_slides_probas)
@@ -414,8 +426,12 @@ elif run_lgbm and not run_xgboost:
         # Generate classification array of only representative slides
         train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
 
-        # Generate the features of representatative slides with all features
-        feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+        # Generate the features of representatative slides with all features or with selected ones
+        if classification_from_allfeatures:
+            
+            feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+        else:
+            feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
        
 
         ## Evaluate on the test split of the cross-validation run
@@ -424,7 +440,7 @@ elif run_lgbm and not run_xgboost:
 
         # ---- maybe a selection of HP is also necessary start without ---
         # --- check where exactly to include the HP search in this loop not to have biased --
-        # a nested list for the HP search can make sense now ?
+        # a nested cross validation for the HP search can make sense now ?
 
         lightgbm_training = lightgbm
         lightgbm_training = lightgbm_training.fit(feat_representative_slides, train_clarray_refined) 
@@ -435,6 +451,14 @@ elif run_lgbm and not run_xgboost:
         # Calculate balanced accuracy for the current split
         balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
         balanced_accuracies.append(balanced_accuracy)
+
+    # Have the mean of balanced accuracies
+    balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+
+    mean_bacc = np.mean(balanced_accuracies_numpy)
+    print('slpits balanced accuracies:', balanced_accuracies)
+    print('mean balanced accuracy: {}'.format(mean_bacc))
 
 
 
@@ -450,112 +474,112 @@ else:
 
 
 
-##############################################################
-## New search of best HPs
-##############################################################
+# ##############################################################
+# ## New search of best HPs
+# ##############################################################
 
-# Load grid of parameters for both classifiers trainings
+# # Load grid of parameters for both classifiers trainings
 
  
-# Start the HP search to maximize the mean balanced accuracy over splits
-# We only focus on the mean so far
+# # Start the HP search to maximize the mean balanced accuracy over splits
+# # We only focus on the mean so far
 
-# -- XGBOOST --
-if run_xgboost and not run_lgbm:
-    if classification_from_allfeatures:
-        cv_bestmean_xgboost = 0 
-        for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
-            xgboost_training.set_params(**paramset)
-            # Evaluate the model with cross validation
-            crossvalid_results_xgboost = cross_val_score(xgboost_training, 
-                                                        feat_representative_slides, 
-                                                        train_clarray_refined,  
-                                                        cv=10,  
-                                                        scoring='balanced_accuracy')
+# # -- XGBOOST --
+# if run_xgboost and not run_lgbm:
+#     if classification_from_allfeatures:
+#         cv_bestmean_xgboost = 0 
+#         for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+#             xgboost_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+#                                                         feat_representative_slides, 
+#                                                         train_clarray_refined,  
+#                                                         cv=10,  
+#                                                         scoring='balanced_accuracy')
 
-            crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
-            if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
-                cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
-                bestmeanset_xgboost = paramset
-                cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
-        print('\n\n ** xgboost (all features) **')
-        print('The best mean average accuracy is:',cv_bestmean_xgboost)
-        print('Corresponding set of parameters for xgboost on all features is:',
-               bestmeanset_xgboost)
-        print('Edit the configuration file consequently')            
+#             crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+#             if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+#                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+#                 bestmeanset_xgboost = paramset
+#                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+#         print('\n\n ** xgboost (all features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_xgboost)
+#         print('Corresponding set of parameters for xgboost on all features is:',
+#                bestmeanset_xgboost)
+#         print('Edit the configuration file consequently')            
 
-    else:
-        cv_bestmean_xgboost = 0 
-        for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
-            xgboost_training.set_params(**paramset)
-            # Evaluate the model with cross validation
-            crossvalid_results_xgboost = cross_val_score(xgboost_training, 
-                                                        feat_representative_slides_boruta, 
-                                                        train_clarray_refined,  
-                                                        cv=10,  
-                                                        scoring='balanced_accuracy')
+#     else:
+#         cv_bestmean_xgboost = 0 
+#         for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+#             xgboost_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+#                                                         feat_representative_slides_boruta, 
+#                                                         train_clarray_refined,  
+#                                                         cv=10,  
+#                                                         scoring='balanced_accuracy')
 
-            crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
-            if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
-                cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
-                bestmeanset_xgboost = paramset
-                cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
-        print('\n\n ** xgboost (selected features) **')
-        print('The best mean average accuracy is:',cv_bestmean_xgboost)
-        print('Corresponding set of parameters for xgboost on selected features is:',
-               bestmeanset_xgboost)
-        print('Edit the configuration file consequently')            
+#             crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+#             if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+#                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+#                 bestmeanset_xgboost = paramset
+#                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+#         print('\n\n ** xgboost (selected features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_xgboost)
+#         print('Corresponding set of parameters for xgboost on selected features is:',
+#                bestmeanset_xgboost)
+#         print('Edit the configuration file consequently')            
 
 
 
-# -- LGBM --
-elif run_lgbm and not run_xgboost:
-    if classification_from_allfeatures:
-        cv_bestmean_lgbm = 0 
-        for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
-            lgbm_training.set_params(**paramset)
-            # Evaluate the model with cross validation
-            crossvalid_results_lgbm = cross_val_score(lgbm_training, 
-                                                       feat_representative_slides, 
-                                                       train_clarray_refined,  
-                                                       cv=10,  
-                                                       scoring='balanced_accuracy')
+# # -- LGBM --
+# elif run_lgbm and not run_xgboost:
+#     if classification_from_allfeatures:
+#         cv_bestmean_lgbm = 0 
+#         for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#             lgbm_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                        feat_representative_slides, 
+#                                                        train_clarray_refined,  
+#                                                        cv=10,  
+#                                                        scoring='balanced_accuracy')
 
-            crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
-            if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
-                cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
-                bestmeanset_lgbm = paramset
-                cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
-        print('\n\n ** lgbm (all features) **')
-        print('The best mean average accuracy is:',cv_bestmean_lgbm)
-        print('Corresponding set of parameters for xgboost on all features is:',
-               bestmeanset_lgbm)
-        print('Edit the configuration file consequently')     
+#             crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#             if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#                 bestmeanset_lgbm = paramset
+#                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+#         print('\n\n ** lgbm (all features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_lgbm)
+#         print('Corresponding set of parameters for xgboost on all features is:',
+#                bestmeanset_lgbm)
+#         print('Edit the configuration file consequently')     
 
-    else:
-        cv_bestmean_lgbm = 0 
-        for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
-            lgbm_training.set_params(**paramset)
-            # Evaluate the model with cross validation
-            crossvalid_results_lgbm = cross_val_score(lgbm_training, 
-                                                       feat_representative_slides_boruta, 
-                                                       train_clarray_refined,  
-                                                       cv=10,  
-                                                       scoring='balanced_accuracy')
+#     else:
+#         cv_bestmean_lgbm = 0 
+#         for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#             lgbm_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                        feat_representative_slides_boruta, 
+#                                                        train_clarray_refined,  
+#                                                        cv=10,  
+#                                                        scoring='balanced_accuracy')
 
-            crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
-            if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
-                cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
-                bestmeanset_lgbm = paramset
-                cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
-        print('\n\n ** lgbm (selected features) **')
-        print('The best mean average accuracy is:',cv_bestmean_lgbm)
-        print('Corresponding set of parameters for xgboost on selected features is:',
-               bestmeanset_lgbm)
-        print('Edit the configuration file consequently')    
+#             crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#             if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#                 bestmeanset_lgbm = paramset
+#                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+#         print('\n\n ** lgbm (selected features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_lgbm)
+#         print('Corresponding set of parameters for xgboost on selected features is:',
+#                bestmeanset_lgbm)
+#         print('Edit the configuration file consequently')    
 
-# dev ink for dev
-devink = 0
+# # dev ink for dev
+# devink = 0
 
 
 

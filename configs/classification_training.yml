@@ -25,7 +25,7 @@
   parameters:
     bool:
 
-      classification_from_allfeatures: True
+      classification_from_allfeatures: False
 
       run_classifiers:
         ridge: False
@@ -36,7 +36,7 @@
 
         xgboost: False
 
-        light_gbm: True  
+        light_gbm: True   
 
       save_evaluations: True
 
