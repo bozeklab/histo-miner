@@ -97,8 +97,8 @@
 
       display_classification_scores: True
 
-      patientid_avail: False
-
+      patientid_avail: True
+      
       perpatient_feat: False
       # Now this name is very missleading should be updated 
 

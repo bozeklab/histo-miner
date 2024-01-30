@@ -651,3 +651,226 @@ elif run_lgbm and not run_xgboost:
 
 # dev ink for dev
 devink = 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ##############################################################
+# ## New search of best HPs
+# ##############################################################
+
+# # Load grid of parameters for both classifiers trainings
+
+ 
+# # Start the HP search to maximize the mean balanced accuracy over splits
+# # We only focus on the mean so far
+
+# # -- XGBOOST --
+# if run_xgboost and not run_lgbm:
+#     if classification_from_allfeatures:
+#         cv_bestmean_xgboost = 0 
+#         for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+#             xgboost_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+#                                                         feat_representative_slides, 
+#                                                         train_clarray_refined,  
+#                                                         cv=10,  
+#                                                         scoring='balanced_accuracy')
+
+#             crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+#             if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+#                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+#                 bestmeanset_xgboost = paramset
+#                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+#         print('\n\n ** xgboost (all features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_xgboost)
+#         print('Corresponding set of parameters for xgboost on all features is:',
+#                bestmeanset_xgboost)
+#         print('Edit the configuration file consequently')            
+
+#     else:
+#         cv_bestmean_xgboost = 0 
+#         for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+#             xgboost_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_xgboost = cross_val_score(xgboost_training, 
+#                                                         feat_representative_slides_boruta, 
+#                                                         train_clarray_refined,  
+#                                                         cv=10,  
+#                                                         scoring='balanced_accuracy')
+
+#             crossvalid_meanscore_xgboost = np.mean(crossvalid_results_xgboost)
+#             if crossvalid_meanscore_xgboost > cv_bestmean_xgboost:
+#                 cv_bestmean_xgboost = crossvalid_meanscore_xgboost 
+#                 bestmeanset_xgboost = paramset
+#                 cv_bestmean_scorevect_xgboost = crossvalid_results_xgboost
+#         print('\n\n ** xgboost (selected features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_xgboost)
+#         print('Corresponding set of parameters for xgboost on selected features is:',
+#                bestmeanset_xgboost)
+#         print('Edit the configuration file consequently')            
+
+
+
+# # -- LGBM --
+# elif run_lgbm and not run_xgboost:
+#     if classification_from_allfeatures:
+#         cv_bestmean_lgbm = 0 
+#         for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#             lgbm_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                        feat_representative_slides, 
+#                                                        train_clarray_refined,  
+#                                                        cv=10,  
+#                                                        scoring='balanced_accuracy')
+
+#             crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#             if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#                 bestmeanset_lgbm = paramset
+#                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+#         print('\n\n ** lgbm (all features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_lgbm)
+#         print('Corresponding set of parameters for xgboost on all features is:',
+#                bestmeanset_lgbm)
+#         print('Edit the configuration file consequently')     
+
+#     else:
+#         cv_bestmean_lgbm = 0 
+#         for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#             lgbm_training.set_params(**paramset)
+#             # Evaluate the model with cross validation
+#             crossvalid_results_lgbm = cross_val_score(lgbm_training, 
+#                                                        feat_representative_slides_boruta, 
+#                                                        train_clarray_refined,  
+#                                                        cv=10,  
+#                                                        scoring='balanced_accuracy')
+
+#             crossvalid_meanscore_lgbm = np.mean(crossvalid_results_lgbm)
+#             if crossvalid_meanscore_lgbm > cv_bestmean_lgbm:
+#                 cv_bestmean_lgbm = crossvalid_meanscore_lgbm 
+#                 bestmeanset_lgbm = paramset
+#                 cv_bestmean_scorevect_lgbm = crossvalid_results_lgbm
+#         print('\n\n ** lgbm (selected features) **')
+#         print('The best mean average accuracy is:',cv_bestmean_lgbm)
+#         print('Corresponding set of parameters for xgboost on selected features is:',
+#                bestmeanset_lgbm)
+#         print('Edit the configuration file consequently')    
+
+# # dev ink for dev
+# devink = 0
+
+
+
+
+
+
+
+
+
+
+# Kept it here for now
+
+# ############################################################
+# ## Save idx and feat array of most representative slides 
+# ##############################################################
+
+# # Save ID of the most representative slides! (becareful to permute again) 
+# # We need to permute again to retreive original order
+# # The - 1 is needed to find back the original indexes starting to 0 and not 1
+# idx_most_representative_slides_export = [
+#     permutation_index[idx_most_representative_slide_per_patient]
+#     ][0]
+# # idx_most_representative_slides_export = [len(permutation_index) - index - 1 for index 
+# #                                          in idx_most_representative_slide_per_patient]
+# idx_most_representative_slides_export = np.asarray(idx_most_representative_slides_export)
+
+# # this export whould be tested back by loading the indeces here and check 
+# # if the result are similar*                         
+
+# # saving
+# if run_xgboost and not run_lgbm:
+    
+#     if classification_from_allfeatures:
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_all_features_xgboost_idx.npy', 
+#                  idx_most_representative_slides_export) 
+#     else:    
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_selfeatures_xgboost_idx.npy', 
+#                 idx_most_representative_slides_export) 
+
+# elif run_lgbm and not run_xgboost:
+
+#     if classification_from_allfeatures:
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_all_features_lgbm_idx.npy', 
+#                  idx_most_representative_slides_export) 
+#     else:    
+#         np.save(pathfeatselect + 
+#                 'most_representative_slides_selfeatures_lgbm_idx.npy', 
+#                 idx_most_representative_slides_export) 
+
+
+# ### HERE IS THE WAY TO LOAD THE INDEXES AND MAKE THEM COMPTAIBLE WITH THE PERMUTATIONS (IN OTHER CODES)
+# # idx_mostrepr_test = np.load(pathfeatselect + 
+# #                 'most_representative_slides_all_features_xgboost_idx.npy')
+# # # idx_mostrepr_test2 = [i for i in range(len(permutation_index)) if permutation_index[i] in idx_mostrepr_test ]
+
+# # idx_mostrepr_test2 = list()
+# # for value in idx_mostrepr_test:
+# #     if value in permutation_index:
+# #         new_index = np.where(permutation_index == value)[0]
+# #         idx_mostrepr_test2.append(new_index)
+
+# # idx_mostrepr_test2 = np.asarray(idx_mostrepr_test2)
+# # idx_mostrepr_test2 = idx_mostrepr_test2[:,0]
+
+
+# # Save new arrays (feature and classification)
+# if run_xgboost and not run_lgbm:
+#     np.save(pathfeatselect + 'repslidesx_clarray.npy', 
+#                 train_clarray_refined)
+
+#     if classification_from_allfeatures:
+#         feat_representative_slides_export = np.transpose(
+#             feat_representative_slides
+#             )
+#         np.save(pathfeatselect + 'repslidesx_featarray.npy', 
+#                 feat_representative_slides_export)
+#     else:
+#         feat_representative_slides_boruta_export = np.transpose(
+#             feat_representative_slides_boruta
+#             )
+#         np.save(pathfeatselect + 'repslidesx_selectfeat.npy', 
+#                 feat_representative_slides_boruta_export)
+
+
+# elif run_lgbm and not run_xgboost:
+#     np.save(pathfeatselect + 'repslidesl_clarray.npy', 
+#                 train_clarray_refined)
+
+#     if classification_from_allfeatures:
+#         feat_representative_slides_export = np.transpose(
+#             feat_representative_slides
+#             )
+#         np.save(pathfeatselect + 'repslidesl_featarray.npy', 
+#                 feat_representative_slides_export) 
+#     else:
+#         feat_representative_slides_boruta_export = np.transpose(
+#             feat_representative_slides_boruta
+#             )
+#         np.save(pathfeatselect + 'repslidesl_selectfeat.npy', 
+#                 feat_representative_slides_boruta_export) 

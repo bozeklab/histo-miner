@@ -25,7 +25,7 @@
   parameters:
     bool:
 
-      classification_from_allfeatures: False
+      classification_from_allfeatures: True
 
       run_classifiers:
         ridge: False
@@ -132,13 +132,13 @@
       
       random_state: 0
 
-      n_estimators: 140
+      n_estimators: 60
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 60
       # for best mean: 40
       # for best mean, slides selected: 140
 
-      learning_rate: 1
+      learning_rate:  1.2
       # for best split: 1.2
       # for best mean: 1
       # for best mean, slides selected: 1
@@ -169,13 +169,13 @@
       
       random_state: 0
 
-      n_estimators: 60 
+      n_estimators: 120
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
       # for best mean: 120
       # for best mean, slides selected: 60
 
-      learning_rate: 0.1
+      learning_rate: 0.01
       # for best split: 0.8
       # for best mean: 0.01
       # for best mean, slides selected:  0.1
@@ -183,7 +183,7 @@
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 15
+      num_leaves: 20
       # for best split: 10
       # for best mean: 20
       # for best mean, slides selected: 15

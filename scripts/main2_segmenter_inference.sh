@@ -46,13 +46,13 @@ fi
 
 
 conda deactivate
-conda activate mmsegmentation_submodule_test1
+conda activate mmsegmentation_submodule_test2
 
 cd ../src/models/mmsegmentation/
 
 
 # May need to export the LIBRARY PATH as follow
-export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/mmsegmentation_submodule_test1/lib/:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/mmsegmentation_submodule_test2/lib/:$LD_LIBRARY_PATH"
 
 # --------------------------------------------------------
 # TO DO? WE CAN ALSO DOWNLOAD USING THE MAIN README
