@@ -154,13 +154,13 @@ if classification_from_allfeatures:
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 
 
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(eval_featarray)
+selected_features_matrix = SelectedFeaturesMatrix(eval_featarray)
 
 #### Classification training with the features kept by mrmr
 
 if os.path.exists(pathselfeat_mrmr):
     # Load test data (that went through mrmr method)
-    test_featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr(selfeat_mrmr)
+    test_featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr)
     # test_featarray_mrmr = np.transpose(test_featarray_mrmr)
 
     # Predict the labels for new data
@@ -204,7 +204,7 @@ if os.path.exists(pathselfeat_mrmr):
 #### Classification training with the features kept by boruta
 
 if os.path.exists(pathselfeat_boruta):
-    test_featarray_boruta = SelectedFeaturesMatrix.mrmr_matr(selfeat_boruta)
+    test_featarray_boruta = selected_features_matrix.mrmr_matr(selfeat_boruta)
     # test_featarray_boruta = np.transpose(test_featarray_boruta)
 
     # Predict the labels for new data
@@ -248,7 +248,7 @@ if os.path.exists(pathselfeat_boruta):
 #### Classification training with the features kept by mannwhitneyu
 
 if os.path.exists(pathorderedp_mannwhitneyu):
-    test_featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(orderedp_mannwhitneyu)
+    test_featarray_mannwhitney = selected_features_matrix.mannwhitney_matr(orderedp_mannwhitneyu)
     # test_featarray_mannwhitney = np.transpose(test_featarray_mannwhitney)
 
     # Predict the labels for new data

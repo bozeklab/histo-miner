@@ -26,9 +26,9 @@ checkpoints=$(yaml $config_path "['inference']['paths']['checkpoints']")
 input_dir=$(yaml $config_path "['inference']['paths']['input_dir']")
 output_dir=$(yaml $config_path "['inference']['paths']['output_dir']")
 
-run_on_slurm=$(yaml $config_path "['inference']['run_on_slurm']")
-slurm_partition=$(yaml $config_path "['inference']['slurm_param']['partition']")
-slurm_job_name=$(yaml $config_path "['inference']['slurm_param']['job_name']")
+# run_on_slurm=$(yaml $config_path "['inference']['run_on_slurm']")
+# slurm_partition=$(yaml $config_path "['inference']['slurm_param']['partition']")
+# slurm_job_name=$(yaml $config_path "['inference']['slurm_param']['job_name']")
 
 
 
@@ -44,15 +44,15 @@ if [ $downsample_needed = true ]; then
 fi
 
 
-
 conda deactivate
-conda activate mmsegmentation_submodule_test2
+conda activate mmsegmentation2
 
 cd ../src/models/mmsegmentation/
 
 
 # May need to export the LIBRARY PATH as follow
-export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/mmsegmentation_submodule_test2/lib/:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/mmsegmentation2/$LD_LIBRARY_PATH"
+
 
 # --------------------------------------------------------
 # TO DO? WE CAN ALSO DOWNLOAD USING THE MAIN README
@@ -75,64 +75,31 @@ fi
 echo "Run mmsegmentation submodule inference..."
 
 
-# test outside a srun to launch a srun
-# if [ $run_on_slurm = true ]; then
-#     ./tools/slurm_test.sh \
-# 	$slurm_partition \
-#     $slurm_job_name \
-#     configs/segmenter/segmenter_vit-l_SCCJohannes141_mask_8x1_640x640_160k_ade20k.py \
-# 	$checkpoints \
-#     $gpu \
-#     $gpu \
-#     5 \
-#  	--format-only \
-#     --eval-options  "imgfile_prefix=$output_dir" \
-# 	--cfg-options data.samples_per_gpu=$samples_per_gpu \
-# 	--cfg-options data.workers_per_gpu=$workers_per_gpu \
-# 	--cfg-options inference_root=$input_dir 
-# fi
+# FOR DEV PURPOSE ---------------------------------------------------------------------------
+# Create code to overwritte config in the following way;
+# - erase the line with inference_root and rewrite it with inference_root=$input_dir
+# - erase the line with data.samples_per_gpu and rewrite it with data.samples_per_gpu=$samples_per_gpu
+# - erase the line with data.workers_per_gpu=$workers_per_gpu and rewrite it with data.workers_per_gpu=$workers_per_gpu=$input_dir
+
+# explain that cfg-option is not working with our version of mmsegmentation very likely
 
 
-
-# test inside a srun to launch the code (Prefered vesrion)
-if [ $run_on_slurm = true ]; then
-	python -u ./tools/test.py \
-	configs/segmenter/segmenter_vit-l_SCC_mask_8x1_640x640_160k_ade20k.py \ 
-	$checkpoints \ 
-	--launcher="slurm" \
+if [ $gpu <= 1 ]; then
+	python ./tools/test.py \
+	configs/segmenter/segmenter_vit-l_SCCJohannes141_mask_8x1_640x640_160k_ade20k.py \ 
+    $checkpoints \ 
 	--format-only \
-	--eval-options  "imgfile_prefix=$output_dir" \
-	--cfg-options data.samples_per_gpu=$samples_per_gpu \
-	--cfg-options data.workers_per_gpu=$workers_per_gpu \
-	--cfg-options inference_root=$input_dir 
+	--eval-options "imgfile_prefix=$output_dir" 
 fi
 
 
-if [ $run_on_slurm = false ]; then
-
-	if [ "$gpu" <= 1 ]; then
-		python ./tools/test.py \
-		configs/segmenter/segmenter_vit-l_SCCJohannes141_mask_8x1_640x640_160k_ade20k.py \ 
-		$checkpoints \ 
-		--format-only \
-		--eval-options  "imgfile_prefix=$output_dir" \
-		--cfg-options data.samples_per_gpu=$samples_per_gpu \
-		--cfg-options data.workers_per_gpu=$workers_per_gpu \
-		--cfg-options inference_root=$input_dir 
-	fi
-
-
-	if [ "$gpu" > 1 ]; then
-		./tools/dist_test.sh \
-		configs/segmenter/segmenter_vit-l_SCCJohannes141_mask_8x1_640x640_160k_ade20k.py \
-	    $checkpoints \
-	    $gpu \
-	    --format-only \
-		--eval-options  "imgfile_prefix=$output_dir" \
-		--cfg-options data.samples_per_gpu=$samples_per_gpu \
-		--cfg-options data.workers_per_gpu=$workers_per_gpu \
-		--cfg-options inference_root=$input_dir 
-	fi
+if [ $gpu > 1 ]; then
+	./tools/dist_test.sh \
+	configs/segmenter/segmenter_vit-l_SCCJohannes141_mask_8x1_640x640_160k_ade20k.py \
+    $checkpoints \
+    $gpu \
+    --format-only \
+	--eval-options  "imgfile_prefix=$output_dir" 
 fi
 
 

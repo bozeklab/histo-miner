@@ -20,16 +20,19 @@
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_segmenteroutput/"
 
      
-    run_on_slurm: "true" 
+
+
+    # SLURM PARAMETERS 
+    # run_on_slurm: "true" 
     # boolean in bash is without capital
 
-    slurm_param:
-      # to know name of partititon and have more info run:
-      # sinfo -N -r -l
-      # on SLURM
-      partition: debug
+    # slurm_param:
+    #   # to know name of partititon and have more info run:
+    #   # sinfo -N -r -l
+    #   # on SLURM
+    #   partition: debug
 
-      job_name: seginf
+    #   job_name: seginf
 
 
 # Parameters for training?

@@ -127,43 +127,6 @@ lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 # See parameters documentation to learn about the other verbosity available. 
 
 
-
-##############################################################
-## Load sets of hyper-parameters to do a HP search  
-##############################################################
-
-
-# Load grid of parameters for both classifiers trainings
-
-xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
-xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
-xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
-xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
-
-lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
-lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
-lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
-lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
-lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
-
-
-xgboost_param_grid = {
-                      'random_state': xgboost_param_grid_random_state,
-                      'n_estimators': xgboost_param_grid_n_estimators,
-                      'learning_rate': xgboost_param_grid_learning_rate,
-                      'objective': xgboost_param_grid_objective
-}
-lgbm_param_grid = {
-                    'random_state': lgbm_param_grid_random_state,
-                    'n_estimators': lgbm_param_grid_n_estimators,
-                    'learning_rate': lgbm_param_grid_learning_rate,
-                    'objective': lgbm_param_grid_objective,
-                    'num_leaves': lgbm_param_grid_num_leaves
-}
-
-
-
-
 ##############################################################
 ## Traininig Classifiers to obtain instance prediction score
 ##############################################################
@@ -186,8 +149,8 @@ train_clarray = train_clarray[permutation_index]
 
 
 # Generate the matrix with selected feature for boruta
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
-featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
+selected_features_matrix = SelectedFeaturesMatrix(train_featarray)
+featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta)
 
 
 # Shuffle selected feature arrays using the permutation index 

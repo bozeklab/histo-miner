@@ -85,7 +85,7 @@
 
       nbr_keptfeat: 56
 
-      boruta_max_depth: 20
+      boruta_max_depth: 10
       # boruta_max_depth: 18 leading to best results so far
       # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
       # parenthesis are for Boruta applied to selected slides 

@@ -222,7 +222,7 @@ else:
 
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
+selected_features_matrix = SelectedFeaturesMatrix(train_featarray)
 
 
 #### Classification training (decreasing number of features left, starting with all)
@@ -313,14 +313,14 @@ for nbr_keptfeat_idx in range(55, 0, -1):
     # print(selfeat_mannwhitneyu_idx)
 
 
-    #### Recall numberr of efatures kept:
+    #### Recall numberr of features kept:
     print('{} features kept.'.format(nbr_keptfeat_idx))
 
 
     #### Classification training with the features kept by mrmr
     if os.path.exists(path_selfeat_mrmr_idx):
         # Generate the matrix with selected feature for mrmr
-        featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr( selfeat_mrmr_idx)
+        featarray_mrmr = selected_features_matrix.mrmr_matr( selfeat_mrmr_idx)
 
         #Shuffle feature arrays using the permutation index 
         if not wsi_selection:
@@ -381,7 +381,7 @@ for nbr_keptfeat_idx in range(55, 0, -1):
 
     if os.path.exists(path_selfeat_mannwhitneyu_idx):
         # Generate the matrix with selected feature for mannwhitney
-        featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu_idx)
+        featarray_mannwhitney = selected_features_matrix.mannwhitney_matr(selfeat_mannwhitneyu_idx)
         
         #Shuffle feature arrays using the permutation index 
         if not wsi_selection:
@@ -509,7 +509,7 @@ if os.path.exists(selfeat_boruta_folder):
 
         if os.path.exists(pathselfeat_boruta):
             # Generate the matrix with selected feature for boruta
-            featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
+            featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta)
 
             #Shuffle feature arrays using the permutation index
             if not wsi_selection: 

@@ -24,7 +24,9 @@ class FeatureSelector:
         Parameters
         ----------
         feature_array: npy array
-            Array containing all the features values for each wsi image
+            Array containing all the features values for each wsi image.
+            SOMETIMES the array needs to be transposed, because shape must be:
+            [ features, slides ]
         classification_array: npy array
             Array containing the classification output (recurrence, or no recurrence) of each wsi image
         Returns
@@ -34,9 +36,22 @@ class FeatureSelector:
         self.classification_array = classification_array
 
 
+    def reset_attributes(self, new_feature_array: np.ndarray, 
+                         new_classification_array: np.ndarray):
+        """
+        Same as __init__ except that if call in a loop you can use the same instance of the class
+        But modify the attributes
+        """
+        self.feature_array = new_feature_array
+        self.classification_array = new_classification_array
+
+
     def run_mrmr(self, nbr_keptfeat: int, return_scores: bool = True) -> np.ndarray:
         """
         MRMR calculations to select features (https://github.com/smazzanti/mrmr)
+
+        Be careful regarding the features array used as arg, 
+        SOMETIMES the array needs to be transposed because shape must be: [features, slides] 
 
         Parameters
         ----------
@@ -74,6 +89,9 @@ class FeatureSelector:
                    max_depth: int = 15, random_state: int = 1) -> np.ndarray:
         """
         Boruta calculations to select features (https://github.com/scikit-learn-contrib/boruta_py)
+
+        Be careful regarding the features array used as arg, 
+        SOMETIMES the array needs to be transposed because shape must be: [features, slides] 
 
         Parameters
         ----------
@@ -131,9 +149,10 @@ class FeatureSelector:
 
     def run_mannwhitney(self, nbr_keptfeat: int) -> dict:
         """
-        PROBABLY NEEDS UPDATES *************
-
         Mann-Whitney U rank test applied on each features
+
+        Be careful regarding the features array used as arg, 
+        SOMETIMES the array needs to be transposed because shape must be: [features, slides]
 
         Returns
         -------
@@ -175,22 +194,35 @@ class FeatureSelector:
 
 
 
+
 class SelectedFeaturesMatrix:
     """
     Generate the matrix of selected features based on the output of a given feature selection method
 
-    Note: No need for Boruta method, as the output is already the matrix of selected features
+    Note: No need for Boruta method, as the output is already the matrix of selected features 
+    - still valid?
     """
-    def __init__(self, feature_array: np.ndarray,):
+    def __init__(self, feature_array: np.ndarray):
         """
         Parameters
         ----------
         feature_array: npy array
             Array containing all the originial (before selection) features values for each wsi image
+            
+            Be careful regarding the features array used as arg, 
+            SOMETIMES the array needs to be transposed because shape must be: [features, slides]
         Returns
         ------
         """
         self.feature_array = feature_array
+
+
+    def reset_attributes(self, new_feature_array: np.ndarray):
+        """
+        Same as __init__ except that if call in a loop you can use the same instance of the class
+        But modify the attribute
+        """
+        self.feature_array = new_feature_array
 
 
     def mrmr_matr(self,  selfeat_mrmr_index: np.ndarray) -> np.ndarray:
@@ -217,7 +249,7 @@ class SelectedFeaturesMatrix:
 
     def boruta_matr(self,  selfeat_boruta_index: np.ndarray) -> np.ndarray:
         """
-        Generate the matrix of selected features from mrmr method output
+        Generate the matrix of selected features
 
         Parameters
         ----------
@@ -229,7 +261,7 @@ class SelectedFeaturesMatrix:
         featarray_mrmr: {ndarray, sparse matrix} of shape (n_samples, n_features)
             Matrix with the values of features selected with boruta
         """
-        # Be sure to enter output from mrmr here
+        # Be sure to enter output from boruta here
         borutaselectedfeatures_idx = sorted(selfeat_boruta_index)
         featarray_boruta = np.transpose(self.feature_array)
         # featarray_boruta = self.feature_array

@@ -3,30 +3,23 @@
 import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
 
-import os
-
+from tqdm import tqdm
 import numpy as np
 import yaml
 import xgboost 
 import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn import linear_model, ensemble
-from sklearn.model_selection import cross_val_score, StratifiedGroupKFold
+from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold
+from sklearn.metrics import balanced_accuracy_score
 
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix
+from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSelector
 import src.histo_miner.utils.misc as utils_misc
 
-# To reproduce the results of fig. opf the paper
 
-# Important to notice that with bolean search_bestsplit in config files
-# set as True, the code will not produce and save the same results as expected
-
-# The Hyperparameter set in the config also needs to be updates
 
 #############################################################
 ## Load configs parameter
 #############################################################
-
 
 
 # Import parameters values from config file by generating a dict.
@@ -35,34 +28,22 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtofolder = confighm.paths.folders.feature_selection_main
-classification_eval_folder = confighm.paths.folders.classification_evaluation
-patientid_avail = confighm.parameters.bool.patientid_avail
-wsi_selection = confighm.parameters.bool.wsi_selection
+pathtomain = confighm.paths.folders.main
+pathfeatselect = confighm.paths.folders.feature_selection_main
 
-# Import parameters values from config file by generating a dict.
-# The lists will be imported as tuples.
+
+# SEE LATER WHAT WE KEEP AND WHAT WE REMOVE
+nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
+boruta_max_depth = confighm.parameters.int.boruta_max_depth
+boruta_random_state = confighm.parameters.int.boruta_random_state
+
+
+
 with open("./../../configs/classification_training.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-search_bestsplit = config.parameters.bool.search_bestsplit
-perm_bestsplit = config.names.permutation_idx.perm_bestsplit
-perm_cvmean = config.names.permutation_idx.perm_cvmean
-
-ridge_random_state = config.classifierparam.ridge.random_state
-ridge_alpha = config.classifierparam.ridge.alpha
-
-lregression_random_state = config.classifierparam.logistic_regression.random_state
-lregression_penalty = config.classifierparam.logistic_regression.penalty
-lregression_solver = config.classifierparam.logistic_regression.solver
-lregression_multi_class = config.classifierparam.logistic_regression.multi_class
-lregression_class_weight = config.classifierparam.logistic_regression.class_weight
-
-forest_random_state = config.classifierparam.random_forest.random_state
-forest_n_estimators = config.classifierparam.random_forest.n_estimators
-forest_class_weight = config.classifierparam.random_forest.class_weight
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
@@ -75,73 +56,49 @@ lgbm_lr = config.classifierparam.light_gbm.learning_rate
 lgbm_objective = config.classifierparam.light_gbm.objective
 lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
 
-
-
-############################################################
-## Load feature selection numpy files
-############################################################
-
-
-pathfeatselect = pathtofolder 
-ext = '.npy'
-
-print('Load feature selection numpy files...')
-
-# Load feature selection numpy files
-
-# COULD ADD RAISE ERRROR IF IT IS NOT FIND!
-# Each time we check if the file exist because all selections are not forced to run
-path_selfeat_mrmr_idx = pathfeatselect + 'selfeat_mrmr_idx' + ext
-if os.path.exists(path_selfeat_mrmr_idx):
-     selfeat_mrmr_idx = np.load(path_selfeat_mrmr_idx, allow_pickle=True)
-path_selfeat_mannwhitneyu_idx = pathfeatselect + 'selfeat_mannwhitneyu_idx' + ext
-if os.path.exists(path_selfeat_mannwhitneyu_idx):
-    selfeat_mannwhitneyu_idx = np.load(path_selfeat_mannwhitneyu_idx, allow_pickle=True)
-print('Loading feature selected indexes done.')
+# Could be simplified maybe if only one classifier is kept later 
+run_xgboost = config.parameters.bool.run_classifiers.xgboost
+run_lgbm = config.parameters.bool.run_classifiers.light_gbm 
 
 
 
-################################################################
-## Load feat array, class arrays and IDs arrays (if applicable)
-################################################################
+###############################################################
+## Load feat array, class arrays, feat names and IDs arrays (if applicable)
+###############################################################
 
 #This is to check but should be fine
-path_featarray = pathfeatselect + 'repslidesx_featarray' + ext
-path_clarray = pathfeatselect + 'repslidesx_clarray' + ext
 
-train_featarray = np.load(path_featarray)
-train_clarray = np.load(path_clarray)
-train_clarray = np.transpose(train_clarray)
-if not wsi_selection:
-    if patientid_avail:
-        path_patientids_array = pathfeatselect + 'patientids' + ext
-        patientids_load = np.load(path_patientids_array, allow_pickle=True)
-        patientids_list = list(patientids_load)
-        patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
-        patientids = np.asarray(patientids_convert)
+ext = '.npy'
+
+featarray_name = 'perwsi_featarray'
+classarray_name = 'perwsi_clarray'
+pathfeatnames = pathfeatselect + 'featnames' + ext
+
+train_featarray = np.load(pathfeatselect + featarray_name + ext)
+train_clarray = np.load(pathfeatselect + classarray_name + ext)
+featnames = np.load(pathfeatnames)
+featnameslist = list(featnames)
+
+
+# Load patient ids
+path_patientids_array = pathfeatselect + 'patientids' + ext
+patientids_load = np.load(path_patientids_array, allow_pickle=True)
+patientids_list = list(patientids_load)
+patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
+patientids = np.asarray(patientids_convert)
+
+#Calculate number of different patients:
+unique_elements_set = set(patientids_list)
+num_unique_elements = len(unique_elements_set)
+print('Number of patient is:', num_unique_elements)
 
 
 
 ##############################################################
-## Traininig Classifiers
+## Load Classifiers
 ##############################################################
 
 
-# Define the classifiers
-# More information here: #https://scikit-learn.org/stable/modules/linear_model.html
-##### RIDGE CLASSIFIER
-ridge = linear_model.RidgeClassifier(random_state= ridge_random_state,
-                                     alpha=ridge_alpha)
-##### LOGISTIC REGRESSION
-lr = linear_model.LogisticRegression(random_state=lregression_random_state,
-                                     penalty=lregression_penalty,
-                                     solver=lregression_solver,
-                                     multi_class=lregression_multi_class,
-                                     class_weight=lregression_class_weight)
-##### RANDOM FOREST
-forest = ensemble.RandomForestClassifier(random_state= forest_random_state,
-                                         n_estimators=forest_n_estimators,
-                                         class_weight=forest_class_weight)
 ##### XGBOOST
 xgboost = xgboost.XGBClassifier(random_state= xgboost_random_state,
                                 n_estimators=xgboost_n_estimators, 
@@ -164,438 +121,466 @@ lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 
 
 
+##############################################################
+## Traininig Classifiers to obtain instance prediction score
+##############################################################
+
+
 print('Start Classifiers trainings...')
 
 
 ### Create a new permutation and save it
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
-
-
-### Load permutation index not to have 0 and 1s not mixed if the slide are not 
-### pre-selected
-if not wsi_selection:
-    if search_bestsplit:
-        permutation_index = np.load(pathfeatselect + perm_bestsplit + '.npy')
-    else: 
-        permutation_index = np.load(pathfeatselect + perm_cvmean + '.npy')
+### Load permutation index not to have 0 and 1s not mixed
+permutation_index = np.load(pathfeatselect + 
+                            '/bestperm/' +
+                            'random_permutation_index_11_28_xgboost_bestmean.npy')
+nbrindeces = len(permutation_index)
 
 ### Shuffle classification arrays using the permutation index
-if not wsi_selection:
-    train_clarray = train_clarray[permutation_index]
+train_clarray = train_clarray[permutation_index]
 
-    if patientid_avail:
 
-        # Create a mapping of unique elements to positive integers
-        mapping = {}
-        current_integer = 1
-        patientids_ordered = []
+# Generate the matrix with selected feature for boruta
+# selected_features_matrix = SelectedFeaturesMatrix(train_featarray)
 
-        for num in patientids:
-            if num not in mapping:
-                mapping[num] = current_integer
-                current_integer += 1
-            patientids_ordered.append(mapping[num])
 
-        ### Shuffle patient IDs arrays using the permutation index 
-        patientids_ordered = patientids_ordered[permutation_index]
+# Shuffle the all features arrays using the permutation index
+train_featarray = np.transpose(train_featarray)
+train_featarray = train_featarray[permutation_index, :]
 
-### Create Stratified Group  instance for the cross validation 
+
+# Create a mapping of unique elements to positive integers
+mapping = {}
+current_integer = 1
+patientids_ordered = []
+
+for num in patientids:
+    if num not in mapping:
+        mapping[num] = current_integer
+        current_integer += 1
+    patientids_ordered.append(mapping[num])
+
+### Shuffle patient IDs arrays using the permutation index 
+patientids_ordered = np.asarray(patientids_ordered)
+patientids_ordered = patientids_ordered[permutation_index]
+
+### Create Stratified Group to further split the dataset into 5 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
 
-# Initialize the lists:
-if search_bestsplit:
-    xgbbestsplit_aAcc_mrmr = list()
-    xgbbestsplit_aAcc_mannwhitneyu = list()
-    xgbbestsplit_aAcc_boruta = list() 
-    lgbmbestsplit_aAcc_mrmr = list()
-    lgbmbestsplit_aAcc_mannwhitneyu = list()
-    lgbmbestsplit_aAcc_boruta = list() 
-else: 
-    xgbmean_aAcc_mrmr = list()
-    xgbmean_aAcc_mannwhitneyu = list()
-    xgbmean_aAcc_boruta = list()
-    lgbmmean_aAcc_mrmr = list()
-    lgbmmean_aAcc_mannwhitneyu = list()
-    lgbmmean_aAcc_boruta = list()
+### Create list of 5 model names
+### It is needed as very scikit learn model NEEDS a different name  
+modelnames = []
+for i in range(5):
+    model_name = f"model_{i}"
+    modelnames.append(model_name)
+
+# Initialize the list of trained_models:
+trained_models = []
+
+# Need another instance of the classifier
+lgbm_slide_ranking = lightgbm
+xgboost_slide_ranking = xgboost
 
 
-#### Parse the featarray to the class SelectedFeaturesMatrix 
-SelectedFeaturesMatrix = SelectedFeaturesMatrix(train_featarray)
+# if classification_from_allfeatures:
+splits_nested_list = list()
+# Create a list of splits with all features 
+# Create a list of patient IDs corresponding of the splits:
+splits_patientID_list = list()
+for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
+                                                                 train_clarray, 
+                                                                 groups=patientids_ordered)):
+    # Generate training and test data from the indexes
+    X_train = train_featarray[train_index]
+    X_test = train_featarray[test_index]
+    y_train = train_clarray[train_index]
+    y_test = train_clarray[test_index]
+
+    splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+    # Generate the corresponding list for patient ids
+    X_train_patID = patientids_ordered[train_index]
+    X_test_patID = patientids_ordered[test_index]
+
+    splits_patientID_list.append([X_train_patID, X_test_patID])
 
 
-#### Classification training (decreasing number of features left, starting with all)
+
+# Initialization of parameters
+nbr_feat = len(X_train[1])
+print('nbr_feat is:',nbr_feat)
+nbr_of_splits = 2 # Assuming 3 splits
+
+# Keep the idwx of the most representative ones for each patient
+list_idx_most_representative_slide_per_patient = list()
 
 
-# Use all the feature (no selection) as input
-genfeatarray = np.transpose(train_featarray)
 
-#Shuffle feature arrays using the permutation index
-if not wsi_selection:
-    genfeatarray = genfeatarray[permutation_index,:]
+# -- XGBOOST --
+if run_xgboost and not run_lgbm:
 
-#### XGBOOST
-xgboostvanilla = xgboost
-if wsi_selection:
-    crossvalid_results = cross_val_score(xgboostvanilla, 
-                                         genfeatarray, 
-                                         train_clarray,  
-                                         cv=10,  
-                                         scoring='balanced_accuracy')
-else:
-    crossvalid_results = cross_val_score(xgboostvanilla, 
-                                         genfeatarray, 
-                                         train_clarray,  
-                                         groups=patientids_ordered,
-                                         cv=stratgroupkf,  
-                                         scoring='balanced_accuracy')
-crossvalid_meanscore = np.mean(crossvalid_results)
-crossvalid_maxscore = np.max(crossvalid_results)
+    balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
+                           "balanced_accuracies_mrmr": {"initialization": True},
+                           "balanced_accuracies_boruta": {"initialization": True}}
+    list_proba_predictions_slideselect = []
 
-# Insert results in the corresponding lists
-if search_bestsplit:
-    xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-    xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-    xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-else:
-    xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
-    xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-    xgbmean_aAcc_boruta.append(crossvalid_meanscore) 
-
-#### LIGHT GBM
-lightgbmvanilla = lightgbm
-if wsi_selection:
-    crossvalid_results = cross_val_score(lightgbmvanilla, 
-                                         genfeatarray, 
-                                         train_clarray,  
-                                         cv=10,  
-                                         scoring='balanced_accuracy')
-else:
-    crossvalid_results = cross_val_score(lightgbmvanilla, 
-                                         genfeatarray, 
-                                         train_clarray,  
-                                         groups=patientids_ordered,
-                                         cv=stratgroupkf,  
-                                         scoring='balanced_accuracy')
-crossvalid_meanscore = np.mean(crossvalid_results)
-crossvalid_maxscore = np.max(crossvalid_results)
-
-# Insert results in the corresponding lists
-if search_bestsplit:
-    lgbmbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-    lgbmbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-    lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-else:
-    lgbmmean_aAcc_mrmr.append(crossvalid_meanscore)
-    lgbmmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-    lgbmmean_aAcc_boruta.append(crossvalid_meanscore) 
-
-
-for nbr_keptfeat_idx in range(55, 0, -1):
-# previous dev:
-# kept the selected features but in inverse order (for figures)
-# Uncomment only for reproducing secondary figures results
-# for nbr_keptfeat in range(56, 1, -1):
-
-    # Kept the selected features
-    selfeat_mrmr_idx =  selfeat_mrmr_idx[0:nbr_keptfeat_idx]
-    print('\n', selfeat_mrmr_idx)
-    selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[0:nbr_keptfeat_idx]
-    print(selfeat_mannwhitneyu_idx)
-
-    # previous dev:
-    # kept the selected features but in inverse order (for figures)
-    # Uncomment only for reproducing secondary figures results
-    # selfeat_mrmr_idx =  selfeat_mrmr_idx[1:nbr_keptfeat]
-    # print('\n', selfeat_mrmr_idx)
-    # selfeat_mannwhitneyu_idx = selfeat_mannwhitneyu_idx[1:nbr_keptfeat]
-    # print(selfeat_mannwhitneyu_idx)
-
-
-    #### Recall numberr of efatures kept:
-    print('{} features kept.'.format(nbr_keptfeat_idx))
-
-
-    #### Classification training with the features kept by mrmr
-    if os.path.exists(path_selfeat_mrmr_idx):
-        # Generate the matrix with selected feature for mrmr
-        featarray_mrmr = SelectedFeaturesMatrix.mrmr_matr( selfeat_mrmr_idx)
-
-        #Shuffle feature arrays using the permutation index 
-        if not wsi_selection:
-            featarray_mrmr = featarray_mrmr[permutation_index,:]
-
-        ##### XGBOOST
-        xgboostmrmr = xgboost
-        if wsi_selection:
-            crossvalid_results = cross_val_score(xgboostmrmr, 
-                                                 featarray_mrmr, 
-                                                 train_clarray,  
-                                                 cv=10,  
-                                                 scoring='balanced_accuracy')
-        else:
-            crossvalid_results = cross_val_score(xgboostmrmr, 
-                                                featarray_mrmr, 
-                                                train_clarray,  
-                                                groups=patientids_ordered,
-                                                cv=stratgroupkf,  
-                                                scoring='balanced_accuracy')
-        crossvalid_meanscore = np.mean(crossvalid_results)
-        crossvalid_maxscore = np.max(crossvalid_results)
+    for i in range(nbr_of_splits):  
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
         
-        # Insert results in the corresponding lists
-        if search_bestsplit:
-            xgbbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-        else: 
-            xgbmean_aAcc_mrmr.append(crossvalid_meanscore)
-
-        ##### LIGHT GBM
-        lightgbmmrmr = lightgbm
-        if wsi_selection:
-            crossvalid_results = cross_val_score(lightgbmmrmr, 
-                                                 featarray_mrmr, 
-                                                 train_clarray,  
-                                                 cv=10,  
-                                                 scoring='balanced_accuracy')
-        else:
-            crossvalid_results = cross_val_score(lightgbmmrmr, 
-                                                 featarray_mrmr, 
-                                                 train_clarray,  
-                                                 groups=patientids_ordered,
-                                                 cv=stratgroupkf,  
-                                                 scoring='balanced_accuracy')
-        crossvalid_meanscore = np.mean(crossvalid_results)
-        crossvalid_maxscore = np.max(crossvalid_results)
-
-        # Insert results in the corresponding lists
-        if search_bestsplit:
-            lgbmbestsplit_aAcc_mrmr.append(crossvalid_maxscore)
-        else: 
-            lgbmmean_aAcc_mrmr.append(crossvalid_meanscore)
-
-
-
-
-    #### Classification training with the features kept by mannwhitneyu
-
-    if os.path.exists(path_selfeat_mannwhitneyu_idx):
-        # Generate the matrix with selected feature for mannwhitney
-        featarray_mannwhitney = SelectedFeaturesMatrix.mannwhitney_matr(selfeat_mannwhitneyu_idx)
+        xgboost_slide_ranking = xgboost
+        xgboost_slide_ranking = xgboost_slide_ranking.fit(X_train, y_train)
         
-        #Shuffle feature arrays using the permutation index 
-        if not wsi_selection:
-            featarray_mannwhitney = featarray_mannwhitney[permutation_index,:]
+        proba_predictions = xgboost_slide_ranking.predict_proba(X_train)
+        
+        # Keep only the highest of the 2 probabilities 
+        highest_proba_prediction = np.max(proba_predictions, axis=1)
+        list_proba_predictions_slideselect.append(highest_proba_prediction)
 
-        ##### XGBOOST
-        xgboostmannwhitney = xgboost
-        if wsi_selection:
-            crossvalid_results = cross_val_score(xgboostmannwhitney, 
-                                                 featarray_mannwhitney, 
-                                                 train_clarray,  
-                                                 cv=10,  
-                                                 scoring='balanced_accuracy')
-        else:
-            crossvalid_results = cross_val_score(xgboostmannwhitney, 
-                                                 featarray_mannwhitney, 
-                                                 train_clarray,  
-                                                 groups=patientids_ordered,
-                                                 cv=stratgroupkf,  
-                                                 scoring='balanced_accuracy')
-        crossvalid_meanscore = np.mean(crossvalid_results)
-        crossvalid_maxscore = np.max(crossvalid_results)
+        # Now we should keep one slide per patient of the training set
+        # load the corresponding ID lists
+        X_train_patID = splits_patientID_list[i][0]
+        X_test_patID = splits_patientID_list[i][1]
+        
+        # Dictionary to store the index of the highest probability score for each group
+        idx_most_representative_slide_per_patient = []
 
-        # Insert results in the corresponding lists
-        if search_bestsplit:
-            xgbbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
+        # Iterate through groups
+        for patientid in np.unique(X_train_patID):
+            # Get the indices of samples belonging to the current group
+            slide_indices = np.where(X_train_patID == patientid)[0]
+
+            # Get the probability predictions for each slides of the patient
+            patietn_slides_probas = list_proba_predictions_slideselect[i][slide_indices]
+
+            # Find the index of the maximum probability score
+            max_proba_index = np.argmax(patietn_slides_probas)
+
+            # Store the index in the dictionary
+            idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
+
+
+        # TODO: always check (at elast experimentaly) that the indexing is correct    
+        idx_most_representative_slide_per_patient = [val - 1 for val 
+                                                     in idx_most_representative_slide_per_patient]
+
+        # Generate new feature matrix and new classification array
+        # Generate classification array of only representative slides
+        train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
+
+        # This is the new feature array
+        feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+        # The array is then transpose to feat FeatureSelector requirements
+        feat_representative_slides_tr = np.transpose(feat_representative_slides)
+  
+
+
+        ########### SELECTION OF FEATURES
+        # If the class was not initalized, do it. If not, reset attributes if the class instance
+        if i == 0:
+            feature_selector = FeatureSelector(feat_representative_slides_tr, train_clarray_refined)
         else: 
-            xgbmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
+            feature_selector.reset_attributes(feat_representative_slides_tr, train_clarray_refined)
+        ## Mann Whitney U calculations
+        print('Selection of features with mannwhitneyu method...')
+        selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_feat)
+        # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
+        selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
 
-        ##### LIGHT GBM
-        lightgbmmannwhitney = lightgbm
-        if wsi_selection:
-            crossvalid_results = cross_val_score(lightgbmmannwhitney, 
-                                                 featarray_mannwhitney, 
-                                                 train_clarray,  
-                                                 cv=10,  
-                                                 scoring='balanced_accuracy')
+        ## mr.MR calculations
+        print('Selection of features with mrmr method...')
+        selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = feature_selector.run_mrmr(nbr_feat)
+        # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+        selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+                
+        ## Boruta calculations (for one specific depth)
+        print('Selection of features with Boruta method...')
+        selfeat_boruta_index = feature_selector.run_boruta(max_depth=boruta_max_depth, 
+                                                          random_state=boruta_random_state)
+        # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+        selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index] 
+
+
+
+        ########## GENERATION OF MATRIX OF SELECTED FEATURES
+        # If the class was not initalized, do it. If not, reset attributes if the class instance
+        if i == 0:
+            selected_features_matrix = SelectedFeaturesMatrix(feat_representative_slides_tr)
         else:
-            crossvalid_results = cross_val_score(lightgbmmannwhitney, 
-                                                 featarray_mannwhitney, 
-                                                 train_clarray,  
-                                                 groups=patientids_ordered,
-                                                 cv=stratgroupkf,  
-                                                 scoring='balanced_accuracy')        
-        crossvalid_meanscore = np.mean(crossvalid_results)
-        crossvalid_maxscore = np.max(crossvalid_results)
+            selected_features_matrix.reset_attributes(feat_representative_slides_tr)
 
-        # Insert results in the corresponding lists
-        if search_bestsplit:
-            lgbmbestsplit_aAcc_mannwhitneyu.append(crossvalid_maxscore)
-        else: 
-            lgbmmean_aAcc_mannwhitneyu.append(crossvalid_meanscore)
-
-
-# Conversion to numpy  
-if search_bestsplit:
-    # print('xgbbestsplit_aAcc_mrmr is:', xgbbestsplit_aAcc_mrmr)
-    print('lgbmbestsplit_aAcc_mrmr is:', lgbmbestsplit_aAcc_mrmr)
-    # print('xgbbestsplit_aAcc_mannwhitneyu is:', xgbbestsplit_aAcc_mannwhitneyu)
-    print('lgbmbestsplit_aAcc_mannwhitneyu is:', lgbmbestsplit_aAcc_mannwhitneyu)
-    # xgbbestsplit_aAcc_mrmr = np.asarray(xgbbestsplit_aAcc_mrmr)
-    lgbmbestsplit_aAcc_mrmr = np.asarray(lgbmbestsplit_aAcc_mrmr)
-    # xgbbestsplit_aAcc_mannwhitneyu = np.asarray(xgbbestsplit_aAcc_mannwhitneyu)
-    lgbmbestsplit_aAcc_mannwhitneyu = np.asarray(lgbmbestsplit_aAcc_mannwhitneyu)
-else: 
-    # print('xgbmean_aAcc_mrmr is', xgbmean_aAcc_mrmr)
-    print('lgbmmean_aAcc_mrmr is', lgbmmean_aAcc_mrmr)
-    # print('xgbmean_aAcc_mannwhitneyu is', xgbmean_aAcc_mannwhitneyu)
-    print('lgbmmean_aAcc_mannwhitneyu is', lgbmmean_aAcc_mannwhitneyu)
-    # xgbmean_aAcc_mrmr = np.asarray(xgbmean_aAcc_mrmr)
-    lgbmmean_aAcc_mrmr = np.asarray(lgbmmean_aAcc_mrmr)
-    # xgbmean_aAcc_mannwhitneyu = np.asarray(xgbmean_aAcc_mannwhitneyu)
-    lgbmmean_aAcc_mannwhitneyu = np.asarray(lgbmmean_aAcc_mannwhitneyu)
-
-# Saving
-save_results_path = classification_eval_folder + 'TestofKs/'
-save_ext = '.npy'
-if not os.path.exists(save_results_path):
-    os.mkdir(save_results_path)
-if search_bestsplit:
-    # np.save(save_results_path + 'xgbbestsplit_aAcc_mrmr' + save_ext,
-             # xgbbestsplit_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mrmr' + save_ext,
-        lgbmbestsplit_aAcc_mrmr)
-    # np.save(save_results_path + 'xgbbestsplit_aAcc_mannwhitneyu' + save_ext,
-        # xgbbestsplit_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmbestsplit_aAcc_mannwhitneyu' + save_ext,
-        lgbmbestsplit_aAcc_mannwhitneyu)
-else:
-    # np.save(save_results_path + 'xgbmean_aAcc_mrmr' + save_ext,
-             # xgbmean_aAcc_mrmr)
-    np.save(save_results_path + 'lgbmmean_aAcc_mrmr' + save_ext,
-        lgbmmean_aAcc_mrmr)
-    # np.save(save_results_path + 'xgbmean_aAcc_mannwhitneyu' + save_ext,
-        # xgbmean_aAcc_mannwhitneyu)
-    np.save(save_results_path + 'lgbmmean_aAcc_mannwhitneyu' + save_ext,
-        lgbmmean_aAcc_mannwhitneyu) 
+        ## For Boruta calculations
+        featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta_index)
+        ##  Mann Whitney U calculations & mr.MR calculations are done later
 
 
 
-### BORUTA
-
-selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
-
-if os.path.exists(selfeat_boruta_folder):
-    print('Check if depth_boruta list match the different files.')
-
-    depth_boruta = [2, 4, 6, 20]
-    # depth_boruta = [6, 8, 10, 12, 14, 16, 18, 20]
-    nbr_keptfeat_list = [56]
-
-    for depth in depth_boruta:
-
-        # Load the correctly selected features
-        pathselfeat_boruta = selfeat_boruta_folder + 'selfeat_boruta_idx_depth' + str(depth) + '.npy'
-        selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
-
-        # Check how many features are selected for this depth
-        nbr_keptfeat = len(selfeat_boruta)
-        print('nbr_keptfeat:', nbr_keptfeat)
-        print('selfeat_boruta', selfeat_boruta)
-        nbr_keptfeat_list.append(nbr_keptfeat)
-
-        #### Classification training with the features kept by boruta
-
-        if os.path.exists(pathselfeat_boruta):
-            # Generate the matrix with selected feature for boruta
-            featarray_boruta = SelectedFeaturesMatrix.boruta_matr(selfeat_boruta)
-
-            #Shuffle feature arrays using the permutation index
-            if not wsi_selection: 
-                featarray_boruta = featarray_boruta[permutation_index,:]
-          
-            ##### XGBOOST
-            xgboostboruta = xgboost
-            if wsi_selection:
-                crossvalid_results = cross_val_score(xgboostboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-            else:
-                crossvalid_results = cross_val_score(xgboostboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     groups=patientids_ordered,
-                                                     cv=stratgroupkf,  
-                                                     scoring='balanced_accuracy')
-            crossvalid_meanscore = np.mean(crossvalid_results)
-            crossvalid_maxscore = np.max(crossvalid_results)
-
-            # Insert results in the corresponding lists
-            if search_bestsplit:
-                xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-            else: 
-                xgbmean_aAcc_boruta.append(crossvalid_meanscore)
-
-            ##### LIGHT GBM
-            lightgbmboruta = lightgbm
-            if wsi_selection:
-                crossvalid_results = cross_val_score(lightgbmboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-            else:
-                crossvalid_results = cross_val_score(lightgbmboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     groups=patientids_ordered,
-                                                     cv=stratgroupkf,  
-                                                     scoring='balanced_accuracy')
-            crossvalid_meanscore = np.mean(crossvalid_results)
-            crossvalid_maxscore = np.max(crossvalid_results)
-
-            # Insert results in the corresponding lists
-            if search_bestsplit:
-                lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-            else: 
-                lgbmmean_aAcc_boruta.append(crossvalid_meanscore)
-
-
-    # Conversion to numpy  
-    nbr_keptfeat_list = np.asarray(nbr_keptfeat_list)
-    if search_bestsplit:
-        # print('xgbbestsplit_aAcc_boruta is:', xgbbestsplit_aAcc_boruta)
-        print('lgbmbestsplit_aAcc_boruta is:', lgbmbestsplit_aAcc_boruta)
-        # xgbbestsplit_aAcc_boruta = np.asarray(xgbbestsplit_aAcc_boruta)
-        lgbmbestsplit_aAcc_boruta = np.asarray(lgbmbestsplit_aAcc_boruta)
-    else: 
-        # print('xgbmean_aAcc_boruta is', xgbmean_aAcc_boruta)
-        print('lgbmmean_aAcc_boruta is', lgbmmean_aAcc_boruta)
-        # xgbmean_aAcc_boruta = np.asarray(xgbmean_aAcc_boruta)
-        lgbmmean_aAcc_boruta = np.asarray(lgbmmean_aAcc_boruta)
-
-    # Saving
-    save_results_path = classification_eval_folder + 'TestofKs/'
-    save_ext = '.npy'
-    if not os.path.exists(save_results_path):
-        os.mkdir(save_results_path)
-
-    np.save(save_results_path + 'nbr_keptfeat_list' + save_ext ,nbr_keptfeat_list)
-    if search_bestsplit:
-        # np.save(save_results_path + 'xgbbestsplit_aAcc_boruta' + save_ext,
-                 # xgbbestsplit_aAcc_boruta)
-        np.save(save_results_path + 'lgbmbestsplit_aAcc_boruta' + save_ext,
-            lgbmbestsplit_aAcc_boruta)
-    else:
-        # np.save(save_results_path + 'xgbmean_aAcc_boruta' + save_ext,
-                 # xgbmean_aAcc_boruta)
-        np.save(save_results_path + 'lgbmmean_aAcc_boruta' + save_ext,
-            lgbmmean_aAcc_boruta)
+        ########## TRAINING AND EVALUATION WITHOUT FEATURE SELECTION
+        # Probably to add in the feature as it is helping to generate visualizations    
 
 
 
-print('Evaluations  are done.')
+        ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
+        xgboost_mrmr_training = xgboost
+        xgboost_mannwhitneyu_training = xgboost
+        balanced_accuracies_mrmr = list()
+        balanced_accuracies_mannwhitneyu = list()
+
+
+        # Recall numberr of features kept:
+        print('Calculate balanced_accuracies for decreasing number of features kept')
+        ### With mrmr and mannwhitneyu selected features
+        for nbr_keptfeat_idx in tqdm(range(nbr_feat - 1, 0, -1)):
+
+            # Kept the selected features
+            selfeat_mrmr_index =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+            selfeat_mannwhitneyu_index = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+
+            # Generate matrix of features
+            featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr_index)
+            featarray_mannwhitneyu = selected_features_matrix.mannwhitney_matr(
+                                        selfeat_mannwhitneyu_index)
+
+            #Training
+            xgboost_mrmr_training = xgboost_mrmr_training.fit(featarray_mrmr, 
+                                                              train_clarray_refined)
+            xgboost_mannwhitneyu_training = xgboost_mannwhitneyu_training.fit(
+                                                              featarray_mannwhitneyu, 
+                                                              train_clarray_refined)
+
+            # Predictions on the test split
+            y_pred_mrmr = xgboost_mrmr_training.predict(
+                X_test[:, np.transpose(selfeat_mrmr_index)]
+                )
+            y_pred_mannwhitneyu = xgboost_mannwhitneyu_training.predict(
+                X_test[:, np.transpose(selfeat_mannwhitneyu_index)]
+                )
+
+            # Calculate balanced accuracy for the current split
+            balanced_accuracy_mrmr = balanced_accuracy_score(y_test, y_pred_mrmr)
+            balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, y_pred_mannwhitneyu)
+
+            balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
+            balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+
+        ### With boruta selected features
+        #Training
+        xgboost_boruta_training = xgboost
+        xgboost_boruta_training = xgboost_boruta_training.fit(featarray_boruta, 
+                                                              train_clarray_refined)
+        # Predictions on the test split
+        y_pred_boruta = xgboost_boruta_training.predict(
+            X_test[:, np.transpose(selfeat_boruta_index)]
+            )
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy_boruta = balanced_accuracy_score(y_test, y_pred_boruta)
+
+        # store all resutls in the main dict knowing it will be repeated 10times
+        # maybe create a nested dict, split1, split2 and so on!!
+        currentsplit =  f"split_{i}"
+
+        # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
+        balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit] = balanced_accuracies_mannwhitneyu
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+        balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = balanced_accuracy_boruta
+                                                
+
+
+
+
+
+
+### calculate and write the saving of the mean balancede accuracues
+# Calculate the mean accuracies 
+
+mean_balanced_accuracies_mannwhitneyu = list()
+mean_balanced_accuracies_mrmr = list()
+loop_index = 0
+
+# do the list of means for mannwhitneyu and mrmr
+for nbr_keptfeat_idx in range(nbr_feat - 1, 0, -1):
+    
+    mean_ba_featsel_mannwhitneyu = list()
+    mean_ba_featsel_mrmr = list()
+
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+
+        balanced_accuracy_mannwhitneyu = float(
+            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][loop_index]
+            ) 
+        mean_ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+
+        balanced_accuracy_mrmr = np.asarray(
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][loop_index]
+            ) 
+        mean_ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+
+    mean_ba_featsel_mannwhitneyu = np.asarray(mean_ba_featsel_mannwhitneyu)
+    mean_balanced_accuracies_mannwhitneyu.append(np.mean(mean_ba_featsel_mannwhitneyu))
+
+    mean_ba_featsel_mrmr = np.asarray(mean_ba_featsel_mrmr)
+    mean_balanced_accuracies_mrmr.append(np.mean(mean_ba_featsel_mrmr))
+
+    loop_index += 1 
+
+mean_balanced_accuracies_boruta = list()
+
+for i in range(nbr_of_splits): 
+    currentsplit =  f"split_{i}"
+    mean_ba_boruta = (
+        [balanced_accuracies['balanced_accuracies_boruta'][currentsplit]]
+        )
+    mean_balanced_accuracies_boruta.append(mean_ba_boruta)
+
+# Transform a list of list into a list?
+mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracies_boruta]
+
+devink = True 
+
+
+
+
+
+
+
+
+
+
+        # For to do plenty of training and evaluation for each set of features ....
+            # with the main line beeing
+            # xgboost_mrmr_training = xgboost_mrmr_training.fit(feat_representative_slides, train_clarray_refined) 
+
+            # Make predictions on the test set
+            # y_pred = xgboost_training.predict(X_test)
+
+
+
+      
+
+            # mean_bacc = np.mean(balanced_accuracies_numpy)
+            # print('slpits balanced accuracies:', balanced_accuracies)
+            # print('mean balanced accuracy: {}'.format(mean_bacc))
+        
+
+
+
+
+
+
+      # Have the mean of balanced accuracies
+
+            # balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+
+
+
+
+
+
+## DEV LIMIT FOR NOW ---------------------------------------------------------------------------------------------------
+# -- LGBM --
+
+# elif run_lgbm and not run_xgboost:
+
+#     balanced_accuracies = []
+#     list_proba_predictions_slideselect = []
+
+#     for i in range(10):  # Assuming you have 10 splits
+#         X_train = splits_nested_list[i][0]
+#         y_train = splits_nested_list[i][1]
+#         X_test = splits_nested_list[i][2]
+#         y_test = splits_nested_list[i][3]
+        
+#         lgbm_slide_ranking = lightgbm
+#         lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, y_train)
+        
+#         proba_predictions = lgbm_slide_ranking.predict_proba(X_train)
+        
+#         # Keep only the highest of the 2 probabilities 
+#         highest_proba_prediction = np.max(proba_predictions, axis=1)
+#         list_proba_predictions_slideselect.append(highest_proba_prediction)
+
+#         # Now we should keep one slide per patient of the training set
+#         # load the corresponding ID lists
+#         X_train_patID = splits_patientID_list[i][0]
+#         X_test_patID = splits_patientID_list[i][1]
+        
+#         # Dictionary to store the index of the highest probability score for each group
+#         idx_most_representative_slide_per_patient = []
+
+#         # Iterate through groups
+#         for patientid in np.unique(X_train_patID):
+#             # Get the indices of samples belonging to the current group
+#             slide_indices = np.where(X_train_patID == patientid)[0]
+
+#             # Get the probability predictions for each slides of the patient
+#             patietn_slides_probas = list_proba_predictions_slideselect[i][slide_indices]
+
+#             # Find the index of the maximum probability score
+#             max_proba_index = np.argmax(patietn_slides_probas)
+
+#             # Store the index in the dictionary
+#             idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
+
+
+#         # TODO: always check (at elast experimentaly) that the indexing is correct    
+#         idx_most_representative_slide_per_patient = [val - 1 for val 
+#                                                      in idx_most_representative_slide_per_patient]
+
+
+#         # Generate new feature matrix and new classification array
+#         # Generate classification array of only representative slides
+#         train_clarray_refined = train_clarray[idx_most_representative_slide_per_patient]
+
+#         # Generate the features of representatative slides with all features or with selected ones
+#         if classification_from_allfeatures:
+            
+#             feat_representative_slides = train_featarray[idx_most_representative_slide_per_patient,:]
+#         else:
+#             feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
+       
+
+#         ## Evaluate on the test split of the cross-validation run
+        
+#         # Train again but this time only with the selected slides 
+
+#         # ---- maybe a selection of HP is also necessary start without ---
+#         # --- check where exactly to include the HP search in this loop not to have biased --
+#         # a nested cross validation for the HP search can make sense now ?
+
+#         lightgbm_training = lightgbm
+#         lightgbm_training = lightgbm_training.fit(feat_representative_slides, train_clarray_refined) 
+
+#         # Make predictions on the test set
+#         y_pred = lightgbm_training.predict(X_test)
+
+#         # Calculate balanced accuracy for the current split
+#         balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+#         balanced_accuracies.append(balanced_accuracy)
+
+#     # Have the mean of balanced accuracies
+#     balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+
+#     mean_bacc = np.mean(balanced_accuracies_numpy)
+#     print('slpits balanced accuracies:', balanced_accuracies)
+#     print('mean balanced accuracy: {}'.format(mean_bacc))
+
+
+
+# else:
+#     raise ValueError('run_xgboost and run_lgbm cannot be both True or both False for'
+#                       'the script to run')
+
+
+
+
+
 

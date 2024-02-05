@@ -59,12 +59,12 @@ print("Classification Vector is", clarray)
 ## Run Feature Selections
 ###################################################################
 
-FeatureSelector = FeatureSelector(featarray, clarray)
+feature_selector = FeatureSelector(featarray, clarray)
 
 ## mr.MR calculations
 print('mR.MR calculations (see https://github.com/smazzanti/mrmr to have more info) '
       'in progress...')
-selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = FeatureSelector.run_mrmr(nbr_keptfeat)
+selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = feature_selector.run_mrmr(nbr_keptfeat)
 # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
 selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
 
@@ -76,7 +76,7 @@ print('Redundancy Matrix: {}'.format(mrmr_redundancy_matrix))
 ## Boruta calculations
 print('Boruta calculations  (https://github.com/scikit-learn-contrib/boruta_py to have more info)'
       ' in progress...')
-selfeat_boruta_index = FeatureSelector.run_boruta(
+selfeat_boruta_index = feature_selector.run_boruta(
     max_depth=boruta_max_depth, random_state=boruta_random_state)
 # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
 selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index] 
@@ -85,7 +85,7 @@ print('Selected Features Names: {}'.format(selfeat_boruta_names))
 
 ## Mann Whitney U calculations
 print('Mann Whitney U calculations in progress...')
-selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = FeatureSelector.run_mannwhitney(nbr_keptfeat)
+selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_keptfeat)
 # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
 selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index] 
 
