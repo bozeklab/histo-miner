@@ -256,70 +256,52 @@ if run_xgboost and not run_lgbm:
 
     for i in range(nbr_of_splits):  
 
-
         X_train = splits_nested_list[i][0]
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
         
-        xgboost_slide_ranking = xgboost
-        xgboost_slide_ranking = xgboost_slide_ranking.fit(X_train, y_train)
-        
-        proba_predictions = xgboost_slide_ranking.predict_proba(X_train)
-        
-        # Keep only the highest of the 2 probabilities 
-        correct_predictions_proba = [proba_predictions[i, classtarget] 
-                                     for i, classtarget in enumerate(y_train)]
+        xgboost_training = xgboost
+        xgboost_training = xgboost_training.fit(X_train, y_train) 
 
-        # highest_proba_prediction = np.max(proba_predictions, axis=1)
-        list_proba_predictions_slideselect.append(correct_predictions_proba)
+        # Make predictions on the test set
+        y_pred = xgboost_training.predict(X_test)
 
-        # Now we should keep one slide per patient of the training set
+        # Now we should keep one prediction per patient for evaluation, the most represented prediction
         # load the corresponding ID lists
         X_train_patID = splits_patientID_list[i][0]
         X_test_patID = splits_patientID_list[i][1]
         
         # Dictionary to store the index of the highest probability score for each group
-        idx_most_representative_slide_per_patient = []
+        y_pred_per_patient = []
+        y_test_per_patient = []
 
         # Iterate through groups
-        for patientid in np.unique(X_train_patID):
+        for patientid in np.unique(X_test_patID):
             # Get the indices of samples belonging to the current group
-            slide_indices = np.where(X_train_patID == patientid)[0]
+            slide_indices = np.where(X_test_patID == patientid)[0]
 
-            # Get the probability predictions for each slides of the patient
-            # if len(slide_indices) == 1:
-            #     slide_indices = int(slide_indices)
-            patient_slides_probas = [list_proba_predictions_slideselect[i][index] 
-                                     for index in slide_indices]
-            # Find the index of the maximum probability score
-            max_proba_index = np.argmax(patient_slides_probas)
+            # If the patient has more than one slide, we keep the one with most prediction
+            if len(slide_indices) > 1:
+                # Get the probability predictions of class 0 for each slides of the patient
+                patient_slides_probas_class0 = [y_pred[index] for index in slide_indices]
+                
+                # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
+                count_norec = patient_slides_probas_class0.count(0)
+                count_rec =  patient_slides_probas_class0.count(1)
+                if count_norec > count_rec:
+                    y_pred_per_patient.append(int(0))
+                    y_test_per_patient.append(y_test[slide_indices][0])
+                else:
+                    y_pred_per_patient.append(int(1))
+                    y_test_per_patient.append(y_test[slide_indices][0])
 
-            # Store the index in the dictionary
-            idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
-
-        # Generate classification array of only representative slides
-        y_train_refined = y_train[idx_most_representative_slide_per_patient]
-
-
-        # Generate the features of representatative slides with all features or with selected ones
-        if classification_from_allfeatures:
-            
-            X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
-        # else:
-        #     feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
-
-
-        ## Evaluate on the test split of the cross-validation run
-        # Train again but this time only with the selected slides 
-        xgboost_training = xgboost
-        xgboost_training = xgboost_training.fit(X_train_representative_slides, y_train_refined) 
-
-        # Make predictions on the test set
-        y_pred = xgboost_training.predict(X_test)
+            else: 
+                y_pred_per_patient.append(y_pred[slide_indices][0])
+                y_test_per_patient.append(y_test[slide_indices][0])
 
         # Calculate balanced accuracy for the current split
-        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracy = balanced_accuracy_score(y_test_per_patient, y_pred_per_patient)
         balanced_accuracies.append(balanced_accuracy)
 
     # Have the mean of balanced accuracies
@@ -328,7 +310,7 @@ if run_xgboost and not run_lgbm:
 
     mean_bacc = np.mean(balanced_accuracies_numpy)
     print('slpits balanced accuracies:', balanced_accuracies)
-    print('mean balanced accuracy: {}'.format(mean_bacc))
+    print('mean balanced accuracy for xgboost: {}'.format(mean_bacc))
         
 
 
@@ -339,63 +321,54 @@ elif run_lgbm and not run_xgboost:
     balanced_accuracies = []
     list_proba_predictions_slideselect = []
 
-    for i in range(nbr_of_splits):  # Assuming you have 10 splits
+    for i in range(nbr_of_splits):  
+
         X_train = splits_nested_list[i][0]
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
         
         lgbm_slide_ranking = lightgbm
-        lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, y_train)
-        
-        proba_predictions = lgbm_slide_ranking.predict_proba(X_train)
-        
-        # Keep only the highest of the 2 probabilities 
-        highest_proba_prediction = np.max(proba_predictions, axis=1)
-        list_proba_predictions_slideselect.append(highest_proba_prediction)
+        lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, y_train) 
 
-        # Now we should keep one slide per patient of the training set
+        # Make predictions on the test set
+        y_pred = lgbm_slide_ranking.predict(X_test)
+
+        # Now we should keep one prediction per patient for evaluation, the most represented prediction
         # load the corresponding ID lists
         X_train_patID = splits_patientID_list[i][0]
         X_test_patID = splits_patientID_list[i][1]
         
         # Dictionary to store the index of the highest probability score for each group
-        idx_most_representative_slide_per_patient = []
+        y_pred_per_patient = []
+        y_test_per_patient = []
 
         # Iterate through groups
-        for patientid in np.unique(X_train_patID):
+        for patientid in np.unique(X_test_patID):
             # Get the indices of samples belonging to the current group
-            slide_indices = np.where(X_train_patID == patientid)[0]
+            slide_indices = np.where(X_test_patID == patientid)[0]
 
-            # Get the probability predictions for each slides of the patient
-            patietn_slides_probas = list_proba_predictions_slideselect[i][slide_indices]
+            # If the patient has more than one slide, we keep the one with most prediction
+            if len(slide_indices) > 1:
+                # Get the probability predictions of class 0 for each slides of the patient
+                patient_slides_probas_class0 = [y_pred[index] for index in slide_indices]
+                
+                # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
+                count_norec = patient_slides_probas_class0.count(0)
+                count_rec =  patient_slides_probas_class0.count(1)
+                if count_norec > count_rec:
+                    y_pred_per_patient.append(int(0))
+                    y_test_per_patient.append(y_test[slide_indices][0])
+                else:
+                    y_pred_per_patient.append(int(1))
+                    y_test_per_patient.append(y_test[slide_indices][0])
 
-            # Find the index of the maximum probability score
-            max_proba_index = np.argmax(patietn_slides_probas)
-
-            # Store the index in the dictionary
-            idx_most_representative_slide_per_patient.append(slide_indices[max_proba_index])
-
-        # Generate classification array of only representative slides
-        y_train_refined = y_train[idx_most_representative_slide_per_patient]
-
-        # Generate the features of representatative slides with all features or with selected ones
-        if classification_from_allfeatures:
-            
-            X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
-        # else:
-        #     feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
-       
-        ## Evaluate on the test split of the cross-validation run
-        # Train again but this time only with the selected slides 
-        lightgbm_training = lightgbm
-        lightgbm_training = lightgbm_training.fit(X_train_representative_slides, y_train_refined) 
-
-        # Make predictions on the test set
-        y_pred = lightgbm_training.predict(X_test)
+            else: 
+                y_pred_per_patient.append(y_pred[slide_indices][0])
+                y_test_per_patient.append(y_test[slide_indices][0])
 
         # Calculate balanced accuracy for the current split
-        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracy = balanced_accuracy_score(y_test_per_patient, y_pred_per_patient)
         balanced_accuracies.append(balanced_accuracy)
 
     # Have the mean of balanced accuracies
@@ -404,7 +377,7 @@ elif run_lgbm and not run_xgboost:
 
     mean_bacc = np.mean(balanced_accuracies_numpy)
     print('slpits balanced accuracies:', balanced_accuracies)
-    print('mean balanced accuracy: {}'.format(mean_bacc))
+    print('mean balanced accuracy for lgbm: {}'.format(mean_bacc))
 
 
 

@@ -1,5 +1,6 @@
 #Lucas Sancéré -
 
+import os
 import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
 
@@ -30,6 +31,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
+classification_eval_folder = confighm.paths.folders.classification_evaluation
 
 
 # SEE LATER WHAT WE KEEP AND WHAT WE REMOVE
@@ -212,7 +214,7 @@ for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray
 # Initialization of parameters
 nbr_feat = len(X_train[1])
 print('nbr_feat is:',nbr_feat)
-nbr_of_splits = 2 # Assuming 3 splits
+nbr_of_splits = 10 # Assuming 10 splits
 
 # Keep the idwx of the most representative ones for each patient
 list_idx_most_representative_slide_per_patient = list()
@@ -338,27 +340,27 @@ if run_xgboost and not run_lgbm:
         for nbr_keptfeat_idx in tqdm(range(nbr_feat - 1, 0, -1)):
 
             # Kept the selected features
-            selfeat_mrmr_index =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
-            selfeat_mannwhitneyu_index = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+            selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+            selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
 
             # Generate matrix of features
-            featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr_index)
+            featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr_index_reduced)
             featarray_mannwhitneyu = selected_features_matrix.mannwhitney_matr(
-                                        selfeat_mannwhitneyu_index)
+                                        selfeat_mannwhitneyu_index_reduced)
 
             #Training
-            xgboost_mrmr_training = xgboost_mrmr_training.fit(featarray_mrmr, 
-                                                              train_clarray_refined)
-            xgboost_mannwhitneyu_training = xgboost_mannwhitneyu_training.fit(
-                                                              featarray_mannwhitneyu, 
-                                                              train_clarray_refined)
+            xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
+                                                                   train_clarray_refined)
+            xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
+                                                                   featarray_mannwhitneyu, 
+                                                                   train_clarray_refined)
 
             # Predictions on the test split
-            y_pred_mrmr = xgboost_mrmr_training.predict(
-                X_test[:, np.transpose(selfeat_mrmr_index)]
+            y_pred_mrmr = xgboost_mrmr_training_inst.predict(
+                X_test[:, np.transpose(selfeat_mrmr_index_reduced)]
                 )
-            y_pred_mannwhitneyu = xgboost_mannwhitneyu_training.predict(
-                X_test[:, np.transpose(selfeat_mannwhitneyu_index)]
+            y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
+                X_test[:, np.transpose(selfeat_mannwhitneyu_index_reduced)]
                 )
 
             # Calculate balanced accuracy for the current split
@@ -389,8 +391,6 @@ if run_xgboost and not run_lgbm:
         balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
         balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = balanced_accuracy_boruta
                                                 
-
-
 
 
 
@@ -441,10 +441,25 @@ for i in range(nbr_of_splits):
 
 # Transform a list of list into a list?
 mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracies_boruta]
+# Then only keep mean value
+mean_ba_boruta_npy = np.asarray(mean_balanced_accuracies_boruta)
+mean_ba_boruta_npy = np.mean(mean_ba_boruta_npy)
 
 devink = True 
 
+# Save the mean accuracies for vizualization 
 
+mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
+mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
+
+save_results_path = classification_eval_folder + 'TestofKs_2/'
+save_ext = '.npy'
+if not os.path.exists(save_results_path):
+    os.mkdir(save_results_path)
+
+np.save(save_results_path + 'mean_ba_mannwhitneyu' + save_ext, mean_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'mean_ba_mrmr' + save_ext, mean_ba_mrmr_npy)
+np.save(save_results_path + 'mean_ba_boruta' + save_ext, mean_ba_boruta_npy)
 
 
 

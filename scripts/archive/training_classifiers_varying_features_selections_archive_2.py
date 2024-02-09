@@ -320,7 +320,7 @@ for nbr_keptfeat_idx in range(55, 0, -1):
     #### Classification training with the features kept by mrmr
     if os.path.exists(path_selfeat_mrmr_idx):
         # Generate the matrix with selected feature for mrmr
-        featarray_mrmr = selected_features_matrix.mrmr_matr( selfeat_mrmr_idx)
+        featarnbr_keptfeat_idxray_mrmr = selected_features_matrix.mrmr_matr( selfeat_mrmr_idx)
 
         #Shuffle feature arrays using the permutation index 
         if not wsi_selection:

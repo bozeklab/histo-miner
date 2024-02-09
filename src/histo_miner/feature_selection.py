@@ -243,7 +243,7 @@ class SelectedFeaturesMatrix:
         mrmrselectedfeatures_idx = sorted(selfeat_mrmr_index)
         featarray_mrmr = np.transpose(self.feature_array)
         # featarray_mrmr = self.feature_array
-        featarray_mrmr = featarray_mrmr[:, mrmrselectedfeatures_idx ]
+        featarray_mrmr = featarray_mrmr[:, selfeat_mrmr_index ]
         return featarray_mrmr
 
 
@@ -265,7 +265,7 @@ class SelectedFeaturesMatrix:
         borutaselectedfeatures_idx = sorted(selfeat_boruta_index)
         featarray_boruta = np.transpose(self.feature_array)
         # featarray_boruta = self.feature_array
-        featarray_boruta = featarray_boruta[:, borutaselectedfeatures_idx]
+        featarray_boruta = featarray_boruta[:, selfeat_boruta_index]
         return featarray_boruta
 
 

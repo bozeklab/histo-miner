@@ -28,19 +28,19 @@ pathtosavefolder = config.paths.folders.visualizations
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/TestofKs/' 
+path2vectors = pathtofolder + '/TestofKs_2/' 
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'xgbmean_aAcc_mrmr' + ext)
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbmean_aAcc_mannwhitneyu' + ext)
-xgbmean_aAcc_boruta = np.load(path2vectors + 'xgbmean_aAcc_boruta' + ext)
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr' + ext)
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu' + ext)
+xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta' + ext)
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
-lgbmmean_aAcc_mrmr = np.load(path2vectors + 'lgbmmean_aAcc_mrmr' + ext)
-lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmmean_aAcc_mannwhitneyu' + ext)
-lgbmmean_aAcc_boruta = np.load(path2vectors + 'lgbmmean_aAcc_boruta' + ext)
+# lgbmmean_aAcc_mrmr = np.load(path2vectors + 'lgbmmean_aAcc_mrmr' + ext)
+# lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmmean_aAcc_mannwhitneyu' + ext)
+# lgbmmean_aAcc_boruta = np.load(path2vectors + 'lgbmmean_aAcc_boruta' + ext)
 # lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
 # lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
 # lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
@@ -50,9 +50,8 @@ lgbmmean_aAcc_boruta = np.load(path2vectors + 'lgbmmean_aAcc_boruta' + ext)
 x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
 
 # Creating x coordinats for boruta
-xboruta = np.load(path2vectors + 'nbr_keptfeat_list' + ext)
-
-
+# xboruta = np.load(path2vectors + 'nbr_keptfeat_list' + ext)
+xboruta = [3]
 ## PLot figure for xgboost
 # Increase the figure width to make room for the legend
 #plt.figure(figsize=(18, 8))
@@ -81,38 +80,38 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'xgboost_result.png')
+plt.savefig(pathtosavefolder + 'xgboost_result_2.png')
 plt.clf()
 
 
-## PLot figure for lgbm
-plt.figure(figsize=(6, 4))
+# ## PLot figure for lgbm
+# plt.figure(figsize=(6, 4))
 
-# First figure with xgboost
-plt.plot(x, lgbmmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
-# plt.plot(x, lgbmbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
-plt.plot(x, lgbmmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
-# plt.plot(x, lgbmbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
-plt.plot(xboruta, lgbmmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
-# plt.plot(xboruta, lgbmbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
-plt.xlim(max(x), min(x))
+# # First figure with xgboost
+# plt.plot(x, lgbmmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+# # plt.plot(x, lgbmbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
+# plt.plot(x, lgbmmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
+# # plt.plot(x, lgbmbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
+# plt.plot(xboruta, lgbmmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+# # plt.plot(xboruta, lgbmbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
+# plt.xlim(max(x), min(x))
 
-# Plot random classification binary accuracy
-plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
+# # Plot random classification binary accuracy
+# plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
 
-# Add labels and a legend
-plt.xlabel('Number of feature kept')
-plt.ylabel('Balanced Accuracy of Classification')
-plt.title('Effect of number of kept features on lgbm balanced accuracy')
-#plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# # Add labels and a legend
+# plt.xlabel('Number of feature kept')
+# plt.ylabel('Balanced Accuracy of Classification')
+# plt.title('Effect of number of kept features on lgbm balanced accuracy')
+# #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-# Set the step on the y-axis
-plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
-plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
+# # Set the step on the y-axis
+# plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
+# plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
-# Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'lgbm_result.png')
-plt.clf()
+# # Save the plot on the root classification_evaluation directory
+# plt.savefig(pathtosavefolder + 'lgbm_result.png')
+# plt.clf()
 
 
 
