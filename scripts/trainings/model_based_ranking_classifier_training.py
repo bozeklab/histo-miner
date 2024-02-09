@@ -241,7 +241,7 @@ else:
 
 
 
-# With the new version of slide selection, everything should be done in one loop,
+# With the new version of slid eselection, everything should be done in one loop,
 # with beginning of the loop beeing the slide selection I think
 
 # -- XGBOOST --
