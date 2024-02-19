@@ -180,15 +180,6 @@ patientids_ordered = patientids_ordered[permutation_index]
 ### Create Stratified Group to further split the dataset into 5 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
-### Create list of 5 model names
-### It is needed as very scikit learn model NEEDS a different name  
-modelnames = []
-for i in range(5):
-    model_name = f"model_{i}"
-    modelnames.append(model_name)
-
-# Initialize the list of trained_models:
-trained_models = []
 
 # Need another instance of the classifier
 lgbm_slide_ranking = lightgbm

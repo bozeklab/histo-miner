@@ -28,6 +28,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
+calculate_distances = config.parameters.bool.calculate_distances
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
 maskmapext = str(config.parameters.str.maskmap_ext)
 selectedcls_ratio = list(config.parameters.lists.selectedcls_ratio)
@@ -105,17 +106,20 @@ for jsonfile in jsonfiles:
                                     classnameaskey=classnames)
 
         print('Cells_inmask_dict generated as follow:', cells_inmask_dict)
-        print('Process distance calculcations inside tumor regions...')
+        
+        # Needs to create an empty dict even if the distances are not calculated
+        cellsdist_inmask_dict = dict()
+        if calculate_distances: 
+            print('Process distance calculcations inside tumor regions...')  
+            cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
+                jsonfile, 
+                selectedcls_dist,
+                cellfilter='Tumor',
+                maskmap=maskmappath,
+                maskmapdownfactor=maskmap_downfactor,
+                tumormargin=None)
 
-        cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
-            jsonfile, 
-            selectedcls_dist,
-            cellfilter='Tumor',
-            maskmap=maskmappath,
-            maskmapdownfactor=maskmap_downfactor,
-            tumormargin=None)
-
-        print('Cellsdist_inmask_dict generated as follow:', cellsdist_inmask_dict)
+            print('Cellsdist_inmask_dict generated as follow:', cellsdist_inmask_dict)
 
 
     else:

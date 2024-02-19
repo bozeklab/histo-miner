@@ -36,7 +36,6 @@ with open("./../../configs/classification_training.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
@@ -180,64 +179,32 @@ patientids_ordered = patientids_ordered[permutation_index]
 ### Create Stratified Group to further split the dataset into 5 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 
-### Create list of 5 model names
-### It is needed as very scikit learn model NEEDS a different name  
-modelnames = []
-for i in range(5):
-    model_name = f"model_{i}"
-    modelnames.append(model_name)
-
-# Initialize the list of trained_models:
-trained_models = []
 
 # Need another instance of the classifier
 lgbm_slide_ranking = lightgbm
 xgboost_slide_ranking = xgboost
 
 
-if classification_from_allfeatures:
-    # Create a list of splits with all features 
-    splits_nested_list = list()
-    # Create a list of patient IDs corresponding of the splits:
-    splits_patientID_list = list()
-    for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
-                                                                     train_clarray, 
-                                                                     groups=patientids_ordered)):
-        # Generate training and test data from the indexes
-        X_train = train_featarray[train_index]
-        X_test = train_featarray[test_index]
-        y_train = train_clarray[train_index]
-        y_test = train_clarray[test_index]
+# Create a list of splits with all features 
+splits_nested_list = list()
+# Create a list of patient IDs corresponding of the splits:
+splits_patientID_list = list()
+for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
+                                                                 train_clarray, 
+                                                                 groups=patientids_ordered)):
+    # Generate training and test data from the indexes
+    X_train = train_featarray[train_index]
+    X_test = train_featarray[test_index]
+    y_train = train_clarray[train_index]
+    y_test = train_clarray[test_index]
 
-        splits_nested_list.append([X_train, y_train, X_test, y_test])
+    splits_nested_list.append([X_train, y_train, X_test, y_test])
 
-        # Generate the corresponding list for patient ids
-        X_train_patID = patientids_ordered[train_index]
-        X_test_patID = patientids_ordered[test_index]
+    # Generate the corresponding list for patient ids
+    X_train_patID = patientids_ordered[train_index]
+    X_test_patID = patientids_ordered[test_index]
 
-        splits_patientID_list.append([X_train_patID, X_test_patID])
-
-else:
-    # Create a list of splits indeces with the selected features 
-    splits_nested_list = list()
-    # Create a list of patient IDs corresponding of the splits:
-    splits_patientID_list = list()
-    for i, (train_index, test_index) in enumerate(stratgroupkf.split(featarray_boruta, 
-                                                                     train_clarray, 
-                                                                     groups=patientids_ordered)):
-        # Generate training and test data from the indexes
-        X_train = featarray_boruta[train_index]
-        X_test = featarray_boruta[test_index]
-        y_train = train_clarray[train_index]
-        y_test = train_clarray[test_index]
-
-        splits_nested_list.append([X_train, y_train, X_test, y_test])
-
-        # Generate the corresponding list for patient ids
-        X_train_patID = patientids_ordered[train_index]
-        X_test_patID = patientids_ordered[test_index]
-
-        splits_patientID_list.append([X_train_patID, X_test_patID])
+    splits_patientID_list.append([X_train_patID, X_test_patID])
 
 
 
@@ -261,7 +228,9 @@ if run_xgboost and not run_lgbm:
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
-        
+
+
+        # Selection of representative slides
         xgboost_slide_ranking = xgboost
         xgboost_slide_ranking = xgboost_slide_ranking.fit(X_train, y_train)
         
@@ -303,11 +272,7 @@ if run_xgboost and not run_lgbm:
 
 
         # Generate the features of representatative slides with all features or with selected ones
-        if classification_from_allfeatures:
-            
-            X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
-        # else:
-        #     feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
+        X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
 
 
         ## Evaluate on the test split of the cross-validation run
@@ -380,11 +345,8 @@ elif run_lgbm and not run_xgboost:
         y_train_refined = y_train[idx_most_representative_slide_per_patient]
 
         # Generate the features of representatative slides with all features or with selected ones
-        if classification_from_allfeatures:
-            
-            X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
-        # else:
-        #     feat_representative_slides = featarray_boruta[idx_most_representative_slide_per_patient,:]
+        X_train_representative_slides = X_train[idx_most_representative_slide_per_patient,:]
+    
        
         ## Evaluate on the test split of the cross-validation run
         # Train again but this time only with the selected slides 

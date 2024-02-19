@@ -5,9 +5,9 @@
     folders:
         main: "/data/shared/scc/histo-miner/data_analysis/"
 
-        inferences_postproc_main: "/data/shared/scc/histo-miner/data_analysis/no_progress/Regensburg"
+        inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
 
-        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis"
+        tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
 
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
@@ -25,6 +25,8 @@
 # All parameters of string names
   names:
       hovernet_mode: wsi
+
+      eval_folder: TestofKs_3
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string
@@ -93,6 +95,8 @@
       boruta_random_state: 1
 
     bool:
+      calculate_distances: True 
+
       display_classification_predictions: False
 
       display_classification_scores: True
