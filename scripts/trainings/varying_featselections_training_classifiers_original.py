@@ -106,8 +106,8 @@ print('Loading feature selected indexes done.')
 ################################################################
 
 #This is to check but should be fine
-path_featarray = pathfeatselect + 'repslidesx_featarray' + ext
-path_clarray = pathfeatselect + 'repslidesx_clarray' + ext
+path_featarray = pathfeatselect + 'perwsi_featarray' + ext
+path_clarray = pathfeatselect + 'perwsi_clarray' + ext
 
 train_featarray = np.load(path_featarray)
 train_clarray = np.load(path_clarray)
@@ -457,7 +457,7 @@ else:
     lgbmmean_aAcc_mannwhitneyu = np.asarray(lgbmmean_aAcc_mannwhitneyu)
 
 # Saving
-save_results_path = classification_eval_folder + 'TestofKs/'
+save_results_path = classification_eval_folder + 'tests/'
 save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
@@ -484,118 +484,118 @@ else:
 
 ### BORUTA
 
-selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
+# selfeat_boruta_folder = pathfeatselect + 'all_borutas/'
 
-if os.path.exists(selfeat_boruta_folder):
-    print('Check if depth_boruta list match the different files.')
+# if os.path.exists(selfeat_boruta_folder):
+#     print('Check if depth_boruta list match the different files.')
 
-    depth_boruta = [2, 4, 6, 20]
-    # depth_boruta = [6, 8, 10, 12, 14, 16, 18, 20]
-    nbr_keptfeat_list = [56]
+#     depth_boruta = [2, 4, 6, 20]
+#     # depth_boruta = [6, 8, 10, 12, 14, 16, 18, 20]
+#     nbr_keptfeat_list = [56]
 
-    for depth in depth_boruta:
+#     for depth in depth_boruta:
 
-        # Load the correctly selected features
-        pathselfeat_boruta = selfeat_boruta_folder + 'selfeat_boruta_idx_depth' + str(depth) + '.npy'
-        selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
+#         # Load the correctly selected features
+#         pathselfeat_boruta = selfeat_boruta_folder + 'selfeat_boruta_idx_depth' + str(depth) + '.npy'
+#         selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 
-        # Check how many features are selected for this depth
-        nbr_keptfeat = len(selfeat_boruta)
-        print('nbr_keptfeat:', nbr_keptfeat)
-        print('selfeat_boruta', selfeat_boruta)
-        nbr_keptfeat_list.append(nbr_keptfeat)
+#         # Check how many features are selected for this depth
+#         nbr_keptfeat = len(selfeat_boruta)
+#         print('nbr_keptfeat:', nbr_keptfeat)
+#         print('selfeat_boruta', selfeat_boruta)
+#         nbr_keptfeat_list.append(nbr_keptfeat)
 
-        #### Classification training with the features kept by boruta
+#         #### Classification training with the features kept by boruta
 
-        if os.path.exists(pathselfeat_boruta):
-            # Generate the matrix with selected feature for boruta
-            featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta)
+#         if os.path.exists(pathselfeat_boruta):
+#             # Generate the matrix with selected feature for boruta
+#             featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta)
 
-            #Shuffle feature arrays using the permutation index
-            if not wsi_selection: 
-                featarray_boruta = featarray_boruta[permutation_index,:]
+#             #Shuffle feature arrays using the permutation index
+#             if not wsi_selection: 
+#                 featarray_boruta = featarray_boruta[permutation_index,:]
           
-            ##### XGBOOST
-            xgboostboruta = xgboost
-            if wsi_selection:
-                crossvalid_results = cross_val_score(xgboostboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-            else:
-                crossvalid_results = cross_val_score(xgboostboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     groups=patientids_ordered,
-                                                     cv=stratgroupkf,  
-                                                     scoring='balanced_accuracy')
-            crossvalid_meanscore = np.mean(crossvalid_results)
-            crossvalid_maxscore = np.max(crossvalid_results)
+#             ##### XGBOOST
+#             xgboostboruta = xgboost
+#             if wsi_selection:
+#                 crossvalid_results = cross_val_score(xgboostboruta, 
+#                                                      featarray_boruta, 
+#                                                      train_clarray,  
+#                                                      cv=10,  
+#                                                      scoring='balanced_accuracy')
+#             else:
+#                 crossvalid_results = cross_val_score(xgboostboruta, 
+#                                                      featarray_boruta, 
+#                                                      train_clarray,  
+#                                                      groups=patientids_ordered,
+#                                                      cv=stratgroupkf,  
+#                                                      scoring='balanced_accuracy')
+#             crossvalid_meanscore = np.mean(crossvalid_results)
+#             crossvalid_maxscore = np.max(crossvalid_results)
 
-            # Insert results in the corresponding lists
-            if search_bestsplit:
-                xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-            else: 
-                xgbmean_aAcc_boruta.append(crossvalid_meanscore)
+#             # Insert results in the corresponding lists
+#             if search_bestsplit:
+#                 xgbbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+#             else: 
+#                 xgbmean_aAcc_boruta.append(crossvalid_meanscore)
 
-            ##### LIGHT GBM
-            lightgbmboruta = lightgbm
-            if wsi_selection:
-                crossvalid_results = cross_val_score(lightgbmboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     cv=10,  
-                                                     scoring='balanced_accuracy')
-            else:
-                crossvalid_results = cross_val_score(lightgbmboruta, 
-                                                     featarray_boruta, 
-                                                     train_clarray,  
-                                                     groups=patientids_ordered,
-                                                     cv=stratgroupkf,  
-                                                     scoring='balanced_accuracy')
-            crossvalid_meanscore = np.mean(crossvalid_results)
-            crossvalid_maxscore = np.max(crossvalid_results)
+#             ##### LIGHT GBM
+#             lightgbmboruta = lightgbm
+#             if wsi_selection:
+#                 crossvalid_results = cross_val_score(lightgbmboruta, 
+#                                                      featarray_boruta, 
+#                                                      train_clarray,  
+#                                                      cv=10,  
+#                                                      scoring='balanced_accuracy')
+#             else:
+#                 crossvalid_results = cross_val_score(lightgbmboruta, 
+#                                                      featarray_boruta, 
+#                                                      train_clarray,  
+#                                                      groups=patientids_ordered,
+#                                                      cv=stratgroupkf,  
+#                                                      scoring='balanced_accuracy')
+#             crossvalid_meanscore = np.mean(crossvalid_results)
+#             crossvalid_maxscore = np.max(crossvalid_results)
 
-            # Insert results in the corresponding lists
-            if search_bestsplit:
-                lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
-            else: 
-                lgbmmean_aAcc_boruta.append(crossvalid_meanscore)
-
-
-    # Conversion to numpy  
-    nbr_keptfeat_list = np.asarray(nbr_keptfeat_list)
-    if search_bestsplit:
-        # print('xgbbestsplit_aAcc_boruta is:', xgbbestsplit_aAcc_boruta)
-        print('lgbmbestsplit_aAcc_boruta is:', lgbmbestsplit_aAcc_boruta)
-        # xgbbestsplit_aAcc_boruta = np.asarray(xgbbestsplit_aAcc_boruta)
-        lgbmbestsplit_aAcc_boruta = np.asarray(lgbmbestsplit_aAcc_boruta)
-    else: 
-        # print('xgbmean_aAcc_boruta is', xgbmean_aAcc_boruta)
-        print('lgbmmean_aAcc_boruta is', lgbmmean_aAcc_boruta)
-        # xgbmean_aAcc_boruta = np.asarray(xgbmean_aAcc_boruta)
-        lgbmmean_aAcc_boruta = np.asarray(lgbmmean_aAcc_boruta)
-
-    # Saving
-    save_results_path = classification_eval_folder + 'TestofKs/'
-    save_ext = '.npy'
-    if not os.path.exists(save_results_path):
-        os.mkdir(save_results_path)
-
-    np.save(save_results_path + 'nbr_keptfeat_list' + save_ext ,nbr_keptfeat_list)
-    if search_bestsplit:
-        # np.save(save_results_path + 'xgbbestsplit_aAcc_boruta' + save_ext,
-                 # xgbbestsplit_aAcc_boruta)
-        np.save(save_results_path + 'lgbmbestsplit_aAcc_boruta' + save_ext,
-            lgbmbestsplit_aAcc_boruta)
-    else:
-        # np.save(save_results_path + 'xgbmean_aAcc_boruta' + save_ext,
-                 # xgbmean_aAcc_boruta)
-        np.save(save_results_path + 'lgbmmean_aAcc_boruta' + save_ext,
-            lgbmmean_aAcc_boruta)
+#             # Insert results in the corresponding lists
+#             if search_bestsplit:
+#                 lgbmbestsplit_aAcc_boruta.append(crossvalid_maxscore)
+#             else: 
+#                 lgbmmean_aAcc_boruta.append(crossvalid_meanscore)
 
 
+#     # Conversion to numpy  
+#     nbr_keptfeat_list = np.asarray(nbr_keptfeat_list)
+#     if search_bestsplit:
+#         # print('xgbbestsplit_aAcc_boruta is:', xgbbestsplit_aAcc_boruta)
+#         print('lgbmbestsplit_aAcc_boruta is:', lgbmbestsplit_aAcc_boruta)
+#         # xgbbestsplit_aAcc_boruta = np.asarray(xgbbestsplit_aAcc_boruta)
+#         lgbmbestsplit_aAcc_boruta = np.asarray(lgbmbestsplit_aAcc_boruta)
+#     else: 
+#         # print('xgbmean_aAcc_boruta is', xgbmean_aAcc_boruta)
+#         print('lgbmmean_aAcc_boruta is', lgbmmean_aAcc_boruta)
+#         # xgbmean_aAcc_boruta = np.asarray(xgbmean_aAcc_boruta)
+#         lgbmmean_aAcc_boruta = np.asarray(lgbmmean_aAcc_boruta)
 
-print('Evaluations  are done.')
+#     # Saving
+#     save_results_path = classification_eval_folder + 'TestofKs/'
+#     save_ext = '.npy'
+#     if not os.path.exists(save_results_path):
+#         os.mkdir(save_results_path)
+
+#     np.save(save_results_path + 'nbr_keptfeat_list' + save_ext ,nbr_keptfeat_list)
+#     if search_bestsplit:
+#         # np.save(save_results_path + 'xgbbestsplit_aAcc_boruta' + save_ext,
+#                  # xgbbestsplit_aAcc_boruta)
+#         np.save(save_results_path + 'lgbmbestsplit_aAcc_boruta' + save_ext,
+#             lgbmbestsplit_aAcc_boruta)
+#     else:
+#         # np.save(save_results_path + 'xgbmean_aAcc_boruta' + save_ext,
+#                  # xgbmean_aAcc_boruta)
+#         np.save(save_results_path + 'lgbmmean_aAcc_boruta' + save_ext,
+#             lgbmmean_aAcc_boruta)
+
+
+
+# print('Evaluations  are done.')
 

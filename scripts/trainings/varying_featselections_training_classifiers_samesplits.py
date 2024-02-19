@@ -234,7 +234,9 @@ if run_xgboost and not run_lgbm:
         y_test = splits_nested_list[i][3]
         
         # The array is then transpose to feat FeatureSelector requirements
+        # X_train_tr = X_train
         X_train_tr = np.transpose(X_train)
+        # train_featarray = np.transpose(train_featarray)
 
         ########### SELECTION OF FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
@@ -250,7 +252,7 @@ if run_xgboost and not run_lgbm:
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
-        selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = feature_selector.run_mrmr(nbr_feat, return_scores=False)
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
 
@@ -294,42 +296,9 @@ if run_xgboost and not run_lgbm:
                 # Predictions on the test split
                 y_pred_allfeat = xgboost_training_allfeat.predict(X_test)
 
-                # Now we should keep one prediction per patient for evaluation, the most represented prediction
-                # load the corresponding ID lists
-                X_train_patID = splits_patientID_list[i][0]
-                X_test_patID = splits_patientID_list[i][1]
-
-                # Dictionary to store the index of the highest probability score for each group
-                y_pred_per_patient = []
-                y_test_per_patient = []
-
-                # Iterate through groups
-                for patientid in np.unique(X_test_patID):
-                    # Get the indices of samples belonging to the current group
-                    slide_indices = np.where(X_test_patID == patientid)[0]
-
-                    # If the patient has more than one slide, we keep the one with most prediction
-                    if len(slide_indices) > 1:
-                        # Get the probability predictions of class 0 for each slides of the patient
-                        patient_slides_probas_class0 = [y_pred_allfeat[index] for index in slide_indices]
-                        
-                        # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
-                        count_norec = patient_slides_probas_class0.count(0)
-                        count_rec =  patient_slides_probas_class0.count(1)
-                        if count_norec > count_rec:
-                            y_pred_per_patient.append(int(0))
-                            y_test_per_patient.append(y_test[slide_indices][0])
-                        else:
-                            y_pred_per_patient.append(int(1))
-                            y_test_per_patient.append(y_test[slide_indices][0])
-
-                    else: 
-                        y_pred_per_patient.append(y_pred_allfeat[slide_indices][0])
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
                 # Calculate balanced accuracy for the current split
-                balanced_accuracy_allfeat = balanced_accuracy_score(y_test_per_patient, 
-                                                                    y_pred_per_patient)
+                balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
+                                                                    y_pred_allfeat)
 
                 # Update mrmr and mannwhitney list with the all feature evaluation
                 balanced_accuracies_mrmr.append(balanced_accuracy_allfeat)
@@ -362,67 +331,12 @@ if run_xgboost and not run_lgbm:
                     X_test[:, np.transpose(selfeat_mannwhitneyu_index_reduced)]
                     )
 
-                # Now we should keep one prediction per patient for evaluation, 
-                # the most represented prediction and load the corresponding ID lists
-                X_train_patID = splits_patientID_list[i][0]
-                X_test_patID = splits_patientID_list[i][1]
-
-                # Dictionary to store the index of the highest probability score for each group
-                y_pred_per_patient_mrmr = []
-                y_pred_per_patient_mannwhitneyu = []
-                y_test_per_patient = []
-               
-                # Iterate through groups
-                for patientid in np.unique(X_test_patID):
-                    # Get the indices of samples belonging to the current group
-                    slide_indices = np.where(X_test_patID == patientid)[0]
-
-                    # If the patient has more than one slide, we keep the one with most prediction
-                    if len(slide_indices) > 1:
-                        # Get the probability predictions of class 0 for each slides of the patient
-                        # for mrmr
-                        patient_slides_probas_mrmr_class0 = [
-                            y_pred_mrmr[index] for index in slide_indices
-                            ]
-                        # for mannwhitneyu
-                        patient_slides_probas_mannwhitneyu_class0 = [
-                            y_pred_mannwhitneyu[index] for index in slide_indices
-                            ]
-
-                        # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2 
-                        # for mrmr
-                        count_norec_mrmr = patient_slides_probas_mrmr_class0.count(0)
-                        count_rec_mrmr =  patient_slides_probas_mrmr_class0.count(1)
-                        # for mannwhitneyu
-                        count_norec_mannwhitneyu = patient_slides_probas_mannwhitneyu_class0.count(0)
-                        count_rec_mannwhitneyu =  patient_slides_probas_mannwhitneyu_class0.count(1)
-                        
-                        if count_norec_mrmr > count_rec_mrmr:
-                            y_pred_per_patient_mrmr.append(int(0))
-                        else:
-                            y_pred_per_patient_mrmr.append(int(1))
-                            
-                        if count_norec_mannwhitneyu > count_rec_mannwhitneyu:
-                            y_pred_per_patient_mannwhitneyu.append(int(0))
-                        else:
-                            y_pred_per_patient_mannwhitneyu.append(int(1))
-
-                        # In any case, we should build the ground truth labels accordingly
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
-
-                    else: 
-                        y_pred_per_patient_mrmr.append(y_pred_mrmr[slide_indices][0])
-                        y_pred_per_patient_mannwhitneyu.append(y_pred_mannwhitneyu[slide_indices][0])
-
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
 
                 # Calculate balanced accuracy for the current split
-                balanced_accuracy_mrmr = balanced_accuracy_score(y_test_per_patient, 
-                                                                 y_pred_per_patient_mrmr)
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test_per_patient, 
-                                                                         y_pred_per_patient_mannwhitneyu)
+                balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                                 y_pred_mrmr)
+                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
+                                                                         y_pred_mannwhitneyu)
 
                 balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
                 balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
@@ -442,43 +356,9 @@ if run_xgboost and not run_lgbm:
                 X_test[:, np.transpose(selfeat_boruta_index)]
                 )
 
-            # Now we should keep one prediction per patient for evaluation, 
-            # the most represented prediction and load the corresponding ID lists
-            X_train_patID = splits_patientID_list[i][0]
-            X_test_patID = splits_patientID_list[i][1]
-
-            # Dictionary to store the index of the highest probability score for each group
-            y_pred_per_patient_boruta = []
-            y_test_per_patient = []
-           
-            # Iterate through groups
-            for patientid in np.unique(X_test_patID):
-                # Get the indices of samples belonging to the current group
-                slide_indices = np.where(X_test_patID == patientid)[0]
-
-                # If the patient has more than one slide, we keep the one with most prediction
-                if len(slide_indices) > 1:
-                    # Get the probability predictions of class 0 for each slides of the patient
-                    patient_slides_probas_boruta_class0 = [
-                        y_pred_boruta[index] for index in slide_indices
-                        ]
-                    
-                    # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
-                    count_norec = patient_slides_probas_boruta_class0.count(0)
-                    count_rec =  patient_slides_probas_boruta_class0.count(1)
-                    if count_norec > count_rec:
-                        y_pred_per_patient_boruta.append(int(0))
-                    else:
-                        y_pred_per_patient_boruta.append(int(1))
-                    y_test_per_patient.append(y_test[slide_indices][0])    
-
-                else: 
-                    y_pred_per_patient_boruta.append(y_pred_allfeat[slide_indices][0])
-                    y_test_per_patient.append(y_pred_allfeat[slide_indices][0])
-
             # Calculate balanced accuracy for the current split
-            balanced_accuracy_boruta = balanced_accuracy_score(y_test_per_patient,
-                                                               y_pred_per_patient_boruta)
+            balanced_accuracy_boruta = balanced_accuracy_score(y_test,
+                                                               y_pred_boruta)
 
 
 
@@ -499,13 +379,11 @@ if run_xgboost and not run_lgbm:
 
 elif run_lgbm and not run_xgboost:
 
-
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
     list_proba_predictions_slideselect = []
     
-
     for i in range(nbr_of_splits):  
 
         X_train = splits_nested_list[i][0]
@@ -574,42 +452,9 @@ elif run_lgbm and not run_xgboost:
                 # Predictions on the test split
                 y_pred_allfeat = lightgbm_training_allfeat.predict(X_test)
 
-                # Now we should keep one prediction per patient for evaluation, the most represented prediction
-                # load the corresponding ID lists
-                X_train_patID = splits_patientID_list[i][0]
-                X_test_patID = splits_patientID_list[i][1]
-
-                # Dictionary to store the index of the highest probability score for each group
-                y_pred_per_patient = []
-                y_test_per_patient = []
-
-                # Iterate through groups
-                for patientid in np.unique(X_test_patID):
-                    # Get the indices of samples belonging to the current group
-                    slide_indices = np.where(X_test_patID == patientid)[0]
-
-                    # If the patient has more than one slide, we keep the one with most prediction
-                    if len(slide_indices) > 1:
-                        # Get the probability predictions of class 0 for each slides of the patient
-                        patient_slides_probas_class0 = [y_pred_allfeat[index] for index in slide_indices]
-                        
-                        # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
-                        count_norec = patient_slides_probas_class0.count(0)
-                        count_rec =  patient_slides_probas_class0.count(1)
-                        if count_norec > count_rec:
-                            y_pred_per_patient.append(int(0))
-                            y_test_per_patient.append(y_test[slide_indices][0])
-                        else:
-                            y_pred_per_patient.append(int(1))
-                            y_test_per_patient.append(y_test[slide_indices][0])
-
-                    else: 
-                        y_pred_per_patient.append(y_pred_allfeat[slide_indices][0])
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
                 # Calculate balanced accuracy for the current split
-                balanced_accuracy_allfeat = balanced_accuracy_score(y_test_per_patient, 
-                                                                    y_pred_per_patient)
+                balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
+                                                                    y_pred_allfeat)
 
                 # Update mrmr and mannwhitney list with the all feature evaluation
                 balanced_accuracies_mrmr.append(balanced_accuracy_allfeat)
@@ -642,67 +487,12 @@ elif run_lgbm and not run_xgboost:
                     X_test[:, np.transpose(selfeat_mannwhitneyu_index_reduced)]
                     )
 
-                # Now we should keep one prediction per patient for evaluation, 
-                # the most represented prediction and load the corresponding ID lists
-                X_train_patID = splits_patientID_list[i][0]
-                X_test_patID = splits_patientID_list[i][1]
-
-                # Dictionary to store the index of the highest probability score for each group
-                y_pred_per_patient_mrmr = []
-                y_pred_per_patient_mannwhitneyu = []
-                y_test_per_patient = []
-               
-                # Iterate through groups
-                for patientid in np.unique(X_test_patID):
-                    # Get the indices of samples belonging to the current group
-                    slide_indices = np.where(X_test_patID == patientid)[0]
-
-                    # If the patient has more than one slide, we keep the one with most prediction
-                    if len(slide_indices) > 1:
-                        # Get the probability predictions of class 0 for each slides of the patient
-                        # for mrmr
-                        patient_slides_probas_mrmr_class0 = [
-                            y_pred_mrmr[index] for index in slide_indices
-                            ]
-                        # for mannwhitneyu
-                        patient_slides_probas_mannwhitneyu_class0 = [
-                            y_pred_mannwhitneyu[index] for index in slide_indices
-                            ]
-
-                        # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2 
-                        # for mrmr
-                        count_norec_mrmr = patient_slides_probas_mrmr_class0.count(0)
-                        count_rec_mrmr =  patient_slides_probas_mrmr_class0.count(1)
-                        # for mannwhitneyu
-                        count_norec_mannwhitneyu = patient_slides_probas_mannwhitneyu_class0.count(0)
-                        count_rec_mannwhitneyu =  patient_slides_probas_mannwhitneyu_class0.count(1)
-                        
-                        if count_norec_mrmr > count_rec_mrmr:
-                            y_pred_per_patient_mrmr.append(int(0))
-                        else:
-                            y_pred_per_patient_mrmr.append(int(1))
-                            
-                        if count_norec_mannwhitneyu > count_rec_mannwhitneyu:
-                            y_pred_per_patient_mannwhitneyu.append(int(0))
-                        else:
-                            y_pred_per_patient_mannwhitneyu.append(int(1))
-
-                        # In any case, we should build the ground truth labels accordingly
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
-
-                    else: 
-                        y_pred_per_patient_mrmr.append(y_pred_mrmr[slide_indices][0])
-                        y_pred_per_patient_mannwhitneyu.append(y_pred_mannwhitneyu[slide_indices][0])
-
-                        y_test_per_patient.append(y_test[slide_indices][0])
-
 
                 # Calculate balanced accuracy for the current split
-                balanced_accuracy_mrmr = balanced_accuracy_score(y_test_per_patient, 
-                                                                 y_pred_per_patient_mrmr)
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test_per_patient, 
-                                                                         y_pred_per_patient_mannwhitneyu)
+                balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                                 y_pred_mrmr)
+                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
+                                                                         y_pred_mannwhitneyu)
 
                 balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
                 balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
@@ -722,43 +512,9 @@ elif run_lgbm and not run_xgboost:
                 X_test[:, np.transpose(selfeat_boruta_index)]
                 )
 
-            # Now we should keep one prediction per patient for evaluation, 
-            # the most represented prediction and load the corresponding ID lists
-            X_train_patID = splits_patientID_list[i][0]
-            X_test_patID = splits_patientID_list[i][1]
-
-            # Dictionary to store the index of the highest probability score for each group
-            y_pred_per_patient_boruta = []
-            y_test_per_patient = []
-           
-            # Iterate through groups
-            for patientid in np.unique(X_test_patID):
-                # Get the indices of samples belonging to the current group
-                slide_indices = np.where(X_test_patID == patientid)[0]
-
-                # If the patient has more than one slide, we keep the one with most prediction
-                if len(slide_indices) > 1:
-                    # Get the probability predictions of class 0 for each slides of the patient
-                    patient_slides_probas_boruta_class0 = [
-                        y_pred_boruta[index] for index in slide_indices
-                        ]
-                    
-                    # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
-                    count_norec = patient_slides_probas_boruta_class0.count(0)
-                    count_rec =  patient_slides_probas_boruta_class0.count(1)
-                    if count_norec > count_rec:
-                        y_pred_per_patient_boruta.append(int(0))
-                    else:
-                        y_pred_per_patient_boruta.append(int(1))
-                    y_test_per_patient.append(y_test[slide_indices][0])    
-
-                else: 
-                    y_pred_per_patient_boruta.append(y_pred_allfeat[slide_indices][0])
-                    y_test_per_patient.append(y_pred_allfeat[slide_indices][0])
-
             # Calculate balanced accuracy for the current split
-            balanced_accuracy_boruta = balanced_accuracy_score(y_test_per_patient,
-                                                               y_pred_per_patient_boruta)
+            balanced_accuracy_boruta = balanced_accuracy_score(y_test,
+                                                               y_pred_boruta)
 
 
 
@@ -847,9 +603,9 @@ save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu' + save_ext, mean_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'mean_ba_mrmr' + save_ext, mean_ba_mrmr_npy)
-np.save(save_results_path + 'mean_ba_boruta' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'mean_ba_mannwhitneyu_xgbooost' + save_ext, mean_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'mean_ba_mrmr_xgbooost' + save_ext, mean_ba_mrmr_npy)
+np.save(save_results_path + 'mean_ba_boruta_xgbooost' + save_ext, mean_ba_boruta_npy)
 
 
 

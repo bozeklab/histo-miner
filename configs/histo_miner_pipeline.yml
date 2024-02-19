@@ -26,7 +26,7 @@
   names:
       hovernet_mode: wsi
 
-      eval_folder: TestofKs_3
+      eval_folder: varfeat-model-based-ranking-xgboost
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string

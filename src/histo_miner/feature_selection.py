@@ -66,7 +66,6 @@ class FeatureSelector:
             (the index correspond to the index of the features in the feature array, starts at 0)
         TO FILL
         """
-        # We create a pandas dataframe from the feature array
         try:
             X = pd.DataFrame(self.feature_array)
             X = np.transpose(X)
@@ -78,11 +77,15 @@ class FeatureSelector:
         y = pd.Series(self.classification_array)
         y = y.astype('int8')
         # Run mrrmr
-        selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
-        selfeat_mrmr_index = selfeat_mrmr[0]
-        mrmr_relevance_matrix = selfeat_mrmr[1]
-        mrmr_redundancy_matrix = selfeat_mrmr[2]
-        return selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix
+        if return_scores == True:
+            selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
+            selfeat_mrmr_index = selfeat_mrmr[0]
+            mrmr_relevance_matrix = selfeat_mrmr[1]
+            mrmr_redundancy_matrix = selfeat_mrmr[2]
+            return selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix
+        else:
+            selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
+            return selfeat_mrmr
 
 
     def run_boruta(self, class_weight: str = 'balanced',
@@ -240,7 +243,7 @@ class SelectedFeaturesMatrix:
             Matrix with the values of features selected with mrmr
         """
         # Be sure to enter output from mrmr here
-        mrmrselectedfeatures_idx = sorted(selfeat_mrmr_index)
+        # mrmrselectedfeatures_idx = sorted(selfeat_mrmr_index)
         featarray_mrmr = np.transpose(self.feature_array)
         # featarray_mrmr = self.feature_array
         featarray_mrmr = featarray_mrmr[:, selfeat_mrmr_index ]
@@ -262,7 +265,7 @@ class SelectedFeaturesMatrix:
             Matrix with the values of features selected with boruta
         """
         # Be sure to enter output from boruta here
-        borutaselectedfeatures_idx = sorted(selfeat_boruta_index)
+        # borutaselectedfeatures_idx = sorted(selfeat_boruta_index)
         featarray_boruta = np.transpose(self.feature_array)
         # featarray_boruta = self.feature_array
         featarray_boruta = featarray_boruta[:, selfeat_boruta_index]

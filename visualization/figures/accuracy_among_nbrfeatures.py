@@ -24,23 +24,25 @@ pathtofolder = config.paths.folders.classification_evaluation
 pathtosavefolder = config.paths.folders.visualizations
 
 
+
 #############################################################
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/TestofKs_2/' 
+path2vectors = pathtofolder + '/varfeat-model-based-ranking-both/' 
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr' + ext)
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu' + ext)
-xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta' + ext)
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost' + ext)
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost' + ext)
+xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost' + ext)
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
-# lgbmmean_aAcc_mrmr = np.load(path2vectors + 'lgbmmean_aAcc_mrmr' + ext)
-# lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmmean_aAcc_mannwhitneyu' + ext)
-# lgbmmean_aAcc_boruta = np.load(path2vectors + 'lgbmmean_aAcc_boruta' + ext)
+
+# lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm' + ext)
+# lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm' + ext)
+# lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm' + ext)
 # lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
 # lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
 # lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
@@ -80,7 +82,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'xgboost_result_2.png')
+plt.savefig(pathtosavefolder + 'test-19-feb-2024.png')
 plt.clf()
 
 
@@ -110,7 +112,7 @@ plt.clf()
 # plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # # Save the plot on the root classification_evaluation directory
-# plt.savefig(pathtosavefolder + 'lgbm_result.png')
+# plt.savefig(pathtosavefolder + 'varfeat-model-based-ranking-lgbm.png')
 # plt.clf()
 
 
