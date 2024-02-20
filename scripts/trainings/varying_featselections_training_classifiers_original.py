@@ -184,21 +184,19 @@ if not wsi_selection:
 if not wsi_selection:
     train_clarray = train_clarray[permutation_index]
 
-    if patientid_avail:
+    # Create a mapping of unique elements to positive integers
+    mapping = {}
+    current_integer = 1
+    patientids_ordered = []
 
-        # Create a mapping of unique elements to positive integers
-        mapping = {}
-        current_integer = 1
-        patientids_ordered = []
+    for num in patientids:
+        if num not in mapping:
+            mapping[num] = current_integer
+            current_integer += 1
+        patientids_ordered.append(mapping[num])
 
-        for num in patientids:
-            if num not in mapping:
-                mapping[num] = current_integer
-                current_integer += 1
-            patientids_ordered.append(mapping[num])
-
-        ### Shuffle patient IDs arrays using the permutation index 
-        patientids_ordered = patientids_ordered[permutation_index]
+    ### Shuffle patient IDs arrays using the permutation index 
+    patientids_ordered = np.asarray(patientids_ordered)
 
 ### Create Stratified Group  instance for the cross validation 
 stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)

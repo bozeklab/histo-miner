@@ -77,15 +77,11 @@ class FeatureSelector:
         y = pd.Series(self.classification_array)
         y = y.astype('int8')
         # Run mrrmr
-        if return_scores == True:
-            selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
-            selfeat_mrmr_index = selfeat_mrmr[0]
-            mrmr_relevance_matrix = selfeat_mrmr[1]
-            mrmr_redundancy_matrix = selfeat_mrmr[2]
-            return selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix
-        else:
-            selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
-            return selfeat_mrmr
+        selfeat_mrmr = mrmr.mrmr_classif(X=X, y=y, K=nbr_keptfeat, return_scores=return_scores)
+        selfeat_mrmr_index = selfeat_mrmr[0]
+        mrmr_relevance_matrix = selfeat_mrmr[1]
+        mrmr_redundancy_matrix = selfeat_mrmr[2]
+        return selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix
 
 
     def run_boruta(self, class_weight: str = 'balanced',

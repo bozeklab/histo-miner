@@ -34,9 +34,9 @@
 
         random_forest: False
 
-        xgboost: True 
+        xgboost: False
 
-        light_gbm: False
+        light_gbm: True
 
       save_evaluations: True
 
