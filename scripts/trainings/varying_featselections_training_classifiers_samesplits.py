@@ -178,13 +178,12 @@ for num in patientids:
 patientids_ordered = np.asarray(patientids_ordered)
 patientids_ordered = patientids_ordered[permutation_index]
 
-### Create Stratified Group to further split the dataset into 5 
-stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
+
+nbr_of_splits = 10 # Assuming 10 splits
 
 
-# Need another instance of the classifier
-lgbm_slide_ranking = lightgbm
-xgboost_slide_ranking = xgboost
+### Create Stratified Group to further split the dataset into n_splits 
+stratgroupkf = StratifiedGroupKFold(n_splits=nbr_of_splits, shuffle=False)
 
 
 # Create a list of splits with all features 
@@ -208,11 +207,9 @@ for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray
 
     splits_patientID_list.append([X_train_patID, X_test_patID])
 
-
 # Initialization of parameters
 nbr_feat = len(X_train[1])
 print('nbr_feat is:',nbr_feat)
-nbr_of_splits = 10 # Assuming 10 splits
 
 
 # -- XGBOOST --
@@ -223,8 +220,12 @@ if run_xgboost and not run_lgbm:
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
+                           # "balanced_accuracies_boruta_2": {"initialization": True},
+                           # "balanced_accuracies_boruta_3": {"initialization": True}}
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
+    # number_feat_kept_boruta_2 = []
+    # number_feat_kept_boruta_3 = []
     
     for i in range(nbr_of_splits):  
 
@@ -258,11 +259,30 @@ if run_xgboost and not run_lgbm:
         # Boruta calculations (for one specific depth)
         print('Selection of features with Boruta method...')
         selfeat_boruta_index = feature_selector.run_boruta(max_depth=boruta_max_depth, 
-                                                          random_state=boruta_random_state)
+                                                           random_state=boruta_random_state)
         nbrfeatsel_boruta = len(selfeat_boruta_index)
         number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
+
+        # Boruta calculations (for deeper depth)
+        # print('Selection of features with Boruta method (changed depth)...')
+        # selfeat_boruta_index_2 = feature_selector.run_boruta(max_depth=16,
+        #                                                    random_state=boruta_random_state)
+        # nbrfeatsel_boruta_2 = len(selfeat_boruta_index_2)
+        # number_feat_kept_boruta_2.append(nbrfeatsel_boruta_2)
+        # # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+        # selfeat_boruta_names_2 = [featnameslist[index] for index in selfeat_boruta_index_2]
+ 
+        # # Boruta calculations (for shallower depth)
+        # print('Selection of features with Boruta method (changed depth)...')
+        # selfeat_boruta_index_3 = feature_selector.run_boruta(max_depth=4,
+        #                                                      random_state=boruta_random_state)
+        # nbrfeatsel_boruta_3 = len(selfeat_boruta_index_3)
+        # number_feat_kept_boruta_3.append(nbrfeatsel_boruta_3)
+        # # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+        # selfeat_boruta_names_3 = [featnameslist[index] for index in selfeat_boruta_index_3]
+
 
 
 
@@ -275,12 +295,13 @@ if run_xgboost and not run_lgbm:
 
         ## For Boruta calculations
         featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta_index)
+        # featarray_boruta_2 = selected_features_matrix.boruta_matr(selfeat_boruta_index_2)
+        # featarray_boruta_3 = selected_features_matrix.boruta_matr(selfeat_boruta_index_3)
+
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        xgboost_mrmr_training = xgboost
-        xgboost_mannwhitneyu_training = xgboost
         balanced_accuracies_mrmr = list()
         balanced_accuracies_mannwhitneyu = list()
 
@@ -318,6 +339,10 @@ if run_xgboost and not run_lgbm:
                                             selfeat_mannwhitneyu_index_reduced)
 
                 #Training
+                # needs to be re initilaized each time!!!! Vry important
+                xgboost_mrmr_training = xgboost
+                xgboost_mannwhitneyu_training = xgboost 
+                # actual training
                 xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
                                                                        y_train)
                 xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
@@ -348,8 +373,15 @@ if run_xgboost and not run_lgbm:
         # sometimes boruta is not keeping any features, so need to check if there are some
         if np.size(featarray_boruta) == 0:      
             balanced_accuracy_boruta = None
+            # balanced_accuracy_boruta_2 = None
+            # balanced_accuracy_boruta_3 = None
+
         else:
             xgboost_boruta_training = xgboost
+            # xgboost_boruta_training_2 = xgboost
+            # xgboost_boruta_training_3 = xgboost
+
+
             xgboost_boruta_training = xgboost_boruta_training.fit(featarray_boruta, 
                                                                   y_train)
             # Predictions on the test split
@@ -357,9 +389,28 @@ if run_xgboost and not run_lgbm:
                 X_test[:, np.transpose(selfeat_boruta_index)]
                 )
 
+
+            # xgboost_boruta_training_2 = xgboost_boruta_training_2.fit(featarray_boruta_2, 
+            #                                                       y_train)
+            # y_pred_boruta_2 = xgboost_boruta_training_2.predict(
+            #     X_test[:, np.transpose(selfeat_boruta_index_2)]
+            #     )
+
+
+            # xgboost_boruta_training_3 = xgboost_boruta_training_3.fit(featarray_boruta_3, 
+            #                                                       y_train)
+            # y_pred_boruta_3 = xgboost_boruta_training_3.predict(
+            #     X_test[:, np.transpose(selfeat_boruta_index_3)]
+                # )
+
+
             # Calculate balanced accuracy for the current split
             balanced_accuracy_boruta = balanced_accuracy_score(y_test,
                                                                y_pred_boruta)
+            # balanced_accuracy_boruta_2 = balanced_accuracy_score(y_test,
+            #                                                      y_pred_boruta_2)
+            # balanced_accuracy_boruta_3 = balanced_accuracy_score(y_test,
+            #                                                      y_pred_boruta_3)
 
 
 
@@ -372,6 +423,8 @@ if run_xgboost and not run_lgbm:
         balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit] = balanced_accuracies_mannwhitneyu
         balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
         balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = balanced_accuracy_boruta
+        # balanced_accuracies['balanced_accuracies_boruta_2'][currentsplit] = balanced_accuracy_boruta_2
+        # balanced_accuracies['balanced_accuracies_boruta_3'][currentsplit] = balanced_accuracy_boruta_3
 
 
 
@@ -383,8 +436,12 @@ elif run_lgbm and not run_xgboost:
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
+                           # "balanced_accuracies_boruta_2": {"initialization": True},
+                           # "balanced_accuracies_boruta_3": {"initialization": True}}
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
+    # number_feat_kept_boruta_2 = []
+    # number_feat_kept_boruta_3 = []
     
     for i in range(nbr_of_splits):  
 
@@ -423,6 +480,25 @@ elif run_lgbm and not run_xgboost:
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
 
+        # # Boruta calculations (for deeper depth)
+        # print('Selection of features with Boruta method...')
+        # selfeat_boruta_index_2 = feature_selector.run_boruta(max_depth=16,
+        #                                                    random_state=boruta_random_state)
+        # nbrfeatsel_boruta_2 = len(selfeat_boruta_index_2)
+        # number_feat_kept_boruta_2.append(nbrfeatsel_boruta_2)
+        # # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+        # selfeat_boruta_names_2 = [featnameslist[index] for index in selfeat_boruta_index_2]
+ 
+        # # Boruta calculations (for shallower depth)
+        # print('Selection of features with Boruta method...')
+        # selfeat_boruta_index_3 = feature_selector.run_boruta(max_depth=4,
+        #                                                      random_state=boruta_random_state)
+        # nbrfeatsel_boruta_3 = len(selfeat_boruta_index_3)
+        # number_feat_kept_boruta_3.append(nbrfeatsel_boruta_3)
+        # # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
+        # selfeat_boruta_names_3 = [featnameslist[index] for index in selfeat_boruta_index_3]
+
+
 
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
@@ -434,12 +510,13 @@ elif run_lgbm and not run_xgboost:
 
         ## For Boruta calculations
         featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta_index)
+        # featarray_boruta_2 = selected_features_matrix.boruta_matr(selfeat_boruta_index_2)
+        # featarray_boruta_3 = selected_features_matrix.boruta_matr(selfeat_boruta_index_3)
+      
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        lightgbm_mrmr_training = lightgbm
-        lightgbm_mannwhitneyu_training = lightgbm
         balanced_accuracies_mrmr = list()
         balanced_accuracies_mannwhitneyu = list()
 
@@ -477,6 +554,10 @@ elif run_lgbm and not run_xgboost:
                                             selfeat_mannwhitneyu_index_reduced)
 
                 #Training
+                # needs to be re initilaized each time!!!! Vry important
+                lightgbm_mrmr_training = lightgbm
+                lightgbm_mannwhitneyu_training = lightgbm
+                # actual training
                 lightgbm_mrmr_training_inst = lightgbm_mrmr_training.fit(featarray_mrmr, 
                                                                        y_train)
                 lightgbm_mannwhitneyu_training_inst = lightgbm_mannwhitneyu_training.fit(
@@ -507,6 +588,8 @@ elif run_lgbm and not run_xgboost:
         # sometimes boruta is not keeping any features, so need to check if there are some
         if np.size(featarray_boruta) == 0:      
             balanced_accuracy_boruta = None
+            # balanced_accuracy_boruta_2 = None
+            # balanced_accuracy_boruta_3 = None
         else:
             lightgbm_boruta_training = lightgbm
             lightgbm_boruta_training = lightgbm_boruta_training.fit(featarray_boruta, 
@@ -516,10 +599,25 @@ elif run_lgbm and not run_xgboost:
                 X_test[:, np.transpose(selfeat_boruta_index)]
                 )
 
+            # lightgbm_boruta_training_2 = lightgbm_boruta_training.fit(featarray_boruta_2, 
+            #                                                       y_train)
+            # y_pred_boruta_2 = lightgbm_boruta_training_2.predict(
+            #     X_test[:, np.transpose(selfeat_boruta_index_2)]
+            #     )
+
+            # lightgbm_boruta_training_3 = lightgbm_boruta_training.fit(featarray_boruta_3, 
+            #                                                       y_train)
+            # y_pred_boruta_3 = lightgbm_boruta_training_3.predict(
+            #     X_test[:, np.transpose(selfeat_boruta_index_3)]
+            #     )
+
             # Calculate balanced accuracy for the current split
             balanced_accuracy_boruta = balanced_accuracy_score(y_test,
                                                                y_pred_boruta)
-
+            # balanced_accuracy_boruta_2 = balanced_accuracy_score(y_test,
+            #                                                y_pred_boruta_2)
+            # balanced_accuracy_boruta_3 = balanced_accuracy_score(y_test,
+            #                                                y_pred_boruta_3)
 
         ### Store results 
         # store all resutls in the main dict knowing it will be repeated 10times
@@ -530,6 +628,8 @@ elif run_lgbm and not run_xgboost:
         balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit] = balanced_accuracies_mannwhitneyu
         balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
         balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = balanced_accuracy_boruta
+        # balanced_accuracies['balanced_accuracies_boruta_2'][currentsplit] = balanced_accuracy_boruta_2
+        # balanced_accuracies['balanced_accuracies_boruta_3'][currentsplit] = balanced_accuracy_boruta_3
 
 
 else:
@@ -576,7 +676,11 @@ for nbr_keptfeat_idx in range(nbr_feat - 1, 0, -1):
 
     loop_index += 1 
 
+
 mean_balanced_accuracies_boruta = list()
+# mean_balanced_accuracies_boruta_2 = list()
+# mean_balanced_accuracies_boruta_3 = list()
+
 
 for i in range(nbr_of_splits): 
     currentsplit =  f"split_{i}"
@@ -585,14 +689,40 @@ for i in range(nbr_of_splits):
         )
     mean_balanced_accuracies_boruta.append(mean_ba_boruta)
 
+    # mean_ba_boruta_2 = (
+    #     [balanced_accuracies['balanced_accuracies_boruta_2'][currentsplit]]
+    #     )
+    # mean_balanced_accuracies_boruta_2.append(mean_ba_boruta_2)
+
+    # mean_ba_boruta_3 = (
+    #     [balanced_accuracies['balanced_accuracies_boruta_3'][currentsplit]]
+    #     )
+    # mean_balanced_accuracies_boruta_3.append(mean_ba_boruta_3)
+
 # Transform a list of list into a list?
 mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracies_boruta]
+# mean_balanced_accuracies_boruta_2 = [value[0] for value in mean_balanced_accuracies_boruta_2]
+# mean_balanced_accuracies_boruta_3 = [value[0] for value in mean_balanced_accuracies_boruta_3]
 # Then only keep mean value
 mean_ba_boruta_npy = np.asarray(mean_balanced_accuracies_boruta)
 mean_ba_boruta_npy = mean_ba_boruta_npy[mean_ba_boruta_npy != None]
 
 mean_ba_boruta_npy = [np.mean(mean_ba_boruta_npy)]
 mean_ba_boruta_npy = np.asarray(mean_ba_boruta_npy)
+
+# mean_ba_boruta_npy_2 = np.asarray(mean_balanced_accuracies_boruta_2)
+# mean_ba_boruta_npy_2 = mean_ba_boruta_npy_2[mean_ba_boruta_npy_2 != None]
+
+# mean_ba_boruta_npy_2 = [np.mean(mean_ba_boruta_npy_2)]
+# mean_ba_boruta_npy_2 = np.asarray(mean_ba_boruta_npy_2)
+
+
+# mean_ba_boruta_npy_3 = np.asarray(mean_balanced_accuracies_boruta_3)
+# mean_ba_boruta_npy_3 = mean_ba_boruta_npy_3[mean_ba_boruta_npy_3 != None]
+
+# mean_ba_boruta_npy_3 = [np.mean(mean_ba_boruta_npy_3)]
+# mean_ba_boruta_npy_3 = np.asarray(mean_ba_boruta_npy_3)
+
 
 # Create a numpy array of max and min number of feat kept by boruta
 
@@ -604,16 +734,31 @@ if len(set(number_feat_kept_boruta))==1:
 else:
     boruta_visu_xcoord = [min(number_feat_kept_boruta), max(number_feat_kept_boruta)]
 
+# same for boruta 2 and 3
+# if len(set(number_feat_kept_boruta_2))==1:
+#     boruta_visu_xcoord_2 = [number_feat_kept_boruta_2[0] + 1, number_feat_kept_boruta_2[0]]
+# # if there are diff values take min and max of nbr of feature kept
+# else:
+#     boruta_visu_xcoord_2 = [min(number_feat_kept_boruta_2), max(number_feat_kept_boruta_2)]
+
+# if len(set(number_feat_kept_boruta_3))==1:
+#     boruta_visu_xcoord_3 = [number_feat_kept_boruta_3[0] + 1, number_feat_kept_boruta_3[0]]
+# # if there are diff values take min and max of nbr of feature kept
+# else:
+#     boruta_visu_xcoord_3 = [min(number_feat_kept_boruta_3), max(number_feat_kept_boruta_3)]
+
+
+
 boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
-
-
-# Save the mean accuracies for vizualization 
-
+# boruta_visu_xcoord_2_npy = np.asarray(boruta_visu_xcoord_2)
+# boruta_visu_xcoord_3_npy  = np.asarray(boruta_visu_xcoord_3)
+ 
 mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
 mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
 
 
 # SAVING
+# save the mean balanced accuracies for visualization
 save_results_path = classification_eval_folder + eval_folder_name + '/'
 save_ext = '.npy'
 
@@ -621,12 +766,21 @@ if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
 np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_10splits' + save_ext, mean_ba_mannwhitneyu_npy)
+
 np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits' + save_ext, mean_ba_mrmr_npy)
+
 np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits' + save_ext, mean_ba_boruta_npy)
 np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits' + save_ext, boruta_visu_xcoord_npy)
 
+# np.save(save_results_path + 'mean_ba_boruta_lgbm_2_10splits' + save_ext, mean_ba_boruta_npy_2)
+# np.save(save_results_path + 'nbr_feat_kept_boruta_2_lgbm_10splits' + save_ext, boruta_visu_xcoord_2_npy)
+
+# np.save(save_results_path + 'mean_ba_boruta_lgbm_3_10splits' + save_ext, mean_ba_boruta_npy_3)
+# np.save(save_results_path + 'nbr_feat_kept_boruta_3_lgbm_10splits' + save_ext, boruta_visu_xcoord_3_npy)
 
 
+
+# print('lgbm_10splits')
 
 
 

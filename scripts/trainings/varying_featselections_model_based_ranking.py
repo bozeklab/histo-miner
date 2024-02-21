@@ -178,13 +178,17 @@ for num in patientids:
 patientids_ordered = np.asarray(patientids_ordered)
 patientids_ordered = patientids_ordered[permutation_index]
 
-### Create Stratified Group to further split the dataset into 5 
-stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
+
+nbr_of_splits = 5 # Assuming 5 splits
+
+
+### Create Stratified Group to further split the dataset into n_splits 
+stratgroupkf = StratifiedGroupKFold(n_splits=nbr_of_splits, shuffle=False)
+
 
 # Need another instance of the classifier
 lgbm_slide_ranking = lightgbm
 xgboost_slide_ranking = xgboost
-
 
 
 # Create a list of splits with all features 
@@ -213,7 +217,7 @@ for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray
 # Initialization of parameters
 nbr_feat = len(X_train[1])
 print('nbr_feat is:',nbr_feat)
-nbr_of_splits = 10 # Assuming 10 splits
+
 
 # Keep the idwx of the most representative ones for each patient
 list_idx_most_representative_slide_per_patient = list()
@@ -226,6 +230,7 @@ if run_xgboost and not run_lgbm:
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
     list_proba_predictions_slideselect = []
+    number_feat_kept_boruta = []
 
     for i in range(nbr_of_splits):  
 
@@ -302,10 +307,12 @@ if run_xgboost and not run_lgbm:
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
 
-        ## Boruta calculations (for one specific depth)
+        # Boruta calculations (for one specific depth)
         print('Selection of features with Boruta method...')
         selfeat_boruta_index = feature_selector.run_boruta(max_depth=boruta_max_depth, 
-                                                          random_state=boruta_random_state)
+                                                           random_state=boruta_random_state)
+        nbrfeatsel_boruta = len(selfeat_boruta_index)
+        number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
 
@@ -324,8 +331,6 @@ if run_xgboost and not run_lgbm:
 
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        xgboost_mrmr_training = xgboost
-        xgboost_mannwhitneyu_training = xgboost
         balanced_accuracies_mrmr = list()
         balanced_accuracies_mannwhitneyu = list()
 
@@ -362,6 +367,8 @@ if run_xgboost and not run_lgbm:
                                             selfeat_mannwhitneyu_index_reduced)
 
                 #Training
+                xgboost_mrmr_training = xgboost
+                xgboost_mannwhitneyu_training = xgboost
                 xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
                                                                        y_train_refined)
                 xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
@@ -422,6 +429,7 @@ elif run_lgbm and not run_xgboost:
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
     list_proba_predictions_slideselect = []
+    number_feat_kept_boruta = []
 
     for i in range(nbr_of_splits):  
 
@@ -500,6 +508,8 @@ elif run_lgbm and not run_xgboost:
         print('Selection of features with Boruta method...')
         selfeat_boruta_index = feature_selector.run_boruta(max_depth=boruta_max_depth, 
                                                           random_state=boruta_random_state)
+        nbrfeatsel_boruta = len(selfeat_boruta_index)
+        number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
 
@@ -518,8 +528,6 @@ elif run_lgbm and not run_xgboost:
 
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        lightgbm_mrmr_training = lightgbm
-        lightgbm_mannwhitneyu_training = lightgbm
         balanced_accuracies_mrmr = list()
         balanced_accuracies_mannwhitneyu = list()
 
@@ -553,6 +561,8 @@ elif run_lgbm and not run_xgboost:
                                             selfeat_mannwhitneyu_index_reduced)
 
                 #Training
+                lightgbm_mrmr_training = lightgbm
+                lightgbm_mannwhitneyu_training = lightgbm
                 lightgbm_mrmr_training_inst = lightgbm_mrmr_training.fit(featarray_mrmr, 
                                                                        y_train_refined)
                 lightgbm_mannwhitneyu_training_inst = lightgbm_mannwhitneyu_training.fit(
@@ -663,25 +673,43 @@ mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracie
 # Then only keep mean value
 mean_ba_boruta_npy = np.asarray(mean_balanced_accuracies_boruta)
 mean_ba_boruta_npy = mean_ba_boruta_npy[mean_ba_boruta_npy != None]
-mean_ba_boruta_npy = np.mean(mean_ba_boruta_npy)
+
+mean_ba_boruta_npy = [np.mean(mean_ba_boruta_npy)]
+mean_ba_boruta_npy = np.asarray(mean_ba_boruta_npy)
 
 
-# Save the mean accuracies for vizualization 
+# Create a numpy array of max and min number of feat kept by boruta
+
+# check if the number of feat kept is the same for all splits or not 
+# if it is the case create another value for visualization purposes
+if len(set(number_feat_kept_boruta))==1:
+    boruta_visu_xcoord = [number_feat_kept_boruta[0] + 1, number_feat_kept_boruta[0]]
+# if there are diff values take min and max of nbr of feature kept
+else:
+    boruta_visu_xcoord = [min(number_feat_kept_boruta), max(number_feat_kept_boruta)]
+
+
+boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
 
 mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
 mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
 
 
 # SAVING
+# Save the mean accuracies for vizualization 
 save_results_path = classification_eval_folder + eval_folder_name + '/'
 save_ext = '.npy'
 
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu' + save_ext, mean_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'mean_ba_mrmr' + save_ext, mean_ba_mrmr_npy)
-np.save(save_results_path + 'mean_ba_boruta' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_5splits' + save_ext, mean_ba_mannwhitneyu_npy)
+
+np.save(save_results_path + 'mean_ba_mrmr_lgbm_5splits' + save_ext, mean_ba_mrmr_npy)
+
+np.save(save_results_path + 'mean_ba_boruta_lgbm_5splits' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_5splits' + save_ext, boruta_visu_xcoord_npy)
+
 
 
 

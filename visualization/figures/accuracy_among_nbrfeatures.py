@@ -30,38 +30,43 @@ pathtosavefolder = config.paths.folders.visualizations
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/varfeat-classic-samesplit-all/' 
+path2vectors = pathtofolder + '/varfeat-model-based-ranking-all/' 
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost_10splits' + ext)
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost_10splits' + ext)
-xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost_10splits' + ext)
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits' + ext):
-     nbr_featkept_xgb_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits' + ext)
-
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost_5splits' + ext)
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost_5splits' + ext)
+xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost_5splits' + ext)
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_5splits' + ext):
+     nbr_featkept_xgb_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_xgboost_5splits' + ext)
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
 
-lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits' + ext)
-lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_10splits' + ext)
-lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_10splits' + ext)
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits' + ext):
-     nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits' + ext)
+
+lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_5splits' + ext)
+lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_5splits' + ext)
+lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_5splits' + ext)
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits' + ext):
+     nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits' + ext)
 # lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
 # lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
 # lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
+
+
 
 
 # Creating x coordinates for mrmr and mannwhtneyu
 x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
 
 
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits' + ext):
+
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_5splits' + ext):
     # need to duplicate the value for boruta 
     xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
     xgb_xboruta = nbr_featkept_xgb_boruta
+
+
 
 ## PLot figure for xgboost
 # Increase the figure width to make room for the legend
@@ -74,6 +79,8 @@ plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
 plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
 # plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
 plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+
+
 # plt.plot(xboruta, xgbbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
 plt.xlim(max(x), min(x))
 
@@ -91,18 +98,21 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-classic-samesplit-xgboost-10splits.png')
+plt.savefig(pathtosavefolder + 'varfeat-one-class-xgboost-5splits.png')
 plt.clf()
 
 
 
+
+
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits' + ext):
+# need to duplicate the value for boruta 
+    lgbmmean_aAcc_boruta = [lgbmmean_aAcc_boruta[0], lgbmmean_aAcc_boruta[0]]   
+    lgbm_xboruta = nbr_featkept_lgbm_boruta
+
+
 ## PLot figure for lgbm
 plt.figure(figsize=(6, 4))
-
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits' + ext):
-    # need to duplicate the value for boruta 
-    lgbmmean_aAcc_boruta = [lgbmmean_aAcc_boruta[0], lgbmmean_aAcc_boruta[0]]
-    lgbm_xboruta = nbr_featkept_lgbm_boruta
 
 # First figure with xgboost
 plt.plot(x, lgbmmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
@@ -110,6 +120,7 @@ plt.plot(x, lgbmmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
 plt.plot(x, lgbmmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
 # plt.plot(x, lgbmbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
 plt.plot(lgbm_xboruta, lgbmmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+
 # plt.plot(xboruta, lgbmbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
 plt.xlim(max(x), min(x))
 
@@ -127,7 +138,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-classic-samesplit-lgbm-10splits.png')
+plt.savefig(pathtosavefolder + 'varfeat-one-class-lgbm-5splits.png')
 plt.clf()
 
 
@@ -225,3 +236,55 @@ if plot_inverse:
     # Save the plot on the root classification_evaluation directory
     plt.savefig(pathtofolder + 'lgbm_result_inverse_order.png')
     plt.clf()
+
+
+
+
+
+#############################################################
+## When several Borutas
+############################################################
+
+
+
+# xgbmean_aAcc_boruta_2 = np.load(path2vectors + 'mean_ba_boruta_xgboost_2_10splits' + ext)
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_2_xgboost_10splits' + ext):
+#      nbr_featkept_xgb_boruta_2 = np.load(path2vectors + 'nbr_feat_kept_boruta_2_xgboost_10splits' + ext)
+
+# xgbmean_aAcc_boruta_3 = np.load(path2vectors + 'mean_ba_boruta_xgboost_3_10splits' + ext)
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_3_xgboost_10splits' + ext):
+#      nbr_featkept_xgb_boruta_3 = np.load(path2vectors + 'nbr_feat_kept_boruta_3_xgboost_10splits' + ext)
+# lgbmmean_aAcc_boruta_2 = np.load(path2vectors + 'mean_ba_boruta_lgbm_2_10splits' + ext)
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_2_lgbm_10splits' + ext):
+#      nbr_featkept_lgbm_boruta_2 = np.load(path2vectors + 'nbr_feat_kept_boruta_2_lgbm_10splits' + ext)
+
+# lgbmmean_aAcc_boruta_3 = np.load(path2vectors + 'mean_ba_boruta_lgbm_3_10splits' + ext)
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_3_lgbm_10splits' + ext):
+#      nbr_featkept_lgbm_boruta_3 = np.load(path2vectors + 'nbr_feat_kept_boruta_3_lgbm_10splits' + ext)
+
+
+
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_2_xgboost_10splits' + ext):
+#     # need to duplicate the value for boruta 
+#     xgbmean_aAcc_boruta_2 = [xgbmean_aAcc_boruta_2[0], xgbmean_aAcc_boruta_2[0]]
+#     xgb_xboruta_2 = nbr_featkept_xgb_boruta_2
+
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_3_xgboost_10splits' + ext):
+#     # need to duplicate the value for boruta 
+#     xgbmean_aAcc_boruta_3 = [xgbmean_aAcc_boruta_3[0], xgbmean_aAcc_boruta_3[0]]
+#     xgb_xboruta_3 = nbr_featkept_xgb_boruta_3
+
+# plt.plot(xgb_xboruta_2, xgbmean_aAcc_boruta_2, label='cvmean_boruta', color='red')
+# plt.plot(xgb_xboruta_3, xgbmean_aAcc_boruta_3, label='cvmean_boruta', color='orange')
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_2_lgbm_10splits' + ext):
+#     # need to duplicate the value for boruta 
+#     lgbmmean_aAcc_boruta_2 = [lgbmmean_aAcc_boruta_2[0], lgbmmean_aAcc_boruta_2[0]]
+#     lgbm_xboruta_2 = nbr_featkept_lgbm_boruta_2
+
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_3_lgbm_10splits' + ext):
+#     # need to duplicate the value for boruta 
+#     lgbmmean_aAcc_boruta_3 = [lgbmmean_aAcc_boruta_3[0], lgbmmean_aAcc_boruta_3[0]]
+#     lgbm_xboruta_3 = nbr_featkept_lgbm_boruta_3
+
+# plt.plot(lgbm_xboruta_2, xgbmean_aAcc_boruta_2, label='cvmean_boruta', color='red')
+# plt.plot(lgbm_xboruta_3, xgbmean_aAcc_boruta_3, label='cvmean_boruta', color='orange')

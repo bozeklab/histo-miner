@@ -26,7 +26,7 @@
   names:
       hovernet_mode: wsi
 
-      eval_folder: varfeat-classic-samesplit-lgbm
+      eval_folder: varfeat-model-based-ranking-lgbm
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string
