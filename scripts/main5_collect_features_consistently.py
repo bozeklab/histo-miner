@@ -52,7 +52,7 @@ perpatient_feat = config.parameters.bool.perpatient_feat
 
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
-tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted'
+tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted_Munich'
 norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
 rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 
@@ -67,7 +67,7 @@ else:
 
 
 ########  Create list with the paths of the files to analyse
-pathto_sortedfolder = pathtofolder + '/' + 'tissue_analyses_sorted'
+pathto_sortedfolder = tissueanalyser_folder
 jsonfiles = list()
 cllist = list()
 # cllist stands for for classification list (recurrence (1) or norecurrence (0))

@@ -3,6 +3,7 @@
 import os
 import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
+import random
 
 from tqdm import tqdm
 import random
@@ -33,6 +34,7 @@ confighm = attributedict(config)
 pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 classification_eval_folder = confighm.paths.folders.classification_evaluation
+use_permutations = confighm.parameters.bool.permutation
 
 eval_folder_name = confighm.names.eval_folder
 boruta_max_depth = confighm.parameters.int.boruta_max_depth
@@ -70,14 +72,14 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 ## Load feature selection numpy files
 ############################################################
 
-ext = '.npy'
+# ext = '.npy'
 
-print('Load feature selection numpy files...')
+# print('Load feature selection numpy files...')
 
-# Load feature selection numpy files
-pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
-selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
-print('Loading feature selected indexes done.')
+# # Load feature selection numpy files
+# pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
+# selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
+# print('Loading feature selected indexes done.')
 
 
 
@@ -85,11 +87,11 @@ print('Loading feature selected indexes done.')
 ## Load feat array, class arrays and IDs arrays (if applicable)
 ################################################################
 
+ext = '.npy'
+
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
 pathfeatnames = pathfeatselect + 'featnames' + ext
-
-ext = '.npy'
 
 train_featarray = np.load(pathfeatselect + featarray_name + ext)
 train_clarray = np.load(pathfeatselect + classarray_name + ext)
@@ -149,18 +151,26 @@ print('Start Classifiers trainings...')
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 ### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathfeatselect + 
-                            '/bestperm/' +
-                            'random_permutation_index_11_28_xgboost_bestmean.npy')
-nbrindeces = len(permutation_index)
+# permutation_index = np.load(pathfeatselect + 
+#                             '/bestperm/' +
+#                             'random_permutation_index_11_28_xgboost_bestmean.npy') 
+nbr_slides = len(train_clarray)
+permutation_index = list(range(nbr_slides))
+random.shuffle(permutation_index)
+permutation_index = np.asarray(permutation_index)
+
+
+
+# nbrindeces = len(permutation_index)
 
 ### Shuffle classification arrays using the permutation index
-train_clarray = train_clarray[permutation_index]
+# train_clarray = train_clarray[permutation_index]
 
 
 # Shuffle the all features arrays using the permutation index
+
 train_featarray = np.transpose(train_featarray)
-train_featarray = train_featarray[permutation_index, :]
+# train_featarray = train_featarray[permutation_index, :]
 
 
 # Create a mapping of unique elements to positive integers
@@ -176,10 +186,10 @@ for num in patientids:
 
 ### Shuffle patient IDs arrays using the permutation index 
 patientids_ordered = np.asarray(patientids_ordered)
-patientids_ordered = patientids_ordered[permutation_index]
+# patientids_ordered = patientids_ordered[permutation_index]
 
 
-nbr_of_splits = 10 # Assuming 10 splits
+nbr_of_splits = 5 # Assuming 5 splits
 
 
 ### Create Stratified Group to further split the dataset into n_splits 
@@ -765,12 +775,12 @@ save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_10splits' + save_ext, mean_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_5splits_Munich_noperm' + save_ext, mean_ba_mannwhitneyu_npy)
 
-np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits' + save_ext, mean_ba_mrmr_npy)
+np.save(save_results_path + 'mean_ba_mrmr_lgbm_5splits_Munich_noperm' + save_ext, mean_ba_mrmr_npy)
 
-np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits' + save_ext, mean_ba_boruta_npy)
-np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits' + save_ext, boruta_visu_xcoord_npy)
+np.save(save_results_path + 'mean_ba_boruta_lgbm_5splits_Munich_noperm' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_5splits_Munich_noperm' + save_ext, boruta_visu_xcoord_npy)
 
 # np.save(save_results_path + 'mean_ba_boruta_lgbm_2_10splits' + save_ext, mean_ba_boruta_npy_2)
 # np.save(save_results_path + 'nbr_feat_kept_boruta_2_lgbm_10splits' + save_ext, boruta_visu_xcoord_2_npy)

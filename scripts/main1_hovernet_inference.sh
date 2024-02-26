@@ -75,17 +75,18 @@ fi
 
 
 if [ "$hovernet_mode" == "tile" ]; then
-python run_infer.py \
+    python run_infer.py \
     --gpu=$gpulist \
     --nr_types=6 \
     --type_info_path=./type_info_SCC.json \
-    --model_path$checkpoints \
+    --model_path=$checkpoints \
     --model_mode=fast \
     --batch_size=64 \
     tile \
-    --input_dir$input_dir \
-    --output_dir$output_dir
-fi 
+    --input_dir=$input_dir \
+    --output_dir=$output_dir
+fi
+
 
 # return to previous path and reeactivate histo-miner env for following steps
 conda deactivate
