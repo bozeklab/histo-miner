@@ -10,11 +10,15 @@
         tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
 
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/Cologne/"
 
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
-        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
+        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/Cologne/"
+
+        workingfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
+        ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/\
+        TrainingSet/Val/"
       
         
     files:

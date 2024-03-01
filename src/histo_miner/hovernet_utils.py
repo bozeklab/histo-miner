@@ -108,6 +108,48 @@ def extr_mattypes(file: str, savename: str) -> np.ndarray:
     return inst_types
 
 
+def classmap_from_classvector(instancemapfolder: str, classvectorfolder: str, savename: str) -> None:
+    """
+    Create a map containing instance segmentation of objects, but each instance pixel corresponds
+    to the class of the object.
+
+    For exemple, you have an image with 2 dogs and 2 cats, background is class 0, dog class 1 and cat class 2.
+    All the pixels belonging to a dog will be 1 on the Class Map of the image,
+    all pixels belonging to a cat will be 2 and the rest 0.
+
+    Parameters:
+    -----------
+    instancemapfolder: str
+        path to the folder containing the Instance Maps in npy format
+    classvectorfolder: str
+        path to the folder containing the Class Vectors in npy format
+    savename: str
+        Suffix of the name of the file to save.
+        The file is saved in ./ClassMaps/
+    Returns:
+    --------
+    """
+    instfolder = os.path.join(instancemapfolder, '*.npy')
+    inst_raw = glob.glob(instfolder)
+    for instmap in tqdm(inst_raw):
+        _, namewithext = os.path.split(instmap)
+        name, ext = os.path.splitext(namewithext)
+        instancemap = np.load(instmap)
+        flatinstancemap = instancemap.flatten()
+        classvectorpath = classvectorfolder + namewithext  # The classvector and the instancelmap must have the same name
+        classvector2_d = np.load(classvectorpath)
+        classvector = classvector2_d.flatten()
+        flatclassoutput = [classvector[flatinstancemap[x] - 1] if flatinstancemap[x] != 0 else 0 for x in
+                           range(0, len(flatinstancemap))]
+        # index value 0 correspond to class of instance with value 1
+        flatclassoutput = np.array(flatclassoutput, dtype=int)
+        outputmap = flatclassoutput.reshape(instancemap.shape[0], instancemap.shape[1])
+
+        if not os.path.exists(classvectorfolder + 'ClassMaps/'):
+            os.makedirs(classvectorfolder + 'ClassMaps/')
+        np.save((classvectorfolder + 'ClassMaps/' + name + savename + ext), outputmap)
+
+
 
 ##### TRAINING UTILS: CREATE TRAINING PATCHES
 

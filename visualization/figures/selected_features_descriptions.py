@@ -54,17 +54,6 @@ delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
 
-
-#############################################################
-## Load correlation matrix
-#############################################################
-
-print('Some informatino that the correlation matrix need to exist already')
-
-matrix_path = '/correlations/correlation_matrix.npy'
-
-
-
 #############################################################
 ## Load feature matrix and classification array, feat names
 #############################################################

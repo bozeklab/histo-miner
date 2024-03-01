@@ -2,9 +2,9 @@
 
 import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
-import json
 import os
 
+import json
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +21,6 @@ from plotnine import ggplot, aes, geom_boxplot, xlab, ylab, labs, theme, \
                     element_text, geom_density, scale_color_manual, scale_fill_manual
 
 from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
- 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 
 # - Plot the correlation matrix in a nice way (seaborn?). In a first step it could stay as just the 56 features. Later-on maybe only display few names or few features, the most interesting ones
@@ -52,24 +51,13 @@ delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
 
-
-#############################################################
-## Load correlation matrix
-#############################################################
-
-print('Some informatino that the correlation matrix need to exist already')
-
-matrix_path = '/correlations/correlation_matrix.npy'
-
-
-
 #############################################################
 ## Load feature matrix and classification array, feat names
 #############################################################
 
 
-featarray_name = 'repslidesx_featarray'
-classarray_name = 'repslidesx_clarray'
+featarray_name = 'perwsi_featarray'
+classarray_name = 'perwsi_clarray'
 ext = '.npy'
 
 featarray = np.load(pathtoworkfolder + featarray_name + ext)
