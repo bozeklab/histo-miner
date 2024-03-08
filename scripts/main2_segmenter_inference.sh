@@ -38,10 +38,18 @@ if [ $downsample_needed = true ]; then
 
 	echo "Downsample images..."
 
-	python -c "import sys; sys.path.append('../')
-	from src.histo_miner.utils.image_processing import downsample_image_segmenter
+	python -c "import sys; sys.path.append('../'); \
+	from src.histo_miner.utils.image_processing import downsample_image_segmenter; \
 	downsample_image_segmenter('$input_dir')"
+
 fi
+
+
+if [ $downsample_needed = false ]; then
+
+	echo "Warning: downsampling of images is skipped."
+fi
+
 
 
 conda deactivate

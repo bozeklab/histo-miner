@@ -68,7 +68,7 @@ ext = '.npy'
 print('Load feature selection numpy files...')
 
 # Load feature selection numpy files
-pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
+pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
 selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 print('Loading feature selected indexes done.')
 
@@ -140,7 +140,8 @@ print('Start Classifiers trainings...')
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 ### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathfeatselect + 
+
+permutation_index = np.load(pathtomain + 
                             '/bestperm/' +
                             'random_permutation_index_11_28_xgboost_bestmean.npy')
 nbrindeces = len(permutation_index)
@@ -241,9 +242,7 @@ nbr_of_splits = 10 # Assuming 10 splits
 
 if run_xgboost and not run_lgbm:
 
-    balanced_accuracies = []
-    list_proba_predictions_slideselect = []
-    
+    balanced_accuracies = []    
 
     for i in range(nbr_of_splits):  
 
@@ -310,7 +309,6 @@ if run_xgboost and not run_lgbm:
 elif run_lgbm and not run_xgboost:
 
     balanced_accuracies = []
-    list_proba_predictions_slideselect = []
 
     for i in range(nbr_of_splits):  
 
@@ -319,11 +317,11 @@ elif run_lgbm and not run_xgboost:
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
         
-        lgbm_slide_ranking = lightgbm
-        lgbm_slide_ranking = lgbm_slide_ranking.fit(X_train, y_train) 
+        lgbm_training = lightgbm
+        lgbm_training = lgbm_training.fit(X_train, y_train) 
 
         # Make predictions on the test set
-        y_pred = lgbm_slide_ranking.predict(X_test)
+        y_pred = lgbm_training.predict(X_test)
 
         # Now we should keep one prediction per patient for evaluation, the most represented prediction
         # load the corresponding ID lists

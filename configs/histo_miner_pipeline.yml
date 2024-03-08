@@ -3,14 +3,14 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        main: "/data/shared/scc/histo-miner/data_analysis/"
+        main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/"
 
         inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
 
         tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
 
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/Cologne/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts/"
 
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 

@@ -75,7 +75,7 @@ ext = '.npy'
 print('Load feature selection numpy files...')
 
 # Load feature selection numpy files
-pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
+pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
 selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 print('Loading feature selected indexes done.')
 
@@ -149,7 +149,7 @@ print('Start Classifiers trainings...')
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 ### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathfeatselect + 
+permutation_index = np.load(pathtomain + 
                             '/bestperm/' +
                             'random_permutation_index_11_28_xgboost_bestmean.npy')
 nbrindeces = len(permutation_index)
@@ -179,7 +179,7 @@ patientids_ordered = np.asarray(patientids_ordered)
 patientids_ordered = patientids_ordered[permutation_index]
 
 
-nbr_of_splits = 5 # Assuming 5 splits
+nbr_of_splits = 10 # Assuming 5 splits
 
 
 ### Create Stratified Group to further split the dataset into n_splits 
