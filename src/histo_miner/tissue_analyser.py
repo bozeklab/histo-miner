@@ -113,8 +113,7 @@ def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: li
     Calculate number of instances from each class contained in "selectedclasses", that are inside the mask from maskmap.
     Maskmap and classjson containing information of all json class are used as input.
 
-    Note: the json has to be correctly formated, see ForHoverNet.MainHvn
-    Codesnippet 1: Update each json files to be compatible with QuPath
+    Note: the json has to be correctly formated
 
     Parameters
     ----------
@@ -200,6 +199,108 @@ def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: li
         outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
                       "dict_totareainstanceperclass": totareainstanceperclass_dict}
         return outputdict
+
+
+
+def cells_insidemargin_classjson(maskmap: str, classjson: str, selectedclasses: list,
+                                    maskmapdownfactor: int = 1, classnameaskey: list = None) -> dict:
+    """
+    Calculate number of instances from each class contained in "selectedclasses", that are inside a given margin of 
+    the mask from maskmap.
+    Maskmap and classjson containing information of all json class are used as input.
+
+    Note: the json has to be correctly formated
+
+    Parameters
+    ----------
+    maskmap: str
+        Path to the binary image, mask of a specific region of the original image.
+        The image must be in PIL supported format.
+    classjson: str
+        Path to the json file (for instance output of hovernet then formatted according to the note above).
+        It must contains, inside each object ID key (numbers):
+        - a 'centroid' key, containing the centroid coordinates of the object
+        - a 'type" key, containing the class type of the object (classification)
+        - a 'contour' key, containing the coordinates of border points of the object
+    selectedclasses: list
+        List containing the different class from what the user wants the caclulation to be done.
+    maskmapdownfactor: int, optional
+        Set what was the downsample factor when the maksmap (tumor regions) were generated
+    classnameaskey: list, optional
+        List object containing the name of the classes to replace their number in the final output.
+        To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
+    Returns
+    -------
+    outputdict: dict
+        Dictionnary containing NUMBER TO DEFINE keys:
+        - "masktotarea": int : total area in pixel of the mask
+        - "list_numinstanceperclass": list : number of instances inside the mask region for each selected class
+    """
+    with open(classjson, 'r') as filename:
+        classjson = json.load(filename)  # data must be a dictionnary
+    # Loading of mask map is really heavy (local ressources might be not enough)
+    maskmap = Image.open(maskmap)
+    maskmap = np.array(maskmap)  # The maskmap siize is not the same as the input image, it is downsampled
+    # Check shape of the input file
+    if len(maskmap.shape) != 2 and len(maskmap.shape) != 3:
+        raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    elif len(maskmap.shape) == 3:
+        if maskmap.shape[2] == 3:
+            maskmap = maskmap[:, :, 0]  # Keep only one channel of the image if the image is 3 channels (RGB)
+        else:
+            raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    # Extract centroids + Class information for each nucleus in the dictionnary and also countour coordinates
+    # loop on dict
+    allnucl_info = [[int(classjson[nucleus]['centroid'][0]),
+                     int(classjson[nucleus]['centroid'][1]),
+                     classjson[nucleus]['type'],
+                     classjson[nucleus]['contour']]
+                    for nucleus in classjson.keys()]  # should extract only first level keys
+    # Idea of creating a separated list for coordinates is too keep for now
+    # nucl_coordinates = [classjson[nucleus]['contour'] for nucleus in classjson.keys()
+    numinstanceperclass = np.zeros(len(selectedclasses))
+    totareainstanceperclass = np.zeros(len(selectedclasses))
+    maskmapdownfactor = int(maskmapdownfactor)
+    # Normally not necessaty but depend how the value is given as output (could be str)
+
+
+    # Here need to add the margin calculation 
+    # And then the cells in the vicinity will be the ones 
+
+
+    for count, nucl_info in tqdm(enumerate(allnucl_info)):
+        # Check if cell is inside tumor (mask) region
+        if maskmap[int(nucl_info[1] / maskmapdownfactor), int(nucl_info[0] / maskmapdownfactor)] == 255:
+            if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
+                indexclass = selectedclasses.index(nucl_info[2])
+                numinstanceperclass[indexclass] += 1
+                # Add Area Calculation by importing all the edges of polygons
+                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                instancearea = polygoninfo.area
+                totareainstanceperclass[indexclass] += instancearea
+    # print('count=', count)
+
+    numinstanceperclass = numinstanceperclass.astype(int)
+    totareainstanceperclass = totareainstanceperclass.astype(int)
+
+    # Aggregate all the informations about number and areas of cells in the masked regions
+    # create a dictionnary of list if classnameaskey is not given as input
+    # (then the class keys corresponds to the index of the value in the list)
+    # or a dictionnary of dictionnaries if classnameaskey is given
+    if not classnameaskey:
+        outputlist = {"list_numinstanceperclass": numinstanceperclass,
+                      "list_totareainstanceperclass": totareainstanceperclass}
+        return outputlist
+    else:
+        #update classnames with the selectedclasses
+        updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
+        #now we use zip method to match class number with its name 
+        numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
+        totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
+        outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
+                      "dict_totareainstanceperclass": totareainstanceperclass_dict}
+        return outputdict
+
 
 
 def cell2celldist_classjson(classjson: str, selectedclasses: list,
@@ -796,49 +897,49 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
 
         # Cell Type ratios (RatioWSIDict)
-        ratio_wsi_dict["Ratio_Granulocytes_TumorCells"] = (
+        ratio_wsi_dict["Ratio_Granulocytes_TumorCells"] =  np.log(
                 allcells_in_wsi_dict["Granulocyte"] / allcells_in_wsi_dict["Tumor"]
         )
-        ratio_wsi_dict["Ratio_Lymphocytes_TumorCells"] = (
+        ratio_wsi_dict["Ratio_Lymphocytes_TumorCells"] =  np.log(
                 allcells_in_wsi_dict["Lymphocyte"] / allcells_in_wsi_dict["Tumor"]
         )
-        ratio_wsi_dict["Ratio_PlasmaCells_TumorCells"] = (
+        ratio_wsi_dict["Ratio_PlasmaCells_TumorCells"] =  np.log(
                 allcells_in_wsi_dict["Plasma"] / allcells_in_wsi_dict["Tumor"]
         )
-        ratio_wsi_dict["Ratio_StromaCells_TumorCells"] = (
+        ratio_wsi_dict["Ratio_StromaCells_TumorCells"] =  np.log(
                 allcells_in_wsi_dict["Stroma"] / allcells_in_wsi_dict["Tumor"]
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_TumorCells"] = (
+        ratio_wsi_dict["Ratio_EpithelialCells_TumorCells"] =  np.log(
                 allcells_in_wsi_dict["Epithelial"] / allcells_in_wsi_dict["Tumor"]
         )
-        ratio_wsi_dict["Ratio_Granulocytes_Lymphocytes"] = (
+        ratio_wsi_dict["Ratio_Granulocytes_Lymphocytes"] =  np.log(
                 allcells_in_wsi_dict["Granulocyte"] / allcells_in_wsi_dict["Lymphocyte"]
         )
-        ratio_wsi_dict["Ratio_PlasmaCells_Lymphocytes"] = (
+        ratio_wsi_dict["Ratio_PlasmaCells_Lymphocytes"] =  np.log(
                 allcells_in_wsi_dict["Plasma"] / allcells_in_wsi_dict["Lymphocyte"]
         )
-        ratio_wsi_dict["Ratio_StromaCells_Lymphocytes"] = (
+        ratio_wsi_dict["Ratio_StromaCells_Lymphocytes"] =  np.log(
                 allcells_in_wsi_dict["Stroma"] / allcells_in_wsi_dict["Lymphocyte"]
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_Lymphocytes"] = (
+        ratio_wsi_dict["Ratio_EpithelialCells_Lymphocytes"] =  np.log(
                 allcells_in_wsi_dict["Epithelial"] / allcells_in_wsi_dict["Lymphocyte"]
         )
-        ratio_wsi_dict["Ratio_Granulocytes_PlasmaCells"] = (
+        ratio_wsi_dict["Ratio_Granulocytes_PlasmaCells"] =  np.log(
                 allcells_in_wsi_dict["Granulocyte"] / allcells_in_wsi_dict["Plasma"]
         )
-        ratio_wsi_dict["Ratio_StromaCells_PlasmaCells"] = (
+        ratio_wsi_dict["Ratio_StromaCells_PlasmaCells"] =  np.log(
                 allcells_in_wsi_dict["Stroma"] / allcells_in_wsi_dict["Plasma"]
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_PlasmaCells"] = (
+        ratio_wsi_dict["Ratio_EpithelialCells_PlasmaCells"] =  np.log(
                 allcells_in_wsi_dict["Epithelial"] / allcells_in_wsi_dict["Plasma"]
         )
-        ratio_wsi_dict["Ratio_StromaCells_Granulocytes"] = (
+        ratio_wsi_dict["Ratio_StromaCells_Granulocytes"] =  np.log(
                 allcells_in_wsi_dict["Stroma"] / allcells_in_wsi_dict["Granulocyte"]
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_Granulocytes"] = (
+        ratio_wsi_dict["Ratio_EpithelialCells_Granulocytes"] =  np.log(
                 allcells_in_wsi_dict["Epithelial"] / allcells_in_wsi_dict["Granulocyte"]
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_StromalCells"] = (
+        ratio_wsi_dict["Ratio_EpithelialCells_StromalCells"] =  np.log(
                 allcells_in_wsi_dict["Epithelial"] / allcells_in_wsi_dict["Stroma"]
         )
 
@@ -883,65 +984,65 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                         cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] / numcells
                         )
                 # Cell Type ratios (RatioTumorDict)
-                ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                ratio_tumor_dict["Ratio_Lymphocytes_TumorCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_Lymphocytes_TumorCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                ratio_tumor_dict["Ratio_PlasmaCells_TumorCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_PlasmaCells_TumorCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                ratio_tumor_dict["Ratio_StromaCells_TumorCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_StromaCells_TumorCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                 )
-                ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumor"] = (
+                ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumor"] = (
+                ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumor"] = (
+                ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                 )
-                ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                 )
-                ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumor"] = (
+                ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                 )
-                ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumor"] = (
+                ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumor"] =  np.log(
                         cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                         / cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                 )
                 if areaofmask:
                     # Number of cells per tumor area
-                    density_tumor_dict["Granulocytes_perTumorarea"] = (
+                    density_tumor_dict["Granulocytes_perTumorarea"] =  (
                             cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"]
                             / areaofmask
                     )
-                    density_tumor_dict["Lymphocytes_perTumorarea"] = (
+                    density_tumor_dict["Lymphocytes_perTumorarea"] =  (
                             cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"]
                             / areaofmask
                     )
-                    density_tumor_dict["PlasmaCells_perTumorarea"] = (
+                    density_tumor_dict["PlasmaCells_perTumorarea"] =  (
                             cells_inmask_dict["dict_numinstanceperclass"]["Plasma"]
                             / areaofmask
                     )
-                    density_tumor_dict["StromaCells_perTumorarea"] = (
+                    density_tumor_dict["StromaCells_perTumorarea"] =  (
                             cells_inmask_dict["dict_numinstanceperclass"]["Stroma"]
                             / areaofmask
                     )
-                    density_tumor_dict["TumorCells_perTumorarea"] = (
+                    density_tumor_dict["TumorCells_perTumorarea"] =   (
                             cells_inmask_dict["dict_numinstanceperclass"]["Tumor"]
                             / areaofmask
                     )

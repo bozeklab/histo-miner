@@ -45,7 +45,7 @@ example_json = config.names.example_json
 ## Load correlation matrix and feature names
 #############################################################
 
-matrix_relative_path = '/correlations/correlation_matrix.npy'
+matrix_relative_path = '/correlation_matrix.npy'
 
 #load correlation matrix
 corrmat = np.load(featselfolder + matrix_relative_path)
@@ -132,7 +132,7 @@ sns.heatmap(round(correlations,2), cmap='RdBu', annot=True,
 
 ## Save figure 
 #Create Name for saving
-savename = 'Corr_matrix_clustered.png'
+savename = 'Corr_matrix_clustered_35_30.png'
 
 #Saving
 if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):
@@ -147,12 +147,12 @@ plt.clf()
 
 # plt.figure(figsize=(20,12))
 sns.clustermap(correlations, method="complete", cmap='RdBu', annot=False, 
-               vmin=-1, vmax=1, figsize=(17,13));
+               vmin=-1, vmax=1, figsize=(35,30));
 
 
 ## Save figure 
 #Create Name for saving
-savename = 'Corr_matrix_clustered_with_dendrograms_17_13.png'
+savename = 'Corr_matrix_clustered_with_dendrograms_35_30.png'
 
 #Saving
 if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):

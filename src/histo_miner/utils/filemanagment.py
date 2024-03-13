@@ -8,10 +8,17 @@ import numpy as np
 
 ### Utils Functions
 
+# Check this function as it can just REMOVE files if not used properly
+# Maybe add GUI with users to understand fully want is happening
+
+
 def anaylser2featselect(folderpath: str, recnaming: list = ('no_recurrence','recurrence')):
     """
     Move all the output files from the tissue analyses to % folders
     to perform the feature selection    
+
+    Dangerous to use as it can remove json files.
+    Maybe update it to be clearer.
 
     Parameters
     ----------

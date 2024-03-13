@@ -17,7 +17,7 @@ from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
 ###################################################################
-## Load configs parameter
+## Load configs parameters
 ###################################################################
 
 # Import parameters values from config file by generating a dict.
@@ -52,18 +52,27 @@ perpatient_feat = config.parameters.bool.perpatient_feat
 
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
-tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted_Munich'
+tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted_allminusBonn_withlogs/'
 norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
 rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 
+
+##### /!\   
+
+
 # If the 2 folders norec_analyse_folder and rec_analyse_folder don't exsit, 
 # or they exist but are empty, we start the re-organization of the files with anaylser2featselect.
-if (not os.path.exists(norec_analyse_folder) and not os.path.exists(rec_analyse_folder)) or \
-    ((os.path.exists(norec_analyse_folder) and not os.listdir(norec_analyse_folder)) and \
-    (os.path.exists(rec_analyse_folder) and not os.listdir(rec_analyse_folder))):
-    anaylser2featselect(pathtofolder)
-else:
-    print('\nRe-organization of the files already performed, so moving the files skipped')
+
+# For now we keep this commented as it is a big risk to run it
+
+# if (not os.path.exists(norec_analyse_folder) and not os.path.exists(rec_analyse_folder)) or \
+#     ((os.path.exists(norec_analyse_folder) and not os.listdir(norec_analyse_folder)) and \
+#     (os.path.exists(rec_analyse_folder) and not os.listdir(rec_analyse_folder))):
+#     # anaylser2featselect(pathtofolder)
+# else:
+#     print('\nRe-organization of the files already performed, so moving the files skipped')
+
+####### END
 
 
 ########  Create list with the paths of the files to analyse

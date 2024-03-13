@@ -97,7 +97,7 @@ lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 
 
 # step to run 
-step = 3
+step = 2
 
 
 
@@ -108,6 +108,8 @@ step = 3
 if step==1:
 
     print('Running step: ',step)
+
+    print('Path used: ', pathfeatselect)
 
     print('Start Classifiers trainings...')
 
@@ -143,6 +145,8 @@ if step==1:
 if step==2:
 
     print('Running step: ',step)
+
+    print('Path used: ', pathfeatselect)
 
     # Load patient ids
     path_patientids_array = pathfeatselect + 'patientids' + ext
@@ -225,8 +229,42 @@ if step==2:
     balanced_accuracies_numpy = np.asarray(balanced_accuracies)
 
     mean_bacc = np.mean(balanced_accuracies_numpy)
-    print('slpits balanced accuracies:', balanced_accuracies)
-    print('mean balanced accuracy: {}'.format(mean_bacc))
+    print('xgboost slpits balanced accuracies:', balanced_accuracies)
+    print('xgboost mean balanced accuracy: {}'.format(mean_bacc))
+
+
+    # # not obtimized but for test
+
+
+    balanced_accuracies = []
+
+    for i in tqdm(range(nbr_of_splits)):  
+
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
+        
+        classifier_training = lightgbm
+        classifier_training = classifier_training.fit(X_train, y_train) 
+
+        # Make predictions on the test set
+        y_pred = classifier_training.predict(X_test)
+
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracies.append(balanced_accuracy)
+
+
+    # Have the mean of balanced accuracies
+    balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+    mean_bacc = np.mean(balanced_accuracies_numpy)
+    print('lightgbm slpits balanced accuracies:', balanced_accuracies)
+    print('lightgbm mean balanced accuracy: {}'.format(mean_bacc))
+
+
+
 
 
 
@@ -241,6 +279,8 @@ if step==3:
 
     print('Running step: ',step)
 
+    print('Path used: ', pathfeatselect)
+
     # Load patient ids
     path_patientids_array = pathfeatselect + 'patientids' + ext
     patientids_load = np.load(path_patientids_array, allow_pickle=True)
@@ -248,10 +288,12 @@ if step==3:
     patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
     patientids = np.asarray(patientids_convert)
 
-    permutation_index = np.load(pathtomain + 
-                            '/bestperm/' +
-                            'random_permutation_index_11_28_xgboost_bestmean.npy')
-    nbrindeces = len(permutation_index)
+    # permutation_index = np.load(pathtomain + 
+    #                         '/bestperm/' +
+    #                         'random_permutation_index_11_28_xgboost_bestmean.npy')
+    # nbrindeces = len(permutation_index)
+
+    permutation_index = np.random.permutation(train_clarray.size)
 
     ### Shuffle classification arrays using the permutation index
     train_clarray = train_clarray[permutation_index]
@@ -332,9 +374,39 @@ if step==3:
     balanced_accuracies_numpy = np.asarray(balanced_accuracies)
 
     mean_bacc = np.mean(balanced_accuracies_numpy)
-    print('slpits balanced accuracies:', balanced_accuracies)
-    print('mean balanced accuracy: {}'.format(mean_bacc))
+    print('xgboost slpits balanced accuracies:', balanced_accuracies)
+    print('xgboost mean balanced accuracy: {}'.format(mean_bacc))
 
+
+    # # not obtimized but for test
+
+
+    balanced_accuracies = []
+
+    for i in tqdm(range(nbr_of_splits)):  
+
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
+        
+        classifier_training = lightgbm
+        classifier_training = classifier_training.fit(X_train, y_train) 
+
+        # Make predictions on the test set
+        y_pred = classifier_training.predict(X_test)
+
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy = balanced_accuracy_score(y_test, y_pred)
+        balanced_accuracies.append(balanced_accuracy)
+
+
+    # Have the mean of balanced accuracies
+    balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+    mean_bacc = np.mean(balanced_accuracies_numpy)
+    print('lightgbm balanced accuracies:', balanced_accuracies)
+    print('lightgbm balanced accuracy: {}'.format(mean_bacc))
 
 
 
@@ -346,6 +418,8 @@ if step==3:
 if step==4:
 
     print('Running step: ',step)
+
+    print('Path used: ', pathfeatselect)
 
     # Load patient ids
     path_patientids_array = pathfeatselect + 'patientids' + ext
@@ -489,6 +563,8 @@ if step==4:
 if step==5:
 
     print('Running step: ',step)
+
+    print('Path used: ', pathfeatselect)
 
 
 
