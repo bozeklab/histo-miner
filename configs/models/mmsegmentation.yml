@@ -2,7 +2,7 @@
 
   inference:
 
-    downsample_needed: "true"
+    downsample_needed: "false"
     # boolean in bash is without capital 
 
     gpu: 2

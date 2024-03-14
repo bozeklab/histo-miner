@@ -80,13 +80,10 @@ for jsonfile in jsonfiles:
 
 
     # Write information inside a json file about cell nbr per class and save it
+    with open(pathwoext + '_cellnbr.json', 'w') as outfile:
+        json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
 
-    #### TEMP
-
-    # with open(pathwoext + '_cellnbr.json', 'w') as outfile:
-    #     json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
-
-    # print('Json file written :', pathwoext + '_cellnbr.json \n**********')
+    print('Json file written :', pathwoext + '_cellnbr.json \n**********')
 
 
     # Create the path to Mask map binarized and Class JSON and save it into a variable

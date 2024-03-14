@@ -5,17 +5,17 @@
     folders:
         main: "/data/shared/scc/histo-miner/data_analysis/"
 
-        inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
+        inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
-        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/tissue_analyses_sorted_Bonn_withlogs/no_recurrence/"
-        # tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_hvnoutput/"
+        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/tissue_analyses_sorted_Bonn/no_recurrence/"
+        # tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts_minusBonn_withlogs/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts_withlogs/"
 
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
-        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/Regensburg/"
+        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
 
         workingfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
         ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/\
@@ -31,7 +31,7 @@
   names:
       hovernet_mode: wsi
 
-      eval_folder: varfeat-classic-samesplit-lgbm
+      eval_folder: varfeat-one-class-lgbm-logs
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string

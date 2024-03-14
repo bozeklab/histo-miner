@@ -70,14 +70,14 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 ## Load feature selection numpy files
 ############################################################
 
-ext = '.npy'
+# ext = '.npy'
 
-print('Load feature selection numpy files...')
+# print('Load feature selection numpy files...')
 
-# Load feature selection numpy files
-pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
-selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
-print('Loading feature selected indexes done.')
+# # Load feature selection numpy files
+# pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
+# selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
+# print('Loading feature selected indexes done.')
 
 
 
@@ -85,11 +85,12 @@ print('Loading feature selected indexes done.')
 ## Load feat array, class arrays and IDs arrays (if applicable)
 ################################################################
 
+ext = '.npy'
+
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
 pathfeatnames = pathfeatselect + 'featnames' + ext
 
-ext = '.npy'
 
 train_featarray = np.load(pathfeatselect + featarray_name + ext)
 train_clarray = np.load(pathfeatselect + classarray_name + ext)
@@ -149,18 +150,27 @@ print('Start Classifiers trainings...')
 # permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 ### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathtomain + 
-                            '/bestperm/' +
-                            'random_permutation_index_11_28_xgboost_bestmean.npy')
-nbrindeces = len(permutation_index)
+# permutation_index = np.load(pathfeatselect + 
+#                             '/bestperm/' +
+#                             'random_permutation_index_11_28_xgboost_bestmean.npy') 
+nbr_slides = len(train_clarray)
+
+# permutation_index = list(range(nbr_slides))
+# random.shuffle(permutation_index)
+# permutation_index = np.asarray(permutation_index)
+
+
+
+# nbrindeces = len(permutation_index)
 
 ### Shuffle classification arrays using the permutation index
-train_clarray = train_clarray[permutation_index]
+# train_clarray = train_clarray[permutation_index]
 
 
 # Shuffle the all features arrays using the permutation index
+
 train_featarray = np.transpose(train_featarray)
-train_featarray = train_featarray[permutation_index, :]
+# train_featarray = train_featarray[permutation_index, :]
 
 
 # Create a mapping of unique elements to positive integers
@@ -176,10 +186,11 @@ for num in patientids:
 
 ### Shuffle patient IDs arrays using the permutation index 
 patientids_ordered = np.asarray(patientids_ordered)
-patientids_ordered = patientids_ordered[permutation_index]
+# patientids_ordered = patientids_ordered[permutation_index]
 
 
-nbr_of_splits = 10 # Assuming 5 splits
+# number of splits for cross validation
+nbr_of_splits = 10
 
 
 ### Create Stratified Group to further split the dataset into n_splits 
@@ -267,13 +278,14 @@ if run_xgboost and not run_lgbm:
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
-        if i == 0:
-            selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
-        else:
-            selected_features_matrix.reset_attributes(X_train_tr)
-
+        # if i == 0:
+        #     selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
+        # else:
+        #     selected_features_matrix.reset_attributes(X_train_tr)
+        feature_array = X_train
         ## For Boruta calculations
-        featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta_index)
+        featarray_boruta = feature_array[:, selfeat_boruta_index]
+
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
 
@@ -341,27 +353,31 @@ if run_xgboost and not run_lgbm:
                 # Kept the selected features
                 selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
                 selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+                selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
+                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
 
                 # Generate matrix of features
-                featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr_index_reduced)
-                featarray_mannwhitneyu = selected_features_matrix.mannwhitney_matr(
-                                            selfeat_mannwhitneyu_index_reduced)
+                featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
+                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
 
                 #Training
+                # needs to be re initilaized each time!!!! Vry important
                 xgboost_mrmr_training = xgboost
-                xgboost_mannwhitneyu_training = xgboost
+                xgboost_mannwhitneyu_training = xgboost 
+                # actual training
                 xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
                                                                        y_train)
                 xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
                                                                        featarray_mannwhitneyu, 
-                                                                       y_train)
+                                                                       y_train
+                                                                       )
 
                 # Predictions on the test split
                 y_pred_mrmr = xgboost_mrmr_training_inst.predict(
-                    X_test[:, np.transpose(selfeat_mrmr_index_reduced)]
+                    X_test[:, selfeat_mrmr_index_reduced]
                     )
                 y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
-                    X_test[:, np.transpose(selfeat_mannwhitneyu_index_reduced)]
+                    X_test[:, selfeat_mannwhitneyu_index_reduced]
                     )
 
                 # Now we should keep one prediction per patient for evaluation, 
@@ -549,13 +565,14 @@ elif run_lgbm and not run_xgboost:
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
-        if i == 0:
-            selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
-        else:
-            selected_features_matrix.reset_attributes(X_train_tr)
-
+        # if i == 0:
+        #     selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
+        # else:
+        #     selected_features_matrix.reset_attributes(X_train_tr)
+        feature_array = X_train
         ## For Boruta calculations
-        featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta_index)
+        featarray_boruta = feature_array[:, selfeat_boruta_index]
+
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
 
@@ -623,27 +640,31 @@ elif run_lgbm and not run_xgboost:
                 # Kept the selected features
                 selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
                 selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+                selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
+                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
 
                 # Generate matrix of features
-                featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr_index_reduced)
-                featarray_mannwhitneyu = selected_features_matrix.mannwhitney_matr(
-                                            selfeat_mannwhitneyu_index_reduced)
+                featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
+                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
 
                 #Training
+                # needs to be re initilaized each time!!!! Vry important
                 lightgbm_mrmr_training = lightgbm
                 lightgbm_mannwhitneyu_training = lightgbm
+                # actual training
                 lightgbm_mrmr_training_inst = lightgbm_mrmr_training.fit(featarray_mrmr, 
-                                                                       y_train)
+                                                                         y_train)
                 lightgbm_mannwhitneyu_training_inst = lightgbm_mannwhitneyu_training.fit(
                                                                        featarray_mannwhitneyu, 
-                                                                       y_train)
+                                                                       y_train
+                                                                       )
 
                 # Predictions on the test split
                 y_pred_mrmr = lightgbm_mrmr_training_inst.predict(
-                    X_test[:, np.transpose(selfeat_mrmr_index_reduced)]
+                    X_test[:, selfeat_mrmr_index_reduced]
                     )
                 y_pred_mannwhitneyu = lightgbm_mannwhitneyu_training_inst.predict(
-                    X_test[:, np.transpose(selfeat_mannwhitneyu_index_reduced)]
+                    X_test[:, selfeat_mannwhitneyu_index_reduced]
                     )
 
                 # Now we should keep one prediction per patient for evaluation, 
@@ -654,7 +675,8 @@ elif run_lgbm and not run_xgboost:
                 # Dictionary to store the index of the highest probability score for each group
                 y_pred_per_patient_mrmr = []
                 y_pred_per_patient_mannwhitneyu = []
-                y_test_per_patient = []
+                y_test_per_patient_mrmr = []
+                y_test_per_patient_mannwhitneyu = []
                
                 # Iterate through groups
                 for patientid in np.unique(X_test_patID):
@@ -683,29 +705,34 @@ elif run_lgbm and not run_xgboost:
                         
                         if count_norec_mrmr > count_rec_mrmr:
                             y_pred_per_patient_mrmr.append(int(0))
+                            y_test_per_patient_mrmr.append(y_test[slide_indices][0])
                         else:
                             y_pred_per_patient_mrmr.append(int(1))
+                            y_test_per_patient_mrmr.append(y_test[slide_indices][0])
                             
                         if count_norec_mannwhitneyu > count_rec_mannwhitneyu:
                             y_pred_per_patient_mannwhitneyu.append(int(0))
+                            y_test_per_patient_mannwhitneyu.append(y_test[slide_indices][0])
                         else:
                             y_pred_per_patient_mannwhitneyu.append(int(1))
+                            y_test_per_patient_mannwhitneyu.append(y_test[slide_indices][0])
 
                         # In any case, we should build the ground truth labels accordingly
-                        y_test_per_patient.append(y_test[slide_indices][0])
+                        
 
 
                     else: 
                         y_pred_per_patient_mrmr.append(y_pred_mrmr[slide_indices][0])
                         y_pred_per_patient_mannwhitneyu.append(y_pred_mannwhitneyu[slide_indices][0])
 
-                        y_test_per_patient.append(y_test[slide_indices][0])
+                        y_test_per_patient_mrmr.append(y_test[slide_indices][0])
+                        y_test_per_patient_mannwhitneyu.append(y_test[slide_indices][0])
 
 
                 # Calculate balanced accuracy for the current split
-                balanced_accuracy_mrmr = balanced_accuracy_score(y_test_per_patient, 
+                balanced_accuracy_mrmr = balanced_accuracy_score(y_test_per_patient_mrmr, 
                                                                  y_pred_per_patient_mrmr)
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test_per_patient, 
+                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test_per_patient_mannwhitneyu, 
                                                                          y_pred_per_patient_mannwhitneyu)
 
                 balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
@@ -786,15 +813,14 @@ else:
 
 
 
-### calculate and write the saving of the mean balancede accuracues
+### calculate and write the saving of the mean balancede accuracies
 # Calculate the mean accuracies 
 
 mean_balanced_accuracies_mannwhitneyu = list()
 mean_balanced_accuracies_mrmr = list()
-loop_index = 0
 
 # do the list of means for mannwhitneyu and mrmr
-for nbr_keptfeat_idx in range(nbr_feat - 1, 0, -1):
+for index in range(0, nbr_feat):
     
     mean_ba_featsel_mannwhitneyu = list()
     mean_ba_featsel_mrmr = list()
@@ -804,12 +830,12 @@ for nbr_keptfeat_idx in range(nbr_feat - 1, 0, -1):
         currentsplit =  f"split_{i}"
 
         balanced_accuracy_mannwhitneyu = float(
-            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][loop_index]
+            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index]
             ) 
         mean_ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
 
         balanced_accuracy_mrmr = np.asarray(
-            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][loop_index]
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
             ) 
         mean_ba_featsel_mrmr.append(balanced_accuracy_mrmr)
 
@@ -819,9 +845,9 @@ for nbr_keptfeat_idx in range(nbr_feat - 1, 0, -1):
     mean_ba_featsel_mrmr = np.asarray(mean_ba_featsel_mrmr)
     mean_balanced_accuracies_mrmr.append(np.mean(mean_ba_featsel_mrmr))
 
-    loop_index += 1 
 
 mean_balanced_accuracies_boruta = list()
+
 
 for i in range(nbr_of_splits): 
     currentsplit =  f"split_{i}"
@@ -829,6 +855,7 @@ for i in range(nbr_of_splits):
         [balanced_accuracies['balanced_accuracies_boruta'][currentsplit]]
         )
     mean_balanced_accuracies_boruta.append(mean_ba_boruta)
+
 
 # Transform a list of list into a list?
 mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracies_boruta]
@@ -838,7 +865,6 @@ mean_ba_boruta_npy = mean_ba_boruta_npy[mean_ba_boruta_npy != None]
 
 mean_ba_boruta_npy = [np.mean(mean_ba_boruta_npy)]
 mean_ba_boruta_npy = np.asarray(mean_ba_boruta_npy)
-
 
 # Create a numpy array of max and min number of feat kept by boruta
 
@@ -853,7 +879,7 @@ else:
 
 
 boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
-
+ 
 mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
 mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
 
@@ -866,15 +892,18 @@ save_ext = '.npy'
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu_xgboost_5splits' + save_ext, mean_ba_mannwhitneyu_npy)
 
-np.save(save_results_path + 'mean_ba_mrmr_xgboost_5splits' + save_ext, mean_ba_mrmr_npy)
+print('Start saving numpy in folder: ', save_results_path)
 
-np.save(save_results_path + 'mean_ba_boruta_xgboost_5splits' + save_ext, mean_ba_boruta_npy)
-np.save(save_results_path + 'nbr_feat_kept_boruta_xgboost_5splits' + save_ext, boruta_visu_xcoord_npy)
+np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_10splits_allCohortslogs' + save_ext, mean_ba_mannwhitneyu_npy)
+
+np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits_allCohortslogs' + save_ext, mean_ba_mrmr_npy)
+
+np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits_allCohortslogs' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs' + save_ext, boruta_visu_xcoord_npy)
 
 
-
+print('Numpy saved.')
 
 
 

@@ -30,7 +30,7 @@ pathtosavefolder = config.paths.folders.visualizations
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/varfeat-classic-samesplit-all/' 
+path2vectors = pathtofolder + '/varfeat-one-class-lgbm-logs/' 
 ext = '.npy'
 
 # Load vectors from files
@@ -44,11 +44,11 @@ ext = '.npy'
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
 
 
-lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_5splits_Munich_noperm' + ext)
-lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_5splits_Munich_noperm' + ext)
-lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_5splits_Munich_noperm' + ext)
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits_Munich_noperm' + ext):
-     nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits_Munich_noperm' + ext)
+lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits_allCohortslogs' + ext)
+lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_10splits_allCohortslogs' + ext)
+lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_10splits_allCohortslogs' + ext)
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs' + ext):
+     nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs' + ext)
 # lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
 # lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
 # lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
@@ -105,7 +105,7 @@ x = np.linspace(56, 1, len(lgbmmean_aAcc_mrmr))
 
 
 
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_5splits_Munich_noperm' + ext):
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs' + ext):
 # need to duplicate the value for boruta 
     lgbmmean_aAcc_boruta = [lgbmmean_aAcc_boruta[0], lgbmmean_aAcc_boruta[0]]   
     lgbm_xboruta = nbr_featkept_lgbm_boruta
@@ -138,7 +138,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-classic-samesplit-all-lgbm-5splits-Munich_noperm.png')
+plt.savefig(pathtosavefolder + 'varfeat-one-class-lgbm-logs.png')
 plt.clf()
 
 

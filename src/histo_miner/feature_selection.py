@@ -285,6 +285,7 @@ class SelectedFeaturesMatrix:
         # Be sure to enter output from  Mann-Whitney U rank test here
         featarray_mannwhitney = np.transpose(self.feature_array)
         # featarray_mannwhitney = self.feature_array
+        # featarray_mannwhitney = featarray_mannwhitney[selfeat_mannwhitneyu_index, :]
         featarray_mannwhitney = featarray_mannwhitney[:, selfeat_mannwhitneyu_index]
         return featarray_mannwhitney
 

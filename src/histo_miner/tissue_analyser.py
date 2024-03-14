@@ -107,8 +107,11 @@ def counthvnjson(file: str, searchedwords: list, classnameaskey: list = None) ->
         return wordcountsdict
 
 
-def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: list,
-                                    maskmapdownfactor: int = 1, classnameaskey: list = None) -> dict:
+def cells_insidemask_classjson(maskmap: str, 
+                               classjson: str, 
+                               selectedclasses: list,
+                               maskmapdownfactor: int = 1, 
+                               classnameaskey: list = None) -> dict:
     """
     Calculate number of instances from each class contained in "selectedclasses", that are inside the mask from maskmap.
     Maskmap and classjson containing information of all json class are used as input.
@@ -202,11 +205,15 @@ def cells_insidemask_classjson(maskmap: str, classjson: str, selectedclasses: li
 
 
 
-def cells_insidemargin_classjson(maskmap: str, classjson: str, selectedclasses: list,
-                                    maskmapdownfactor: int = 1, classnameaskey: list = None) -> dict:
+def cells_insidemargin_classjson(maskmap: str, 
+                                 classjson: str, 
+                                 selectedclasses: list,
+                                 maskmapdownfactor: int = 1, 
+                                 classnameaskey: list = None,
+                                 tumormargin: int = None) -> dict:
     """
     Calculate number of instances from each class contained in "selectedclasses", that are inside a given margin of 
-    the mask from maskmap.
+    the mask from maskmap, and also inside the mask itself.
     Maskmap and classjson containing information of all json class are used as input.
 
     Note: the json has to be correctly formated
@@ -258,30 +265,62 @@ def cells_insidemargin_classjson(maskmap: str, classjson: str, selectedclasses: 
                     for nucleus in classjson.keys()]  # should extract only first level keys
     # Idea of creating a separated list for coordinates is too keep for now
     # nucl_coordinates = [classjson[nucleus]['contour'] for nucleus in classjson.keys()
-    numinstanceperclass = np.zeros(len(selectedclasses))
-    totareainstanceperclass = np.zeros(len(selectedclasses))
+
+    # mask map factor
     maskmapdownfactor = int(maskmapdownfactor)
+
+    #Initialize the lists
+    numinstanceperclass_mask = np.zeros(len(selectedclasses))
+    totareainstanceperclass_mask = np.zeros(len(selectedclasses))
+    numinstanceperclass_vicinity = np.zeros(len(selectedclasses))
+    totareainstanceperclass_vicinity = np.zeros(len(selectedclasses))
     # Normally not necessaty but depend how the value is given as output (could be str)
 
 
-    # Here need to add the margin calculation 
-    # And then the cells in the vicinity will be the ones 
+    # Create a dilated tumor region 
+    # TumorMargin should be in pixel as input directly
+    kernel_size = int(tumormargin / 2)
+    kernel = np.ones((kernel_size, kernel_size), dtype=np.uint8)
+    extended_maskmap = cv2.dilate(maskmap, kernel)
+    # Create a connected component maps to have different values for the different tumor regions
+    # (not connected ones)
+    num_labels, tumorextendedid_map = cv2.connectedComponents(extended_maskmap, connectivity=8)
+    regions = regionprops(tumorextendedid_map)
+
+    
+    # Keep only the vicinity region as mask and not the tumor itself
+    # NOT NEEDED YET vicinitymask = extended_maskmap - maskmap
 
 
     for count, nucl_info in tqdm(enumerate(allnucl_info)):
         # Check if cell is inside tumor (mask) region
-        if maskmap[int(nucl_info[1] / maskmapdownfactor), int(nucl_info[0] / maskmapdownfactor)] == 255:
-            if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
-                indexclass = selectedclasses.index(nucl_info[2])
-                numinstanceperclass[indexclass] += 1
-                # Add Area Calculation by importing all the edges of polygons
-                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
-                instancearea = polygoninfo.area
-                totareainstanceperclass[indexclass] += instancearea
+        if extended_maskmap[int(nucl_info[1] / maskmapdownfactor), 
+                            int(nucl_info[0] / maskmapdownfactor)] == 255:
+            if maskmap[int(nucl_info[1] / maskmapdownfactor), 
+                                int(nucl_info[0] / maskmapdownfactor)] == 255:     
+                if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
+                    indexclass = selectedclasses.index(nucl_info[2])
+                    numinstanceperclass_mask[indexclass] += 1
+                    # Add Area Calculation by importing all the edges of polygons
+                    polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                    instancearea = polygoninfo.area
+                    totareainstanceperclass_mask[indexclass] += instancearea
+            else:
+                #Here we are in the case of the cell beeing in the vicinity of the tumor
+                if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
+                    indexclass = selectedclasses.index(nucl_info[2])
+                    numinstanceperclass_vicinity[indexclass] += 1
+                    # Add Area Calculation by importing all the edges of polygons
+                    polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                    instancearea = polygoninfo.area
+                    totareainstanceperclass_vicinity[indexclass] += instancearea
+
     # print('count=', count)
 
-    numinstanceperclass = numinstanceperclass.astype(int)
-    totareainstanceperclass = totareainstanceperclass.astype(int)
+    numinstanceperclass_mask = numinstanceperclass_mask.astype(int)
+    totareainstanceperclass_mask = totareainstanceperclass_mask.astype(int)
+    numinstanceperclass_mask = numinstanceperclass_mask.astype(int)
+    totareainstanceperclass_mask = totareainstanceperclass_mask.astype(int)
 
     # Aggregate all the informations about number and areas of cells in the masked regions
     # create a dictionnary of list if classnameaskey is not given as input
@@ -303,7 +342,8 @@ def cells_insidemargin_classjson(maskmap: str, classjson: str, selectedclasses: 
 
 
 
-def cell2celldist_classjson(classjson: str, selectedclasses: list,
+def cell2celldist_classjson(classjson: str, 
+                            selectedclasses: list,
                             cellfilter: str = 'Tumor',
                             maskmap: str = '',
                             maskmapdownfactor: int = 1,
@@ -535,7 +575,8 @@ def cell2celldist_classjson(classjson: str, selectedclasses: list,
     # corresponding keys!
 
 
-def mpcell2celldist_classjson(classjson: str, selectedclasses: list,
+def mpcell2celldist_classjson(classjson: str, 
+                              selectedclasses: list,
                               cellfilter: str = 'Tumor',
                               maskmap: str = '',
                               maskmapdownfactor: int = 1,

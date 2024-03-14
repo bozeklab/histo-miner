@@ -97,7 +97,7 @@ lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 
 
 # step to run 
-step = 2
+step = 4
 
 
 
@@ -137,9 +137,10 @@ if step==1:
 
 
 
-#######################################################################
+
+###############################################################################
 ## 2 Including cross validation with patient groupts - works
-########################################################################
+###############################################################################
 
 
 if step==2:
@@ -176,7 +177,7 @@ if step==2:
     # number of splits for cross validation
     nbr_of_splits = 10 
 
-    ### Create Stratified Group to further split the dataset into 5 
+    ### Create Stratified Group to further split the dataset into nbr_of_splits 
     stratgroupkf = StratifiedGroupKFold(n_splits=nbr_of_splits, shuffle=False)
 
     print('Create splits...')
@@ -267,12 +268,10 @@ if step==2:
 
 
 
-
-
-##############################################################
+###############################################################################
 ## 3 Including cross validation with patient groupts 
 ##   and permutations - works
-##############################################################
+###############################################################################
 
 
 if step==3:
@@ -410,10 +409,11 @@ if step==3:
 
 
 
-#######################################################################
-## 4 training keep one class (done here again)- worked
-########################################################################
 
+
+###############################################################################
+## 4 training keep one class (done here again)- worked
+###############################################################################
 
 if step==4:
 
@@ -428,10 +428,13 @@ if step==4:
     patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
     patientids = np.asarray(patientids_convert)
 
-    permutation_index = np.load(pathtomain + 
-                            '/bestperm/' +
-                            'random_permutation_index_11_28_xgboost_bestmean.npy')
-    nbrindeces = len(permutation_index)
+    # permutation_index = np.load(pathtomain + 
+    #                         '/bestperm/' +
+    #                         'random_permutation_index_11_28_xgboost_bestmean.npy')
+    # nbrindeces = len(permutation_index)
+
+    permutation_index = np.random.permutation(train_clarray.size)
+
 
     ### Shuffle classification arrays using the permutation index
     train_clarray = train_clarray[permutation_index]
@@ -454,6 +457,7 @@ if step==4:
 
     ### Shuffle patient IDs arrays using the permutation index 
     patientids_ordered = np.asarray(patientids_ordered)
+    patientids_ordered = patientids_ordered[permutation_index]
 
     # number of splits for cross validation
     nbr_of_splits = 10 
@@ -486,6 +490,68 @@ if step==4:
 
 
     print('Do cross validation...')
+
+    balanced_accuracies = []
+
+    for i in tqdm(range(nbr_of_splits)):  
+
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
+        
+        classifier_training = xgboost
+        classifier_training = classifier_training.fit(X_train, y_train) 
+
+        # Make predictions on the test set
+        y_pred = classifier_training.predict(X_test)
+
+                # Now we should keep one prediction per patient for evaluation, the most represented prediction
+        # load the corresponding ID lists
+        X_train_patID = splits_patientID_list[i][0]
+        X_test_patID = splits_patientID_list[i][1]
+        
+        # Dictionary to store the index of the highest probability score for each group
+        y_pred_per_patient = []
+        y_test_per_patient = []
+
+        # Iterate through groups
+        for patientid in np.unique(X_test_patID):
+            # Get the indices of samples belonging to the current group
+            slide_indices = np.where(X_test_patID == patientid)[0]
+
+            # If the patient has more than one slide, we keep the one with most prediction
+            if len(slide_indices) > 1:
+                # Get the probability predictions of class 0 for each slides of the patient
+                patient_slides_probas_class0 = [y_pred[index] for index in slide_indices]
+                
+                # HVE TO CHECK WHAT IS CLASS ONE AND WHAT IS CLASS 2
+                count_norec = patient_slides_probas_class0.count(0)
+                count_rec =  patient_slides_probas_class0.count(1)
+                if count_norec > count_rec:
+                    y_pred_per_patient.append(int(0))
+                    y_test_per_patient.append(y_test[slide_indices][0])
+                else:
+                    y_pred_per_patient.append(int(1))
+                    y_test_per_patient.append(y_test[slide_indices][0])
+
+            else: 
+                y_pred_per_patient.append(y_pred[slide_indices][0])
+                y_test_per_patient.append(y_test[slide_indices][0])
+
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy = balanced_accuracy_score(y_test_per_patient, y_pred_per_patient)
+        balanced_accuracies.append(balanced_accuracy)
+
+
+    # Have the mean of balanced accuracies
+    balanced_accuracies_numpy = np.asarray(balanced_accuracies)
+
+    mean_bacc = np.mean(balanced_accuracies_numpy)
+    print('xgboost slpits balanced accuracies:', balanced_accuracies)
+    print('xgboost mean balanced accuracy: {}'.format(mean_bacc))
+
+    
 
     balanced_accuracies = []
 
@@ -544,8 +610,10 @@ if step==4:
     balanced_accuracies_numpy = np.asarray(balanced_accuracies)
 
     mean_bacc = np.mean(balanced_accuracies_numpy)
-    print('slpits balanced accuracies:', balanced_accuracies)
-    print('mean balanced accuracy: {}'.format(mean_bacc))
+    print('lightgbm slpits balanced accuracies:', balanced_accuracies)
+    print('lightgbm mean balanced accuracy: {}'.format(mean_bacc))
+
+
 
 
 
