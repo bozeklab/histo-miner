@@ -31,7 +31,7 @@
   names:
       hovernet_mode: wsi
 
-      eval_folder: varfeat-one-class-lgbm-logs
+      eval_folder: varfeat-model-based-ranking-lgbm-logs
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string
@@ -100,19 +100,16 @@
       boruta_random_state: 1
 
     bool:
+      calculate_vicinity: False
+      #Used to calculate number of cells (in pourcentage) of a given type
+      #in the vicinity 
+
       calculate_distances: False 
-
-      display_classification_predictions: False
-
-      display_classification_scores: True
 
       patientid_avail: True
       
       perpatient_feat: False
       # Now this name is very missleading should be updated 
-
-      wsi_selection: False
-      # not sure it is needed so far
 
       permutation: True
       # use or not the permutation index for the HP seach of curriculum
@@ -128,6 +125,9 @@
 
         delete_outliers: True 
 
+      display_classification_predictions: False
+
+      display_classification_scores: True
 
 
 

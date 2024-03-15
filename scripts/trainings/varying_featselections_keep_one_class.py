@@ -153,7 +153,7 @@ print('Start Classifiers trainings...')
 # permutation_index = np.load(pathfeatselect + 
 #                             '/bestperm/' +
 #                             'random_permutation_index_11_28_xgboost_bestmean.npy') 
-nbr_slides = len(train_clarray)
+# nbr_slides = len(train_clarray)
 
 # permutation_index = list(range(nbr_slides))
 # random.shuffle(permutation_index)
@@ -901,7 +901,6 @@ np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits_allCohortslogs' + save_e
 
 np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits_allCohortslogs' + save_ext, mean_ba_boruta_npy)
 np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs' + save_ext, boruta_visu_xcoord_npy)
-
 
 print('Numpy saved.')
 

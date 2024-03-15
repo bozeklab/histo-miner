@@ -28,6 +28,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
+calculate_vicinity = config.parameters.bool.calculate_vicinity
 calculate_distances = config.parameters.bool.calculate_distances
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
 maskmapext = str(config.parameters.str.maskmap_ext)
@@ -98,12 +99,24 @@ for jsonfile in jsonfiles:
         print('Process cells identification '
               '(number of cells and tot area of cells) inside tumor regions...')
 
-        cells_inmask_dict = analyser.cells_insidemask_classjson(
-                                    maskmappath, 
-                                    jsonfile, 
-                                    selectedcls_ratio,
-                                    maskmapdownfactor=maskmap_downfactor,
-                                    classnameaskey=classnames)
+        if calculate_vicinity:
+            cells_inmask_dict = analyser.cells_insidemargin_classjson(
+                                                            maskmappath, 
+                                                            jsonfile, 
+                                                            selectedcls_ratio,
+                                                            maskmapdownfactor=maskmap_downfactor,
+                                                            classnameaskey=classnames,
+                                                            tumormargin=
+                                                            )
+        
+        else:
+            cells_inmask_dict = analyser.cells_insidemask_classjson(
+                                                            maskmappath, 
+                                                            jsonfile, 
+                                                            selectedcls_ratio,
+                                                            maskmapdownfactor=maskmap_downfactor,
+                                                            classnameaskey=classnames
+                                                            )
 
         print('Cells_inmask_dict generated as follow:', cells_inmask_dict)
         
@@ -135,9 +148,11 @@ for jsonfile in jsonfiles:
                                     cells_inmask_dict, 
                                     cellsdist_inmask_dict,
                                     masktype='Tumor',
+                                    calculate_vicinity=calculate_vicinity,
                                     areaofmask=tumor_tot_area, 
                                     selectedcls_ratio=selectedcls_ratio, 
-                                    selectedcls_dist=selectedcls_dist)
+                                    selectedcls_dist=selectedcls_dist
+                                    )
 
 
     # Write information inside a json file and save it for the whole analysis

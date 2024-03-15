@@ -154,7 +154,7 @@ print('Start Classifiers trainings...')
 # permutation_index = np.load(pathfeatselect + 
 #                             '/bestperm/' +
 #                             'random_permutation_index_11_28_xgboost_bestmean.npy') 
-nbr_slides = len(train_clarray)
+# nbr_slides = len(train_clarray)
 
 # permutation_index = list(range(nbr_slides))
 # random.shuffle(permutation_index)
@@ -236,8 +236,6 @@ if run_xgboost and not run_lgbm:
                            # "balanced_accuracies_boruta_3": {"initialization": True}}
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
-    # number_feat_kept_boruta_2 = []
-    # number_feat_kept_boruta_3 = []
     
     for i in range(nbr_of_splits):  
 
@@ -276,7 +274,6 @@ if run_xgboost and not run_lgbm:
         number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
-
 
 
 
@@ -406,8 +403,6 @@ elif run_lgbm and not run_xgboost:
                            # "balanced_accuracies_boruta_3": {"initialization": True}}
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
-    # number_feat_kept_boruta_2 = []
-    # number_feat_kept_boruta_3 = []
     
     for i in range(nbr_of_splits):  
 
@@ -633,7 +628,6 @@ else:
     boruta_visu_xcoord = [min(number_feat_kept_boruta), max(number_feat_kept_boruta)]
 
 
-
 boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
  
 mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
@@ -657,7 +651,6 @@ np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits_allCohortslogs_5' + save
 
 np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits_allCohortslogs_5' + save_ext, mean_ba_boruta_npy)
 np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs_5' + save_ext, boruta_visu_xcoord_npy)
-
 
 print('Numpy saved.')
 

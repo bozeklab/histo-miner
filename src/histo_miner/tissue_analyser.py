@@ -315,30 +315,38 @@ def cells_insidemargin_classjson(maskmap: str,
                     instancearea = polygoninfo.area
                     totareainstanceperclass_vicinity[indexclass] += instancearea
 
-    # print('count=', count)
 
     numinstanceperclass_mask = numinstanceperclass_mask.astype(int)
     totareainstanceperclass_mask = totareainstanceperclass_mask.astype(int)
-    numinstanceperclass_mask = numinstanceperclass_mask.astype(int)
-    totareainstanceperclass_mask = totareainstanceperclass_mask.astype(int)
+    numinstanceperclass_vicinity = numinstanceperclass_vicinity.astype(int)
+    totareainstanceperclass_vicinity = totareainstanceperclass_vicinity.astype(int)
 
     # Aggregate all the informations about number and areas of cells in the masked regions
     # create a dictionnary of list if classnameaskey is not given as input
     # (then the class keys corresponds to the index of the value in the list)
     # or a dictionnary of dictionnaries if classnameaskey is given
     if not classnameaskey:
-        outputlist = {"list_numinstanceperclass": numinstanceperclass,
-                      "list_totareainstanceperclass": totareainstanceperclass}
-        return outputlist
+        # a dictionnary of list
+        outputlist_mask = {"list_numinstanceperclass": numinstanceperclass_mask,
+                           "list_totareainstanceperclass": totareainstanceperclass_mask}
+        outputlist_vicinity = {"list_numinstanceperclass": numinstanceperclass_vicinity,
+                               "list_totareainstanceperclass": totareainstanceperclass_vicinity}
+        return outputlist_mask, outputlist_vicinity
     else:
         #update classnames with the selectedclasses
         updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
         #now we use zip method to match class number with its name 
-        numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
-        totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
-        outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
-                      "dict_totareainstanceperclass": totareainstanceperclass_dict}
-        return outputdict
+        numinstanceperclass_dict_mask = dict(zip(updateclassnameaskey, numinstanceperclass_mask))
+        totareainstanceperclass_dict_mask = dict(zip(updateclassnameaskey, totareainstanceperclass_mask))
+        numinstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey, numinstanceperclass_vicinity))
+        totareainstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey, totareainstanceperclass_vicinity))
+
+        # a dictionnary of dictionnaries
+        outputdict_mask = {"dict_numinstanceperclass": numinstanceperclass_dict_mask,
+                           "dict_totareainstanceperclass": totareainstanceperclass_dict_mask}
+        outputdict_vicinity = {"dict_numinstanceperclass": numinstanceperclass_dict_vicinity,
+                               "dict_totareainstanceperclass": totareainstanceperclass_dict_vicinity}
+        return outputdict_mask, outputdict_vicinity
 
 
 
@@ -853,6 +861,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                          cells_inmask_dict: dict = None,
                          cellsdist_inmask_dict: dict = None,
                          masktype: str = 'Tumor',
+                         calculate_vicinity: bool = False,
                          areaofmask: int = None, 
                          selectedcls_ratio: list = None,
                          selectedcls_dist: list = None) -> dict:

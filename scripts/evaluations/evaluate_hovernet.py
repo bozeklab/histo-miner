@@ -218,6 +218,6 @@ devink = 0
 
 			
 
-			# we need to add a selection in case the gt as no cells of the label
+# we need to add a selection in case the gt as no cells of the label
 
 
