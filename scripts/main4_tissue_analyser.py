@@ -31,8 +31,10 @@ pathtofolder = config.paths.folders.tissue_analyser_main
 calculate_vicinity = config.parameters.bool.calculate_vicinity
 calculate_distances = config.parameters.bool.calculate_distances
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
+default_tumormargin = config.parameters.int.default_tumormargin
 maskmapext = str(config.parameters.str.maskmap_ext)
 selectedcls_ratio = list(config.parameters.lists.selectedcls_ratio)
+selectedcls_ratiovic = list(config.parameters.lists.selectedcls_ratiovic)
 selectedcls_dist = list(config.parameters.lists.selectedcls_dist)
 classnames = list(config.parameters.lists.classnames)
 classnames_injson = list(config.parameters.lists.classnames_injson)
@@ -102,11 +104,12 @@ for jsonfile in jsonfiles:
         if calculate_vicinity:
             cells_inmask_dict = analyser.cells_insidemargin_classjson(
                                                             maskmappath, 
-                                                            jsonfile, 
+                                                            jsonfile,
                                                             selectedcls_ratio,
+                                                            selectedcls_ratiovic,
                                                             maskmapdownfactor=maskmap_downfactor,
                                                             classnameaskey=classnames,
-                                                            tumormargin=
+                                                            tumormargin=default_tumormargin
                                                             )
         
         else:
@@ -150,16 +153,17 @@ for jsonfile in jsonfiles:
                                     masktype='Tumor',
                                     calculate_vicinity=calculate_vicinity,
                                     areaofmask=tumor_tot_area, 
-                                    selectedcls_ratio=selectedcls_ratio, 
+                                    selectedcls_ratio=selectedcls_ratio,
+                                    selectedcls_ratiovicinity=selectedcls_ratiovic, 
                                     selectedcls_dist=selectedcls_dist
                                     )
 
 
     # Write information inside a json file and save it for the whole analysis
-    with open(pathwoext + '_analysed.json', 'w') as outfile:
+    with open(pathwoext + '_vicinity_analysed.json', 'w') as outfile:
         json.dump(jsondata, outfile, cls=NpEncoder)
 
-    print('Json file written :', pathwoext + '_analysed.json \n**********')
+    print('Json file written :', pathwoext + '_vicinity_analysed.json \n**********')
 
 
 print('Tissue Analysis Done')

@@ -7,8 +7,8 @@
 
         inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
-        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/tissue_analyses_sorted_Bonn/no_recurrence/"
-        # tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
+        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/recurrence/Regensburg/"
+        #tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts_withlogs/"
@@ -75,8 +75,9 @@
 
       selectedcls_ratio: [1, 2, 3, 4, 5]
       # Selected Classes for ratio calculcations inside tumor regions
-      # COULD BE REDUCED TO ONLY ONE SELECTEDCLASS AS Stromal cell ratio inside tumor is not interesting and maybe
-      # Missleadin
+
+      selectedcls_ratiovic: [1, 2, 3, 4, 6]
+      # Selected Classes for ratio calculcations inside vicinity of tumor regions
 
       classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']
       #Still to test when the analyser will run
@@ -99,8 +100,16 @@
 
       boruta_random_state: 1
 
+      default_tumormargin: 4338
+      # it corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in:
+      #  "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
+      # A Practical Review for Pathologists and Proposal for a Standardized Method 
+      # From the International Immunooncology Biomarkers Working Group"
+      #
+
+
     bool:
-      calculate_vicinity: False
+      calculate_vicinity: True
       #Used to calculate number of cells (in pourcentage) of a given type
       #in the vicinity 
 

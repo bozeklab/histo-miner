@@ -207,7 +207,8 @@ def cells_insidemask_classjson(maskmap: str,
 
 def cells_insidemargin_classjson(maskmap: str, 
                                  classjson: str, 
-                                 selectedclasses: list,
+                                 selectedclassestum: list,
+                                 selectedclassesvic: list,
                                  maskmapdownfactor: int = 1, 
                                  classnameaskey: list = None,
                                  tumormargin: int = None) -> dict:
@@ -229,8 +230,12 @@ def cells_insidemargin_classjson(maskmap: str,
         - a 'centroid' key, containing the centroid coordinates of the object
         - a 'type" key, containing the class type of the object (classification)
         - a 'contour' key, containing the coordinates of border points of the object
-    selectedclasses: list
-        List containing the different class from what the user wants the caclulation to be done.
+    selectedclassestum: list
+        List containing the different class 
+        from what the user wants the caclulation inside tumor region to be done, 
+    selectedclassesvic: list
+        List containing the different class 
+        from what the user wants the caclulation in the vicinity of tumor to be done, 
     maskmapdownfactor: int, optional
         Set what was the downsample factor when the maksmap (tumor regions) were generated
     classnameaskey: list, optional
@@ -250,12 +255,12 @@ def cells_insidemargin_classjson(maskmap: str,
     maskmap = np.array(maskmap)  # The maskmap siize is not the same as the input image, it is downsampled
     # Check shape of the input file
     if len(maskmap.shape) != 2 and len(maskmap.shape) != 3:
-        raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+        raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported')
     elif len(maskmap.shape) == 3:
         if maskmap.shape[2] == 3:
             maskmap = maskmap[:, :, 0]  # Keep only one channel of the image if the image is 3 channels (RGB)
         else:
-            raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+            raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported')
     # Extract centroids + Class information for each nucleus in the dictionnary and also countour coordinates
     # loop on dict
     allnucl_info = [[int(classjson[nucleus]['centroid'][0]),
@@ -270,16 +275,16 @@ def cells_insidemargin_classjson(maskmap: str,
     maskmapdownfactor = int(maskmapdownfactor)
 
     #Initialize the lists
-    numinstanceperclass_mask = np.zeros(len(selectedclasses))
-    totareainstanceperclass_mask = np.zeros(len(selectedclasses))
-    numinstanceperclass_vicinity = np.zeros(len(selectedclasses))
-    totareainstanceperclass_vicinity = np.zeros(len(selectedclasses))
+    numinstanceperclass_mask = np.zeros(len(selectedclassestum))
+    totareainstanceperclass_mask = np.zeros(len(selectedclassestum))
+    numinstanceperclass_vicinity = np.zeros(len(selectedclassesvic))
+    totareainstanceperclass_vicinity = np.zeros(len(selectedclassesvic))
     # Normally not necessaty but depend how the value is given as output (could be str)
 
 
     # Create a dilated tumor region 
     # TumorMargin should be in pixel as input directly
-    kernel_size = int(tumormargin / 2)
+    kernel_size = int((tumormargin / maskmapdownfactor) / 2)
     kernel = np.ones((kernel_size, kernel_size), dtype=np.uint8)
     extended_maskmap = cv2.dilate(maskmap, kernel)
     # Create a connected component maps to have different values for the different tumor regions
@@ -298,8 +303,8 @@ def cells_insidemargin_classjson(maskmap: str,
                             int(nucl_info[0] / maskmapdownfactor)] == 255:
             if maskmap[int(nucl_info[1] / maskmapdownfactor), 
                                 int(nucl_info[0] / maskmapdownfactor)] == 255:     
-                if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
-                    indexclass = selectedclasses.index(nucl_info[2])
+                if nucl_info[2] in selectedclassestum:  # Chech the class of the nucleus
+                    indexclass = selectedclassestum.index(nucl_info[2])
                     numinstanceperclass_mask[indexclass] += 1
                     # Add Area Calculation by importing all the edges of polygons
                     polygoninfo = shapely.geometry.Polygon(nucl_info[3])
@@ -307,8 +312,8 @@ def cells_insidemargin_classjson(maskmap: str,
                     totareainstanceperclass_mask[indexclass] += instancearea
             else:
                 #Here we are in the case of the cell beeing in the vicinity of the tumor
-                if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
-                    indexclass = selectedclasses.index(nucl_info[2])
+                if nucl_info[2] in selectedclassesvic:  # Chech the class of the nucleus
+                    indexclass = selectedclassesvic.index(nucl_info[2])
                     numinstanceperclass_vicinity[indexclass] += 1
                     # Add Area Calculation by importing all the edges of polygons
                     polygoninfo = shapely.geometry.Polygon(nucl_info[3])
@@ -327,26 +332,31 @@ def cells_insidemargin_classjson(maskmap: str,
     # or a dictionnary of dictionnaries if classnameaskey is given
     if not classnameaskey:
         # a dictionnary of list
-        outputlist_mask = {"list_numinstanceperclass": numinstanceperclass_mask,
-                           "list_totareainstanceperclass": totareainstanceperclass_mask}
-        outputlist_vicinity = {"list_numinstanceperclass": numinstanceperclass_vicinity,
-                               "list_totareainstanceperclass": totareainstanceperclass_vicinity}
-        return outputlist_mask, outputlist_vicinity
+        outputlist = {"list_numinstanceperclass": numinstanceperclass_mask,
+                      "list_totareainstanceperclass": totareainstanceperclass_mask,
+                      "list_numinstanceperclass_vicinity": numinstanceperclass_vicinity,
+                      "list_totareainstanceperclass_vicinity": totareainstanceperclass_vicinity}
+        return outputlist
     else:
         #update classnames with the selectedclasses
-        updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
+        updateclassnameaskey_mask = [classnameaskey[index-1] for index in selectedclassestum]
+        updateclassnameaskey_vicinity = [classnameaskey[index-1] for index in selectedclassesvic]
         #now we use zip method to match class number with its name 
-        numinstanceperclass_dict_mask = dict(zip(updateclassnameaskey, numinstanceperclass_mask))
-        totareainstanceperclass_dict_mask = dict(zip(updateclassnameaskey, totareainstanceperclass_mask))
-        numinstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey, numinstanceperclass_vicinity))
-        totareainstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey, totareainstanceperclass_vicinity))
+        numinstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask, 
+                                                 numinstanceperclass_mask))
+        totareainstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask, 
+                                                     totareainstanceperclass_mask))
+        numinstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey_vicinity,
+                                                     numinstanceperclass_vicinity))
+        totareainstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey_vicinity,
+                                                         totareainstanceperclass_vicinity))
 
         # a dictionnary of dictionnaries
-        outputdict_mask = {"dict_numinstanceperclass": numinstanceperclass_dict_mask,
-                           "dict_totareainstanceperclass": totareainstanceperclass_dict_mask}
-        outputdict_vicinity = {"dict_numinstanceperclass": numinstanceperclass_dict_vicinity,
-                               "dict_totareainstanceperclass": totareainstanceperclass_dict_vicinity}
-        return outputdict_mask, outputdict_vicinity
+        outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict_mask,
+                      "dict_totareainstanceperclass": totareainstanceperclass_dict_mask,
+                      "dict_numinstanceperclass_vicinity": numinstanceperclass_dict_vicinity,
+                      "dict_totareainstanceperclass_vicinity": totareainstanceperclass_dict_vicinity}
+        return outputdict
 
 
 
@@ -864,6 +874,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                          calculate_vicinity: bool = False,
                          areaofmask: int = None, 
                          selectedcls_ratio: list = None,
+                         selectedcls_ratiovicinity: list = None,
                          selectedcls_dist: list = None) -> dict:
     """
     Calculate and store in a dictionnary all tissue features.
@@ -1004,7 +1015,9 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     # Already calculated, it is an input of the function (cellsratio_inmask_dict)
 
     ### Calculations linked to ratio of cells inside tumor regions
-
+    # Here we have 2 different cases, one where we consider only the rumor region (output number of cells inside tumor) 
+    # and one when we also consider the vicinity of the tumor (output number of cells inside tumor and number of cells
+    # in the vicnity of the tumor - vicinity to set)
     if cells_inmask_dict:
         # Fraction of cell types taking into account only cells inside tumor regions (FractionsTumorDict)
         if masktype == "Tumor":
@@ -1119,12 +1132,95 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                             cells_inmask_dict["dict_totareainstanceperclass"]["Tumor"]
                             / areaofmask
                     )
+    
+ 
             else:
                 raise ValueError('hvn_outputproperties cannot run with selectedcls_ratio as {}.'
                     'This is a custom class selection for ratio calculations iniside tumors.'
                     'hvn_outputproperties function needs to be updated to fit this selection.'
                     .format(selectedcls_ratio)) 
 
+
+            if calculate_vicinity:
+
+                nummcellsvicdict = cells_inmask_dict.get(
+                    "dict_numinstanceperclass_vicinity", {}
+                )  # number of cells inside tumor regions
+                numcells_vicinity = sum(
+                    nummcellsvicdict.values()
+                )  # No background cell class inside  instmaskdict
+
+                if selectedcls_ratiovicinity == [1, 2, 3, 4, 6]:
+                    fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumorVicinity"] = (
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
+                            / numcells_vicinity
+                    )
+                    fractions_tumor_dict["Pourcentage_Lymphocytes_allcellsinTumorVicinity"] = (
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
+                            / numcells_vicinity
+                    )
+                    fractions_tumor_dict["Pourcentage_PlasmaCells_allcellsinTumorVicinity"] = (
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] 
+                            / numcells_vicinity
+                    )
+                    fractions_tumor_dict["Pourcentage_StromaCells_allcellsinTumorVicinity"] = (
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] 
+                            / numcells_vicinity
+                    )
+                    fractions_tumor_dict["Pourcentage_EpithelialCells_allcellsinTumorVicinity"] = (
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] 
+                            / numcells_vicinity
+                            )
+                    # Cell Type ratios (RatioTumorDict)
+                    ratio_tumor_dict["Ratio_Granulocytes_EpithelialCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"]
+                    )
+                    ratio_tumor_dict["Ratio_Lymphocytes_EpithelialCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"]
+                    )
+                    ratio_tumor_dict["Ratio_PlasmaCells_EpithelialCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"]
+                    )
+                    ratio_tumor_dict["Ratio_StromaCells_EpithelialCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"]
+                    )
+                    ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
+                    )
+                    ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
+                    )
+                    ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
+                    )
+                    ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"]
+                    )
+                    ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"]
+                    )
+                    ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumorVicinity"] =  np.log(
+                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"]
+                            / cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
+                    )
+
+                else:
+                    raise ValueError('hvn_outputproperties cannot run with selectedcls_ratiovicinity as {}.'
+                        'This is a custom class selection for ratio calculations iniside vicinity of tumors.'
+                        'hvn_outputproperties function needs to be updated to fit this selection.'
+                        .format(selectedcls_ratiovicinity))
+
+
+            
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions ratios
     calculations_ratio_tumor_dict = {
