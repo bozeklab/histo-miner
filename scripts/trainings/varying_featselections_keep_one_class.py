@@ -30,7 +30,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 
@@ -75,7 +74,7 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 # print('Load feature selection numpy files...')
 
 # # Load feature selection numpy files
-# pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
+# pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
 # selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
 # print('Loading feature selected indexes done.')
 

@@ -26,7 +26,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtofolder = config.paths.folders.main
+pathanalyserout = config.paths.folders.tissue_analyser_output
 pathfeatselect = config.paths.folders.feature_selection_main
 patientid_csv = config.paths.files.patientid_csv
 patientid_avail = config.parameters.bool.patientid_avail
@@ -52,7 +52,7 @@ perpatient_feat = config.parameters.bool.perpatient_feat
 
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
-tissueanalyser_folder = pathtofolder + '/' + 'tissue_analyses_sorted_withlogs/'
+tissueanalyser_folder = pathanalyserout 
 norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
 rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 
@@ -72,7 +72,7 @@ rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 # else:
 #     print('\nRe-organization of the files already performed, so moving the files skipped')
 
-####### END
+####### END 
 
 
 ########  Create list with the paths of the files to analyse
@@ -149,7 +149,7 @@ for jsonfile in jsonfiles:
             raise ValueError('Some features are not associated to a recurrence '
                              'or norecurrence WSI classification. User must sort JSON and rename it'
                              'with the corresponding reccurence and noreccurence caracters'
-                             'User can check src.utils.anaylser2featselect function for more details.')
+                             'User can check src.utils.filemanagement.anaylser2featselect function for more details.')
 
     if  feature_init:
         #Create a list of names of the features, (only done once as all the json have the same features)

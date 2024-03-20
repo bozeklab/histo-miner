@@ -3,19 +3,30 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        main: "/data/shared/scc/histo-miner/data_analysis/"
-
         inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
-        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/recurrence/Regensburg/"
+
+        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/no_recurrence/Regensburg/"
         #tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
 
+
+        tissue_analyser_output: "/data/shared/scc/histo-miner/data_analysis/\
+        tissue_analyses/tissue_analyses_indiv_cohorts_withlogs_withvicintiy/\
+        tissue_analyses_sorted_Regensburg_withlogs_withvicinity/no_recurrence/"
+        
+
         # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts_withlogs/"
+        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/all_Cohorts_withlogs_withvicinity/"
+
+        feature_selection_output: ""
+
+
 
         classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
 
+
         visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
+
 
         workingfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
         ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/\
@@ -31,7 +42,7 @@
   names:
       hovernet_mode: wsi
 
-      eval_folder: varfeat-model-based-ranking-lgbm-logs
+      eval_folder: varfeat-model-based-ranking-lgbm-logs-vici
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string

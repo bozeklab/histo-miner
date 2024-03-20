@@ -31,7 +31,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 use_permutations = confighm.parameters.bool.permutation
@@ -232,8 +231,7 @@ if run_xgboost and not run_lgbm:
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
-                           # "balanced_accuracies_boruta_2": {"initialization": True},
-                           # "balanced_accuracies_boruta_3": {"initialization": True}}
+
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
     
@@ -399,8 +397,7 @@ elif run_lgbm and not run_xgboost:
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
-                           # "balanced_accuracies_boruta_2": {"initialization": True},
-                           # "balanced_accuracies_boruta_3": {"initialization": True}}
+
     list_proba_predictions_slideselect = []
     number_feat_kept_boruta = []
     
@@ -428,7 +425,8 @@ elif run_lgbm and not run_xgboost:
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
-        selfeat_mrmr_index, mrmr_relevance_matrix, mrmr_redundancy_matrix = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = selfeat_mrmr[0]
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
 

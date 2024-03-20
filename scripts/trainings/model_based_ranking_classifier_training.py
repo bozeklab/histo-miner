@@ -29,7 +29,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 
 with open("./../../configs/classification_training.yml", "r") as f:

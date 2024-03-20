@@ -28,6 +28,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
+pathanalyserout = config.paths.folders.tissue_analyser_output
 calculate_vicinity = config.parameters.bool.calculate_vicinity
 calculate_distances = config.parameters.bool.calculate_distances
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
@@ -48,6 +49,10 @@ classnames_injson = list(config.parameters.lists.classnames_injson)
 """Tissue Analysis"""
 
 
+if not os.path.exists(pathanalyserout):
+    os.mkdir(pathanalyserout)
+        
+
 ########  Create list with the paths of the files to analyse
 jsonfiles = list()
 for root, dirs, files in os.walk(pathtofolder):
@@ -58,7 +63,7 @@ for root, dirs, files in os.walk(pathtofolder):
             filepath = root + '/' + file
             if extension == '.json' and not any(keyword in namewoext for keyword in ['data', 'analysed', 'cellnbr']):
                 # 'data' not in name of files means it is not a json file coming from the analysis
-                if os.path.exists(pathtofolder + '/' + namewoext + '_analysed.json'):
+                if os.path.exists(pathanalyserout + namewoext + '_analysed.json'):
                     print('Detected an already processed file:', file)
                     continue
                 else:
@@ -71,6 +76,8 @@ for root, dirs, files in os.walk(pathtofolder):
 for jsonfile in jsonfiles:
    # Creating the dictionnary to count the cells using countjson function:
     pathwoext = os.path.splitext(jsonfile)[0]
+    namewoext = os.path.splitext(os.path.split(jsonfile)[1])[0] 
+    pathtosavewoext = pathanalyserout + namewoext
 
     print('********** \nProcess file:', pathwoext)
     print('Process count of cells per cell type in the whole slide image...')
@@ -83,7 +90,7 @@ for jsonfile in jsonfiles:
 
 
     # Write information inside a json file about cell nbr per class and save it
-    with open(pathwoext + '_cellnbr.json', 'w') as outfile:
+    with open(pathtosavewoext + '_cellnbr.json', 'w') as outfile:
         json.dump(allcells_in_wsi_dict, outfile, cls=NpEncoder)
 
     print('Json file written :', pathwoext + '_cellnbr.json \n**********')
@@ -160,7 +167,7 @@ for jsonfile in jsonfiles:
 
 
     # Write information inside a json file and save it for the whole analysis
-    with open(pathwoext + '_vicinity_analysed.json', 'w') as outfile:
+    with open(pathtosavewoext + '_vicinity_analysed.json', 'w') as outfile:
         json.dump(jsondata, outfile, cls=NpEncoder)
 
     print('Json file written :', pathwoext + '_vicinity_analysed.json \n**********')

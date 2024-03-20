@@ -30,7 +30,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 
 with open("./../../configs/classification_training.yml", "r") as f:
@@ -64,7 +63,7 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 ################################################################
 
 #This is to check but should be fine
-
+    
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
 ext = '.npy'
@@ -287,7 +286,7 @@ if step==3:
     patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
     patientids = np.asarray(patientids_convert)
 
-    # permutation_index = np.load(pathtomain + 
+    # permutation_index = np.load(pathfeatselect + 
     #                         '/bestperm/' +
     #                         'random_permutation_index_11_28_xgboost_bestmean.npy')
     # nbrindeces = len(permutation_index)
@@ -428,7 +427,7 @@ if step==4:
     patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
     patientids = np.asarray(patientids_convert)
 
-    # permutation_index = np.load(pathtomain + 
+    # permutation_index = np.load(pathfeatselect + 
     #                         '/bestperm/' +
     #                         'random_permutation_index_11_28_xgboost_bestmean.npy')
     # nbrindeces = len(permutation_index)

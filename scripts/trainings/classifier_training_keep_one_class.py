@@ -29,7 +29,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathtomain = confighm.paths.folders.main
 pathfeatselect = confighm.paths.folders.feature_selection_main
 
 with open("./../../configs/classification_training.yml", "r") as f:
@@ -63,14 +62,15 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 ## Load feature selection numpy files
 ############################################################
 
-ext = '.npy'
+# ext = '.npy'
 
-print('Load feature selection numpy files...')
+# print('Load feature selection numpy files...')
 
-# Load feature selection numpy files
-pathselfeat_boruta = pathtomain + '/all_borutas/selfeat_boruta_idx_depth18' + ext
-selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
-print('Loading feature selected indexes done.')
+# # Load feature selection numpy files
+# pathselfeat_boruta = pathfeatselect + '/selfeat_boruta_idx_depth18' + ext
+# selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
+# print('Loading feature selected indexes done.')
+
 
 
 
@@ -141,7 +141,7 @@ print('Start Classifiers trainings...')
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 ### Load permutation index not to have 0 and 1s not mixed
 
-permutation_index = np.load(pathtomain + 
+permutation_index = np.load(pathfeatselect + 
                             '/bestperm/' +
                             'random_permutation_index_11_28_xgboost_bestmean.npy')
 nbrindeces = len(permutation_index)
@@ -152,7 +152,6 @@ train_clarray = train_clarray[permutation_index]
 
 # Generate the matrix with selected feature for boruta
 selected_features_matrix = SelectedFeaturesMatrix(train_featarray)
-featarray_boruta = selected_features_matrix.boruta_matr(selfeat_boruta)
 
 
 # Shuffle selected feature arrays using the permutation index 

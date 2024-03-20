@@ -21,8 +21,8 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathmain = config.paths.folders.main
 pathfeatselect = config.paths.folders.feature_selection_main
+pathfeatselectout = config.paths.folders.feature_selection_output
 patientid_avail = config.parameters.bool.patientid_avail
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
 boruta_max_depth = config.parameters.int.boruta_max_depth
@@ -105,7 +105,7 @@ print('***** \n')
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
 
-pathoutput = pathmain + 'feature_selection_selectedslides/'
+pathoutput = pathfeatselectout 
 ext = '.npy'
 
 # If the folder doesn't exist create it

@@ -14,7 +14,7 @@ import numpy as np
 
 def anaylser2featselect(folderpath: str, recnaming: list = ('no_recurrence','recurrence')):
     """
-    Move all the output files from the tissue analyses to % folders
+    Move all the output files from the tissue analyses to 2 folders, recurrence and no_recurrence
     to perform the feature selection    
 
     Dangerous to use as it can remove json files.
@@ -26,7 +26,7 @@ def anaylser2featselect(folderpath: str, recnaming: list = ('no_recurrence','rec
         Path to the folder containing all the json output of the tissue analyses.
         The json files could be in subdirectories as well
     recnaming: list
-        TO COMPLETE ---------
+        List of names of the 2 classes
 
     Returns
     -------
