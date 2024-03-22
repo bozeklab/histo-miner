@@ -282,43 +282,42 @@ def cells_insidemargin_classjson(maskmap: str,
     # Normally not necessaty but depend how the value is given as output (could be str)
 
 
-    # Create a dilated tumor region 
+    # Create a dilated tumor region and an eroded tumor region and finally a vicinity map
     # TumorMargin should be in pixel as input directly
     kernel_size = int((tumormargin / maskmapdownfactor) / 2)
     kernel = np.ones((kernel_size, kernel_size), dtype=np.uint8)
     extended_maskmap = cv2.dilate(maskmap, kernel)
-    # Create a connected component maps to have different values for the different tumor regions
-    # (not connected ones)
-    num_labels, tumorextendedid_map = cv2.connectedComponents(extended_maskmap, connectivity=8)
-    regions = regionprops(tumorextendedid_map)
+    diminuted_maskmap = cv2.erode(maskmap, kernel)
 
-    
-    # Keep only the vicinity region as mask and not the tumor itself
-    # NOT NEEDED YET vicinitymask = extended_maskmap - maskmap
-
+    vicinity_maskmap = extended_maskmap - diminuted_maskmap
+    # Map of where the cells in the vicinity od the tumor region are
 
     for count, nucl_info in tqdm(enumerate(allnucl_info)):
         # Check if cell is inside tumor (mask) region
-        if extended_maskmap[int(nucl_info[1] / maskmapdownfactor), 
-                            int(nucl_info[0] / maskmapdownfactor)] == 255:
-            if maskmap[int(nucl_info[1] / maskmapdownfactor), 
-                                int(nucl_info[0] / maskmapdownfactor)] == 255:     
-                if nucl_info[2] in selectedclassestum:  # Chech the class of the nucleus
-                    indexclass = selectedclassestum.index(nucl_info[2])
-                    numinstanceperclass_mask[indexclass] += 1
-                    # Add Area Calculation by importing all the edges of polygons
-                    polygoninfo = shapely.geometry.Polygon(nucl_info[3])
-                    instancearea = polygoninfo.area
-                    totareainstanceperclass_mask[indexclass] += instancearea
-            else:
-                #Here we are in the case of the cell beeing in the vicinity of the tumor
-                if nucl_info[2] in selectedclassesvic:  # Chech the class of the nucleus
-                    indexclass = selectedclassesvic.index(nucl_info[2])
-                    numinstanceperclass_vicinity[indexclass] += 1
-                    # Add Area Calculation by importing all the edges of polygons
-                    polygoninfo = shapely.geometry.Polygon(nucl_info[3])
-                    instancearea = polygoninfo.area
-                    totareainstanceperclass_vicinity[indexclass] += instancearea
+        # if extended_maskmap[int(nucl_info[1] / maskmapdownfactor), 
+        #                     int(nucl_info[0] / maskmapdownfactor)] == 255:
+
+        if vicinity_maskmap[int(nucl_info[1] / maskmapdownfactor), 
+                            int(nucl_info[0] / maskmapdownfactor)] == 255:  
+            #Here we are in the case of the cell beeing in the vicinity of the tumor
+            if nucl_info[2] in selectedclassesvic:  # Chech the class of the nucleus
+                indexclass = selectedclassesvic.index(nucl_info[2])
+                numinstanceperclass_vicinity[indexclass] += 1
+                # Add Area Calculation by importing all the edges of polygons
+                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                instancearea = polygoninfo.area
+                totareainstanceperclass_vicinity[indexclass] += instancearea
+
+        if maskmap[int(nucl_info[1] / maskmapdownfactor), 
+                     int(nucl_info[0] / maskmapdownfactor)] == 255:  
+            # cells in the tumor region, including part of the vicinity (the one inside the tumor region)
+            if nucl_info[2] in selectedclassestum:  # Chech the class of the nucleus
+                indexclass = selectedclassestum.index(nucl_info[2])
+                numinstanceperclass_mask[indexclass] += 1
+                # Add Area Calculation by importing all the edges of polygons
+                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                instancearea = polygoninfo.area
+                totareainstanceperclass_mask[indexclass] += instancearea
 
 
     numinstanceperclass_mask = numinstanceperclass_mask.astype(int)

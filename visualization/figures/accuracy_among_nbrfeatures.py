@@ -30,7 +30,7 @@ pathtosavefolder = config.paths.folders.visualizations
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/varfeat-model-based-ranking-lgbm-logs/' 
+path2vectors = pathtofolder + '/varfeat-classic-ranking-lgbm-logs-vici-nodist/' 
 ext = '.npy'
 
 # Load vectors from files
@@ -138,7 +138,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-model-based-ranking-lgbm-logs.png')
+plt.savefig(pathtosavefolder + 'varfeat-classic-ranking-lgbm-logs-vici-nodist.png')
 plt.clf()
 
 
