@@ -281,9 +281,9 @@ if run_xgboost and not run_lgbm:
         #     selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
         # else:
         #     selected_features_matrix.reset_attributes(X_train_tr)
-        feature_array = np.transpose(X_train)
+        feature_array = X_train
         ## For Boruta calculations
-        featarray_boruta = feature_array[:, selfeat_boruta_index]
+        featarray_boruta = feature_array[:, np.transpose(selfeat_boruta_index)]
 
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
@@ -643,12 +643,12 @@ if not os.path.exists(save_results_path):
 
 print('Start saving numpy in folder: ', save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu_lgbm_10splits_allCohortslogs_5' + save_ext, mean_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'mean_ba_mannwhitneyu_xgboost_10splits_allCohorts' + save_ext, mean_ba_mannwhitneyu_npy)
 
-np.save(save_results_path + 'mean_ba_mrmr_lgbm_10splits_allCohortslogs_5' + save_ext, mean_ba_mrmr_npy)
+np.save(save_results_path + 'mean_ba_mrmr_xgboost_10splits_allCohorts' + save_ext, mean_ba_mrmr_npy)
 
-np.save(save_results_path + 'mean_ba_boruta_lgbm_10splits_allCohortslogs_5' + save_ext, mean_ba_boruta_npy)
-np.save(save_results_path + 'nbr_feat_kept_boruta_lgbm_10splits_allCohortslogs_5' + save_ext, boruta_visu_xcoord_npy)
+np.save(save_results_path + 'mean_ba_boruta_xgboost_10splits_allCohorts' + save_ext, mean_ba_boruta_npy)
+np.save(save_results_path + 'nbr_feat_kept_boruta__10splits_allCohorts' + save_ext, boruta_visu_xcoord_npy)
 
 print('Numpy saved.')
 
