@@ -9,7 +9,7 @@ from skimage.measure import regionprops
 from tqdm import tqdm
 import json
 from scipy.io import loadmat
-
+from typing import Tuple
 
 
 ##### HOVERNET OUTPUT CONVERSIONS AND PROCESSING
@@ -19,7 +19,7 @@ def replacestring_json(file: str,
                        string2replace: str,
                        newstring: str,
                        string2replace_2r: str,
-                       newstring_2r: str):
+                       newstring_2r: str) -> None:
     """
     Open a json file and modify some caracters according to input args. Caracters contained in String2replace will be
     replace by the caracters contained in Newstring
