@@ -54,7 +54,8 @@ perpatient_feat = config.parameters.bool.perpatient_feat
 ###### Reorganise the folder and naming of files to process the concatenation of feature
 tissueanalyser_folder = pathanalyserout 
 norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
-rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
+rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence' 
+
 
 
 ##### /!\   
