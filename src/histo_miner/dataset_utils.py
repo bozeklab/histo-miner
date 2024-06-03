@@ -85,7 +85,8 @@ def count_cells(classmap_folder: str,
     cell_count_matrix = np.row_stack(count_per_file)
 
     # this vectors exclude the name of the files, it is just the total per class
-    total_count_vect = [np.sum(cell_count_matrix[:, column_index]) for column_index in range(1,len(cell_count))]
+    total_count_vect = [np.sum(cell_count_matrix[:, column_index].astype(int)) 
+                        for column_index in range(1,len(cell_count))]
     print('Number of cells for each class in the folder:', total_count_vect)
     nbr_cells = np.sum(total_count_vect)
     print('Total number of cells in the folder:', nbr_cells)
@@ -116,18 +117,76 @@ def count_cells_csv(classmap_folder: str,
     """
     count_cell_output = count_cells(classmap_folder, instancemap_folder)
     cell_count_matrix = count_cell_output[2]
+    #update format of the cell_count_matrix to make it usable
+    cell_count_matrix = cell_count_matrix.astype(str)
     # Headers name for the cell count csv
     headers = ["Image", "Granulocyte", "Lymphocyte", "Plasma", "Stromal", "Tumor"]
     # Save data to CSV with headers
     csvname_cellcnt = pathtosave + 'cell_count.csv'
-    np.savetxt(csvname_cellcnt, cell_count_matrix, delimiter=",", header=",".join(headers), comments='')
+    np.savetxt(csvname_cellcnt, 
+               cell_count_matrix, 
+               delimiter=",", 
+               header=",".join(headers), 
+               comments='', 
+               fmt='%s')
     # Headers name for the cancer type names csv
     headers2 = ["img","type"]
     # Save data to CSV with headers
     csvname_cancertype = pathtosave + 'types.csv' 
-    column_skin_vector = np.full((len(np.transpose(cell_count_matrix[0])), 1), "Skin")  
-    cancertype_vect = np.vstack(cell_count_matrix[0] , column_skin_vector)
-    np.savetxt(csvname_cancertype, cancertype_vect, delimiter=",", header=",".join(headers), comments='')
+    column_skin_vector = np.full(((cell_count_matrix[:,0]).shape[0], 1), "Skin")
+    #q column_skin_vector = column_skin_vector.astype(str)  
+    cancertype_vect = np.vstack((cell_count_matrix[:,0] , column_skin_vector[:,0]))
+    cancertype_vect = np.transpose(cancertype_vect)
+    np.savetxt(csvname_cancertype, 
+               cancertype_vect, 
+               delimiter=",", 
+               header=",".join(headers2), 
+               comments='',
+               fmt='%s')
+
+
+def cellVIT_format(classmap_folder: str, 
+                   instancemap_folder: str, 
+                   pathtosave: str) -> None:
+    """
+    Create a file "label" that contains both class maps and instance maps as dictionnary keys inside np file/
+    Format needed to train cellVIT on custom dataset. 
+
+    Parameters:
+    -----------
+    instancemap_folder: str
+        Path to the .npy IcnstanceMap files. Each file should contain the instance segmentation map
+        where each cell instance is labeled with a unique integer value.
+    classmap_folder: str
+        Path to the .npy ClassMap files. The names should be the same as the InstanceMap files.
+    pathtosave: str
+        Path to the folder where the CSV file containing the count of cells will be saved.
+    Returns:
+    --------    
+    """
+    instance_maps_path = os.path.join(instancemap_folder, '*.npy')
+    files_instance_maps = glob.glob(instance_maps_path)
+    for fname in tqdm(files_instance_maps):
+        #Load the Groundtruth class image
+        instancemappath = os.path.splitext(fname)[0] #remove extension from the path
+        instancemapname = os.path.split(instancemappath)[1] #keep only name of the image
+        class_map_path = classmap_folder + instancemapname  \
+                         + os.path.splitext(fname)[1]  # add the extension at the end
+        if not os.path.exists(class_map_path): #check if there is an associated classmap, if not continue the loop
+            continue
+        type_map = np.load(class_map_path)
+        type_map = type_map.astype(np.int32)
+        #Load all the regions from input Instance Map
+        inst_map = np.load(fname)
+        inst_map = inst_map.astype(np.int32)
+
+        outname = instancemapname + '.npy'
+        outdict = {"inst_map": inst_map, "type_map": type_map}
+
+        np.save(pathtosave + "/labels/" + outname, outdict)
+
+
+
 
 
 # Temporary run from here:
@@ -135,12 +194,12 @@ def count_cells_csv(classmap_folder: str,
 def main():
     classmap_folder = '/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/' + \
     'ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/' + \
-    'TrainingSet-OriginalFormat/Train/ClassMaps/'
+    'TrainingSet-OriginalFormat/Val/ClassMaps/'
     instancemap_folder = '/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/' + \
     'ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/' + \
-    'TrainingSet-OriginalFormat/Train/InstanceMaps/'
-    pathtosave = '/data/lsancere/Data_General/TrainingSets/CellVIT_Training_Orga/'
-    count_cells_csv(classmap_folder, instancemap_folder, pathtosave)
+    'TrainingSet-OriginalFormat/Val/InstanceMaps/'
+    pathtosave = '/data/lsancere/Ada_Codes/CellViT/configs/datasets/SkycaNucleus/fold1/'
+    cellVIT_format(classmap_folder, instancemap_folder, pathtosave)
 
     print('Done')
 
