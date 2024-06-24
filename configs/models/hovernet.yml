@@ -3,7 +3,7 @@
 
   inference:
 
-    hovernet_mode: wsi
+    hovernet_mode: tile
 
     gpulist: "0,1"
 
@@ -11,17 +11,19 @@
       
       checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/hvn_bestweights.tar"
 
-      input_dir:  "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1/"
+      input_dir:  "/data/lsancere/Data_General/Other_Dataset/HEIHC-ext-qupath/\
+      ExportRawBackground/4811_18_HE/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/Images/"
 
-      output_dir:  "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
+      output_dir:  "/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/\
+      4811_18_HE/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/InfonVal_output/"
       
-      cache_path: "/dev/shm/cachelucas/"
+      cache_path: "/dev/shm/cache-histominer/"
 
 
 

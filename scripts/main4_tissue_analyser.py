@@ -120,13 +120,14 @@ for jsonfile in jsonfiles:
                                                             )
         
         else:
-            cells_inmask_dict = analyser.cells_insidemask_classjson(
-                                                            maskmappath, 
-                                                            jsonfile, 
-                                                            selectedcls_ratio,
-                                                            maskmapdownfactor=maskmap_downfactor,
-                                                            classnameaskey=classnames
-                                                            )
+            # cells_inmask_dict = analyser.cells_insidemask_classjson(
+            #                                                 maskmappath, 
+            #                                                 jsonfile, 
+            #                                                 selectedcls_ratio,
+            #                                                 maskmapdownfactor=maskmap_downfactor,
+            #                                                 classnameaskey=classnames
+            #                                                 )
+            cells_inmask_dict = dict()
 
         print('Cells_inmask_dict generated as follow:', cells_inmask_dict)
         

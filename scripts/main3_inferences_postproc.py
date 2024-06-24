@@ -103,9 +103,9 @@ for maskfile in tqdm(maskfiles):
 #Update of the jsons
 print('Update of the json files...')
 for jsonfile in tqdm(jsonfiles):
-    hovernet_utils.replacestring_json(jsonfile, string2replace,
-                                      newstring, string2replace2,
-                                      newstring2)
+    # hovernet_utils.replacestring_json(jsonfile, string2replace,
+    #                                   newstring, string2replace2,
+    #                                   newstring2)
     maskmappath = jsonfile.replace('.json', '.png')
     cellclass_process.update_cellclass(jsonfile, maskmappath, 
                                        maskmapdownfactor=maskmap_downfactor)

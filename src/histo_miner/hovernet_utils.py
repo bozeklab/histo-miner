@@ -86,7 +86,7 @@ def extr_matinstances(file: str, savename: str) -> np.ndarray:
 
 def extr_mattypes(file: str, savename: str) -> np.ndarray:
     """
-    Extract types maps (classification) from .mat file
+    Extract types array (classification) from .mat file
 
     Parameters:
     -----------

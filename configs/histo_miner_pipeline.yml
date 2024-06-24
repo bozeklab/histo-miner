@@ -3,18 +3,18 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-        inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
+        inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        /cSCC_CPI_extra_folders/cSCC_CPI_extra1_tissue_analysis/"
 
 
-        tissue_analyser_main: "/data/shared/scc/histo-miner/data_analysis/tissue_analyses/"
-        #tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_extra1_hvnoutput/"
+        tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        /cSCC_CPI_extra_folders/cSCC_CPI_extra1_tissue_analysis/"
 
 
-        tissue_analyser_output: "/data/shared/scc/histo-miner/data_analysis/\
-        tissue_analyses/tissue_analyses_sorted_withlogs_withvicinity/"
+        tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        cSCC_CPI_extra_folders/cSCC_CPI_extra1_tissue_analysis_output_2_dist/"
         
 
-        # feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection_selectedslides/"
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/\
         all_Cohorts_withlogs_withvicinity/"
 
@@ -40,7 +40,7 @@
 
 # All parameters of string names
   names:
-      hovernet_mode: wsi
+      hovernet_mode: tile
 
       eval_folder: varfeat-classic-ranking-lgbm-logs-vici
 
@@ -120,18 +120,18 @@
 
 
     bool:
-      calculate_vicinity: True
+      calculate_vicinity: False
       #Used to calculate number of cells (in pourcentage) of a given type
       #in the vicinity 
 
-      calculate_distances: False 
+      calculate_distances: True 
 
       patientid_avail: True
       
       perpatient_feat: False
       # Now this name is very missleading should be updated 
 
-      permutation: True
+      permutation: False
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 

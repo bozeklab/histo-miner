@@ -188,20 +188,116 @@ def cellVIT_format(classmap_folder: str,
 
 
 
+# def main():
 
-# Temporary run from here:
+#     pathtofolder = '/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/281_18_HE/Classmaps/'
+#     savefoldername = 'images/'
+#     npystring = False
+#     makergbimage = True
+#     more_than_8bits = True
+#     npydim = 3
+
+#     fileslist = os.path.join(pathtofolder, '*.npy')
+#     fileslist = glob.glob(fileslist)
+#     os.makedirs(pathtofolder + savefoldername, exist_ok=True)
+
+#     # for fname in tqdm(fileslist):
+#     #     if os.path.exists(fname):
+#     #         path, extension = os.path.splitext(fname)  # split the file name and extension
+#     #         pathtofolder, filename = os.path.split(path)  # split the path and the file name
+#     #         # create the name of the file to save in the same place as the original file:
+#     #         savename = savefoldername + filename
+
+#     #         # Load the saved numpy file
+#     #         loaded_dict = np.load(fname, allow_pickle=True).item()
+
+#     #         # Extract the type_map from the loaded dictionary
+#     #         type_map = loaded_dict['type_map']
+
+#     #         maxval = np.max(type_map)
+
+#     #         if maxval > 5:
+                
+#     #             print("finame",filename)
+#     #             print("max value", maxval)
+
+
+#     if npystring:
+#         for fname in tqdm(fileslist):
+#             if os.path.exists(fname):
+#                 path, extension = os.path.splitext(fname)  # split the file name and extension
+#                 pathtofolder, filename = os.path.split(path)  # split the path and the file name
+#                 # create the name of the file to save in the same place as the original file:
+#                 savename = savefoldername + filename
+
+#                 # Apply function only if the output file doesn't exist
+#                 if not os.path.exists(pathtofolder + '/' + savename + '.png'):
+#                     # already (be careful Extension variable cannot be used here)
+#                     save2dnpy_2png(fname, savename)
+
+#     else:
+#         if npydim == 2:
+#             for fname in tqdm(fileslist):
+#                 if os.path.exists(fname):
+#                     path, extension = os.path.splitext(fname)  # split the file name and extension
+#                     pathtofolder, filename = os.path.split(path)  # split the path and the file name
+#                     # create the name of the file to save in the same place as the original file:
+#                     savename = savefoldername + filename
+
+#                     # Apply function only if the output file doesn't exist
+#                     if not os.path.exists(pathtofolder + '/' + savename + '.png'):
+#                         # already (be careful Extension variable cannot be used here)
+#                         save2dnpy_2png(fname, savename, more_than_8bits=more_than_8bits)
+
+#         if npydim == 3:
+#             if not makergbimage:
+#                 for k in range(0, 3):
+#                     # Index is related to the function, it is to extract the right dimensions from the 3D npy
+#                     index = k
+#                     for fname in tqdm(fileslist):
+#                         path, extension = os.path.splitext(fname)  # split the file name and extension
+#                         pathtofolder, filename = os.path.split(path)  # split the path and the file name
+#                         # create the name of the file to save in the same place as the original file:
+#                         savename = savefoldername + filename
+#                         # Apply function only if the output file doesn't exist:
+#                         if not os.path.exists(pathtofolder + '/' + savename + '.png'):
+#                                 # already (be careful Extension variable cannot be used here)
+#                                 save3dnpy_2png(fname, savename, index, make_rgbimage=makergbimage)
+
+#             else:
+#                 for fname in tqdm(fileslist):
+#                     if os.path.exists(fname):
+#                         path, extension = os.path.splitext(fname)  # split the file name and extension
+#                         pathtofolder, filename = os.path.split(path)  # split the path and the file name
+#                         # create the name of the file to save in the same place as the original file:
+#                         savename = savefoldername + filename
+
+#                         # Apply function only if the output file doesn't exist:
+#                         if not os.path.exists(pathtofolder + '/' + savename + '.png'):
+#                             # already (be careful Extension variable cannot be used here)
+#                             save3dnpy_2png(fname, savename, None, make_rgbimage=makergbimage)
+
+
+#         if npydim == 4:
+#             print('Use of save4Dnpy_2png not written yet')
+
+#     print('Done')
+
+# if __name__ == "__main__":
+#     main()
+
+
 
 def main():
-    classmap_folder = '/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/' + \
-    'ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/' + \
-    'TrainingSet-OriginalFormat/Val/ClassMaps/'
-    instancemap_folder = '/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/' + \
-    'ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/' + \
-    'TrainingSet-OriginalFormat/Val/InstanceMaps/'
-    pathtosave = '/data/lsancere/Ada_Codes/CellViT/configs/datasets/SkycaNucleus/fold1/'
-    cellVIT_format(classmap_folder, instancemap_folder, pathtosave)
 
+    instancemap_folder = '/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/4811_18_HE/instancemaps/'
+    classmap_folder = '/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/4811_18_HE/ClassMaps/'
+    pathtosave = '/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/4811_18_HE/cellcount/'
+
+    count_cells_csv(classmap_folder, instancemap_folder, pathtosave)
+    
     print('Done')
+
 
 if __name__ == "__main__":
     main()
