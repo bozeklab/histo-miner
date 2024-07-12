@@ -23,6 +23,9 @@
 Histo-Miner employs convolutional neural networks and vision transformers models for nucleus segmentation and classification as well as tumor region segmentation. From these
 predictions, it generates a compact feature vector summarizing tissue morphology and cellular interactions. We used such generated features to classify cSCC patient response to immunotherapy. 
 
+
+## Project structure 
+
 Here is an explanation of the project structure:
 
 ```bash
