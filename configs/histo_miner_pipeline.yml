@@ -8,11 +8,11 @@
 
 
         tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-        /cSCC_CPI_extra_folders/cSCC_CPI_extra1_tissue_analysis/"
+        /cSCC_CPI_folders/cSCC_CPI_tissue_analysis_test/"
 
 
         tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-        cSCC_CPI_extra_folders/cSCC_CPI_extra1_tissue_analysis_output_2_dist/"
+        cSCC_CPI_folders/cSCC_CPI_tissue_analysis_output_test/"
         
 
         feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/\
@@ -120,7 +120,7 @@
 
 
     bool:
-      calculate_vicinity: False
+      calculate_vicinity: True 
       #Used to calculate number of cells (in pourcentage) of a given type
       #in the vicinity 
 

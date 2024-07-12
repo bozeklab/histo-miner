@@ -963,65 +963,65 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         )
 
 
-        # Cell Type ratios (RatioWSIDict)
-        ratio_wsi_dict["Ratio_Granulocytes_TumorCells"] =  np.log(
-                allcells_in_wsi_dict["Granulocyte"] + eps 
+        # Cell Type ratios (LogRatioWSIDict)
+        ratio_wsi_dict["LogRatio_Granulocytes_TumorCells"] =  np.log(
+                (allcells_in_wsi_dict["Granulocyte"] + eps)
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
-        ratio_wsi_dict["Ratio_Lymphocytes_TumorCells"] =  np.log(
-                allcells_in_wsi_dict["Lymphocyte"] + eps 
+        ratio_wsi_dict["LogRatio_Lymphocytes_TumorCells"] =  np.log(
+                (allcells_in_wsi_dict["Lymphocyte"] + eps) 
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
-        ratio_wsi_dict["Ratio_PlasmaCells_TumorCells"] =  np.log(
-                allcells_in_wsi_dict["Plasma"] + eps 
+        ratio_wsi_dict["LogRatio_PlasmaCells_TumorCells"] =  np.log(
+                (allcells_in_wsi_dict["Plasma"] + eps) 
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
-        ratio_wsi_dict["Ratio_StromaCells_TumorCells"] =  np.log(
-                allcells_in_wsi_dict["Stroma"] + eps 
+        ratio_wsi_dict["LogRatio_StromaCells_TumorCells"] =  np.log(
+                (allcells_in_wsi_dict["Stroma"] + eps) 
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_TumorCells"] =  np.log(
-                allcells_in_wsi_dict["Epithelial"] + eps 
+        ratio_wsi_dict["LogRatio_EpithelialCells_TumorCells"] =  np.log(
+                (allcells_in_wsi_dict["Epithelial"] + eps) 
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
-        ratio_wsi_dict["Ratio_Granulocytes_Lymphocytes"] =  np.log(
-                allcells_in_wsi_dict["Granulocyte"] + eps 
+        ratio_wsi_dict["LogRatio_Granulocytes_Lymphocytes"] =  np.log(
+                (allcells_in_wsi_dict["Granulocyte"] + eps) 
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_PlasmaCells_Lymphocytes"] =  np.log(
-                allcells_in_wsi_dict["Plasma"] + eps 
+        ratio_wsi_dict["LogRatio_PlasmaCells_Lymphocytes"] =  np.log(
+                (allcells_in_wsi_dict["Plasma"] + eps) 
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_StromaCells_Lymphocytes"] =  np.log(
-                allcells_in_wsi_dict["Stroma"] + eps 
+        ratio_wsi_dict["LogRatio_StromaCells_Lymphocytes"] =  np.log(
+                (allcells_in_wsi_dict["Stroma"] + eps) 
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_Lymphocytes"] =  np.log(
-                allcells_in_wsi_dict["Epithelial"] + eps 
+        ratio_wsi_dict["LogRatio_EpithelialCells_Lymphocytes"] =  np.log(
+                (allcells_in_wsi_dict["Epithelial"] + eps) 
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_Granulocytes_PlasmaCells"] =  np.log(
-                allcells_in_wsi_dict["Granulocyte"] + eps
+        ratio_wsi_dict["LogRatio_Granulocytes_PlasmaCells"] =  np.log(
+                (allcells_in_wsi_dict["Granulocyte"] + eps)
                 / (allcells_in_wsi_dict["Plasma"] + eps)
         )
-        ratio_wsi_dict["Ratio_StromaCells_PlasmaCells"] =  np.log(
-                allcells_in_wsi_dict["Stroma"] + eps 
+        ratio_wsi_dict["LogRatio_StromaCells_PlasmaCells"] =  np.log(
+                (allcells_in_wsi_dict["Stroma"] + eps)
                 / (allcells_in_wsi_dict["Plasma"] + eps)
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_PlasmaCells"] =  np.log(
-                allcells_in_wsi_dict["Epithelial"] + eps 
+        ratio_wsi_dict["LogRatio_EpithelialCells_PlasmaCells"] =  np.log(
+                (allcells_in_wsi_dict["Epithelial"] + eps) 
                 / (allcells_in_wsi_dict["Plasma"] + eps)
         )
-        ratio_wsi_dict["Ratio_StromaCells_Granulocytes"] =  np.log(
-                allcells_in_wsi_dict["Stroma"] + eps 
+        ratio_wsi_dict["LogRatio_StromaCells_Granulocytes"] =  np.log(
+                (allcells_in_wsi_dict["Stroma"] + eps) 
                 / (allcells_in_wsi_dict["Granulocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_Granulocytes"] =  np.log(
-                allcells_in_wsi_dict["Epithelial"] + eps 
+        ratio_wsi_dict["LogRatio_EpithelialCells_Granulocytes"] =  np.log(
+                (allcells_in_wsi_dict["Epithelial"] + eps) 
                 / (allcells_in_wsi_dict["Granulocyte"] + eps)
         )
-        ratio_wsi_dict["Ratio_EpithelialCells_StromalCells"] =  np.log(
-                allcells_in_wsi_dict["Epithelial"] + eps 
+        ratio_wsi_dict["LogRatio_EpithelialCells_StromalCells"] =  np.log(
+                (allcells_in_wsi_dict["Epithelial"] + eps )
                 / (allcells_in_wsi_dict["Stroma"] + eps)
         )
 
@@ -1068,45 +1068,45 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                 fractions_tumor_dict["Pourcentage_TumorCells_allcellsinTumor"] = (
                         cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] / numcells
                         )
-                # Cell Type ratios (RatioTumorDict)
-                ratio_tumor_dict["Ratio_Granulocytes_TumorCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps
+                # Cell Type ratios (LogRatioTumorDict)
+                ratio_tumor_dict["LogRatio_Granulocytes_TumorCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] + eps)
                 )
-                ratio_tumor_dict["Ratio_Lymphocytes_TumorCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"] + eps
+                ratio_tumor_dict["LogRatio_Lymphocytes_TumorCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] + eps)
                 )
-                ratio_tumor_dict["Ratio_PlasmaCells_TumorCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps
+                ratio_tumor_dict["LogRatio_PlasmaCells_TumorCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] + eps)
                 )
-                ratio_tumor_dict["Ratio_StromaCells_TumorCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps
+                ratio_tumor_dict["LogRatio_StromaCells_TumorCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Tumor"] + eps)
                 )
-                ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps
+                ratio_tumor_dict["LogRatio_Granulocytes_Lymphocytes_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"] + eps)
                 )
-                ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps
+                ratio_tumor_dict["LogRatio_PlasmaCells_Lymphocytes_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"] + eps)
                 )
-                ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps
+                ratio_tumor_dict["LogRatio_StromaCells_Lymphocytes_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Lymphocyte"] + eps)
                 )
-                ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps
+                ratio_tumor_dict["LogRatio_Granulocytes_PlasmaCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps)
                 )
-                ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps
+                ratio_tumor_dict["LogRatio_StromaCells_PlasmaCells_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Plasma"] + eps)
                 )
-                ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumor"] =  np.log(
-                        cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps
+                ratio_tumor_dict["LogRatio_StromaCells_Granulocytes_inTumor"] =  np.log(
+                        (cells_inmask_dict["dict_numinstanceperclass"]["Stroma"] + eps)
                         / (cells_inmask_dict["dict_numinstanceperclass"]["Granulocyte"] + eps)
                 )
                 if areaofmask:
@@ -1193,45 +1193,45 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                             cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] 
                             / numcells_vicinity
                             )
-                    # Cell Type ratios (RatioTumorDict)
-                    ratio_tumor_dict["Ratio_Granulocytes_EpithelialCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps
+                    # Cell Type ratios (LogRatioTumorDict)
+                    ratio_tumor_dict["LogRatio_Granulocytes_EpithelialCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_Lymphocytes_EpithelialCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"] + eps
+                    ratio_tumor_dict["LogRatio_Lymphocytes_EpithelialCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_PlasmaCells_EpithelialCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps
+                    ratio_tumor_dict["LogRatio_PlasmaCells_EpithelialCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_StromaCells_EpithelialCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps
+                    ratio_tumor_dict["LogRatio_StromaCells_EpithelialCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_Granulocytes_Lymphocytes_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps
+                    ratio_tumor_dict["LogRatio_Granulocytes_Lymphocytes_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_PlasmaCells_Lymphocytes_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps
+                    ratio_tumor_dict["LogRatio_PlasmaCells_Lymphocytes_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_StromaCells_Lymphocytes_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps
+                    ratio_tumor_dict["LogRatio_StromaCells_Lymphocytes_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_Granulocytes_PlasmaCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps
+                    ratio_tumor_dict["LogRatio_Granulocytes_PlasmaCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_StromaCells_PlasmaCells_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps
+                    ratio_tumor_dict["LogRatio_StromaCells_PlasmaCells_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Plasma"] + eps)
                     )
-                    ratio_tumor_dict["Ratio_StromaCells_Granulocytes_inTumorVicinity"] =  np.log(
-                            cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps
+                    ratio_tumor_dict["LogRatio_StromaCells_Granulocytes_inTumorVicinity"] =  np.log(
+                            (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Stroma"] + eps)
                             / (cells_inmask_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"] + eps)
                     )
 
