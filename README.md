@@ -33,7 +33,7 @@ Here is an explanation of the project structure:
 ├── configs                               # All configs file with explanations
 │   ├── models                            # example configs for both models inference
 │   ├── classification_training           # Configs for classifier training 
-│   ├── histm_miner_pipeline              # Configs for the core code of histo-minerent
+│   ├── histo_miner_pipeline              # Configs for the core code of histo-minerent
 ├── datasets                              # README defining where to find our datasets in Zenodo
 ├── docs                                  # Documentation files (in addition to this main README.md)
 ├── scripts                               # Main code for users to run Histo-Miner 

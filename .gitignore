@@ -3,4 +3,8 @@
 scripts/multi_launch
 src/archive 
 docs4paper
+.idea
 
+#Files
+
+.DS_Store
