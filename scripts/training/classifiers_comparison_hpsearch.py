@@ -21,9 +21,6 @@ import src.histo_miner.utils.misc as utils_misc
 
 
 
-
-
-
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -128,13 +125,13 @@ print('Start Classifiers trainings...')
 
 
 ### Create a new permutation and save it
-# permutation_index = np.random.permutation(train_clarray.size)
+permutation_index = np.random.permutation(train_clarray.size)
 # np.save(pathfeatselect + 'random_permutation_index_new2.npy', permutation_index)
 
-### Load permutation index not to have 0 and 1s not mixed
-permutation_index = np.load(pathfeatselect + 
-                            '/bestperm/' +
-                            'random_permutation_index_11_28_xgboost_bestmean.npy')
+# ### Load permutation index not to have 0 and 1s not mixed
+# permutation_index = np.load(pathfeatselect + 
+#                             '/bestperm/' +
+#                             'random_permutation_index_11_28_xgboost_bestmean.npy')
 
 ### Shuffle classification arrays using the permutation index
 train_clarray = train_clarray[permutation_index]
@@ -146,13 +143,13 @@ if not patientid_avail:
 
 else:
     patientids_list = np.asarray(patientids_list)
-    patientids = patientids_list[permutation_index]
+    # patientids = patientids_list[permutation_index]
     # Create a mapping of unique elements to positive integers
-    patientids_ordered = utils_misc.convert_names_to_orderedint(patientids)
+    patientids_ordered = utils_misc.convert_names_to_orderedint(patientids_list)
 
 
 ### Create Stratified Group  instance for the cross validation 
-stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
+stratgroupkf = StratifiedGroupKFold(n_splits=10)
 
 
 #### Classification training with all features kept 
@@ -160,7 +157,7 @@ stratgroupkf = StratifiedGroupKFold(n_splits=10, shuffle=False)
 # Use all the feature (no selection) as input
 genfeatarray = np.transpose(train_featarray)
 
-#Shuffle feature arrays using the permutation index 
+# Shuffle feature arrays using the permutation index 
 genfeatarray = genfeatarray[permutation_index,:]
 
 

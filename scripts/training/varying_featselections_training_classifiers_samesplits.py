@@ -203,7 +203,8 @@ splits_nested_list = list()
 splits_patientID_list = list()
 for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
                                                                  train_clarray, 
-                                                                 groups=patientids_ordered)):
+                                                                 groups=patientids_ordered
+                                                                 )):
     # Generate training and test data from the indexes
     X_train = train_featarray[train_index]
     X_test = train_featarray[test_index]
@@ -232,9 +233,17 @@ if run_xgboost and not run_lgbm:
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
 
-    list_proba_predictions_slideselect = []
-    number_feat_kept_boruta = []
+    # NOT SURE TO KEEP IT THOUGH -------
+    # selected_features = {"best_features_mannwhitneyu": {"initialization": True},
+    #                      "best_features_mrmr": {"initialization": True},
+    #                      "best_features_boruta": {"initialization": True}}
+    # NOT SURE TO KEEP IT THOUGH -------
     
+    selfeat_mannwhitneyu_names_allsplits = [] 
+    selfeat_mrmr_names_allsplits = []
+    selfeat_boruta_allsplits = []
+    number_feat_kept_boruta = []
+
     for i in range(nbr_of_splits):  
 
         X_train = splits_nested_list[i][0]
@@ -256,6 +265,7 @@ if run_xgboost and not run_lgbm:
         selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_feat)
         # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
         selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
+        selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
@@ -263,6 +273,7 @@ if run_xgboost and not run_lgbm:
         selfeat_mrmr_index = selfeat_mrmr[0]
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
 
         # Boruta calculations (for one specific depth)
         print('Selection of features with Boruta method...')
@@ -272,7 +283,7 @@ if run_xgboost and not run_lgbm:
         number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
-
+        selfeat_boruta_allsplits.append(selfeat_boruta_names)
 
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
@@ -397,8 +408,10 @@ elif run_lgbm and not run_xgboost:
     balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True},
                            "balanced_accuracies_mrmr": {"initialization": True},
                            "balanced_accuracies_boruta": {"initialization": True}}
-
-    list_proba_predictions_slideselect = []
+    
+    selfeat_mannwhitneyu_names_allsplits = [] 
+    selfeat_mrmr_names_allsplits = []
+    selfeat_boruta_allsplits = []
     number_feat_kept_boruta = []
     
     for i in range(nbr_of_splits):  
@@ -422,6 +435,7 @@ elif run_lgbm and not run_xgboost:
         selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_feat)
         # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
         selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
+        selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
@@ -429,16 +443,17 @@ elif run_lgbm and not run_xgboost:
         selfeat_mrmr_index = selfeat_mrmr[0]
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
 
         ## Boruta calculations (for one specific depth)
         print('Selection of features with Boruta method...')
         selfeat_boruta_index = feature_selector.run_boruta(max_depth=boruta_max_depth, 
-                                                          random_state=boruta_random_state)
+                                                           random_state=boruta_random_state)
         nbrfeatsel_boruta = len(selfeat_boruta_index)
         number_feat_kept_boruta.append(nbrfeatsel_boruta)
         # Now associate the index of selected features (selfeat_boruta_index) to the list of names:
         selfeat_boruta_names = [featnameslist[index] for index in selfeat_boruta_index]
-
+        selfeat_boruta_allsplits.append(selfeat_boruta_names)
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
@@ -559,20 +574,32 @@ else:
 
 
 
+####################################################################
+## Extract mean,min,max of balanced accuracy and kept feature names 
+####################################################################
 
 
-
-### calculate and write the saving of the mean balancede accuracies
+### calculate and write the saving of the mean balanced accuracies
 # Calculate the mean accuracies 
 
 mean_balanced_accuracies_mannwhitneyu = list()
+min_balanced_accuracies_mannwhitneyu = list()
+max_balanced_accuracies_mannwhitneyu = list()
+std_balanced_accuracies_mannwhitneyu = list()
+
 mean_balanced_accuracies_mrmr = list()
+min_balanced_accuracies_mrmr = list()
+max_balanced_accuracies_mrmr = list()
+std_balanced_accuracies_mrmr = list()
+
+best_mean_mannwhitneyu = 0
+best_mean_mrmr = 0
 
 # do the list of means for mannwhitneyu and mrmr
 for index in range(0, nbr_feat):
     
-    mean_ba_featsel_mannwhitneyu = list()
-    mean_ba_featsel_mrmr = list()
+    ba_featsel_mannwhitneyu = list()
+    ba_featsel_mrmr = list()
 
     for i in range(nbr_of_splits):
 
@@ -581,39 +608,68 @@ for index in range(0, nbr_feat):
         balanced_accuracy_mannwhitneyu = float(
             balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index]
             ) 
-        mean_ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+        ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
 
         balanced_accuracy_mrmr = np.asarray(
             balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
             ) 
-        mean_ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+        ba_featsel_mrmr.append(balanced_accuracy_mrmr)
 
-    mean_ba_featsel_mannwhitneyu = np.asarray(mean_ba_featsel_mannwhitneyu)
-    mean_balanced_accuracies_mannwhitneyu.append(np.mean(mean_ba_featsel_mannwhitneyu))
+    ba_featsel_mannwhitneyu = np.asarray(ba_featsel_mannwhitneyu)
 
-    mean_ba_featsel_mrmr = np.asarray(mean_ba_featsel_mrmr)
-    mean_balanced_accuracies_mrmr.append(np.mean(mean_ba_featsel_mrmr))
+    mean_balanced_accuracies_mannwhitneyu.append(np.mean(ba_featsel_mannwhitneyu))
+    min_balanced_accuracies_mannwhitneyu.append(np.min(ba_featsel_mannwhitneyu))
+    max_balanced_accuracies_mannwhitneyu.append(np.max(ba_featsel_mannwhitneyu))
+    std_balanced_accuracies_mannwhitneyu.append(np.std(ba_featsel_mannwhitneyu))
 
 
-mean_balanced_accuracies_boruta = list()
+    ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
+
+    mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
+    min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
+    max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
+    std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
+
+    # Try to find name of selected features that leads to the best prediction
+    if np.mean(ba_featsel_mannwhitneyu) > best_mean_mannwhitneyu:
+        nbr_kept_features_mannwhitneyu = index + 1
+        kept_features_mannwhitneyu = [selfeat[0:index] for selfeat in selfeat_mannwhitneyu_names_allsplits]
+        best_mean_mannwhitneyu = np.mean(ba_featsel_mannwhitneyu)
+
+    if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
+        nbr_kept_features_mrmr = index + 1
+        kept_features_mrmr = [selfeat[0:index] for selfeat in selfeat_mrmr_names_allsplits]
+        best_mean_mrmr = np.mean(ba_featsel_mrmr)
+
+
+
+
+
+balanced_accuracies_boruta = list()
 
 
 for i in range(nbr_of_splits): 
     currentsplit =  f"split_{i}"
-    mean_ba_boruta = (
+    ba_boruta = (
         [balanced_accuracies['balanced_accuracies_boruta'][currentsplit]]
         )
-    mean_balanced_accuracies_boruta.append(mean_ba_boruta)
+    balanced_accuracies_boruta.append(ba_boruta)
 
 
 # Transform a list of list into a list?
-mean_balanced_accuracies_boruta = [value[0] for value in mean_balanced_accuracies_boruta]
+balanced_accuracies_boruta = [value[0] for value in balanced_accuracies_boruta]
 # Then only keep mean value
-mean_ba_boruta_npy = np.asarray(mean_balanced_accuracies_boruta)
-mean_ba_boruta_npy = mean_ba_boruta_npy[mean_ba_boruta_npy != None]
+ba_boruta_npy = np.asarray(balanced_accuracies_boruta)
+ba_boruta_npy = ba_boruta_npy[ba_boruta_npy != None]
 
-mean_ba_boruta_npy = [np.mean(mean_ba_boruta_npy)]
-mean_ba_boruta_npy = np.asarray(mean_ba_boruta_npy)
+mean_ba_boruta_npy = np.mean(ba_boruta_npy)
+min_ba_boruta_npy = np.min(ba_boruta_npy)
+max_ba_boruta_npy = np.max(ba_boruta_npy)
+std_ba_boruta_npy = np.std(ba_boruta_npy)
+
+
+
+#mean_ba_boruta_npy = np.asarray(mean_ba_boruta_npy)
 
 # Create a numpy array of max and min number of feat kept by boruta
 
@@ -629,29 +685,114 @@ else:
 boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
  
 mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
+min_ba_mannwhitneyu_npy = np.asarray(min_balanced_accuracies_mannwhitneyu)
+max_ba_mannwhitneyu_npy = np.asarray(max_balanced_accuracies_mannwhitneyu)
+std_ba_mannwhitneyu_npy = np.asarray(std_balanced_accuracies_mannwhitneyu)
+
 mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
+min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
+max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
+std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 
 
-# SAVING
+
+##############################################################
+## Save numpy files
+##############################################################
+
 # save the mean balanced accuracies for visualization
 save_results_path = classification_eval_folder + eval_folder_name + '/'
 save_ext = '.npy'
+
+if not os.path.exists(classification_eval_folder):
+    os.mkdir(classification_eval_folder)
 
 if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
 
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
+
+
 print('Start saving numpy in folder: ', save_results_path)
 
-np.save(save_results_path + 'mean_ba_mannwhitneyu_xgboost_10splits_allCohorts' + save_ext, mean_ba_mannwhitneyu_npy)
+name_mannwhitneyu_output = 'ba_mannwhitneyut_10splits2'
+np.save(save_results_path + 'mean_' + classifier_name + name_mannwhitneyu_output + save_ext, 
+    mean_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'min_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
+    min_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'max_' + classifier_name + name_mannwhitneyu_output + save_ext, 
+    max_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'std_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
+    std_ba_mannwhitneyu_npy)
 
-np.save(save_results_path + 'mean_ba_mrmr_xgboost_10splits_allCohorts' + save_ext, mean_ba_mrmr_npy)
+name_mrmr_output = 'ba_mrmr_10splits2'
+np.save(save_results_path + 'mean_' + classifier_name + name_mrmr_output + save_ext, 
+    mean_ba_mrmr_npy)
+np.save(save_results_path + 'max_' + classifier_name + name_mrmr_output + save_ext, 
+    min_ba_mrmr_npy)
+np.save(save_results_path + 'min_' + classifier_name + name_mrmr_output + save_ext, 
+    max_ba_mrmr_npy)
+np.save(save_results_path + 'std_' + classifier_name + name_mrmr_output + save_ext, 
+    std_ba_mrmr_npy)
 
-np.save(save_results_path + 'mean_ba_boruta_xgboost_10splits_allCohorts' + save_ext, mean_ba_boruta_npy)
-np.save(save_results_path + 'nbr_feat_kept_boruta__10splits_allCohorts' + save_ext, boruta_visu_xcoord_npy)
+name_boruta_output = 'ba_boruta_10splits2'
+np.save(save_results_path + 'mean_' + classifier_name + name_boruta_output + save_ext, 
+    mean_ba_boruta_npy)
+np.save(save_results_path + 'max_' + classifier_name + name_boruta_output + save_ext, 
+    min_ba_boruta_npy)
+np.save(save_results_path + 'min_' + classifier_name + name_boruta_output + save_ext, 
+    max_ba_boruta_npy)
+np.save(save_results_path + 'std_' + classifier_name + name_boruta_output + save_ext, 
+    std_ba_boruta_npy)
+
+np.save(save_results_path + classifier_name  + 'nbr_feat_kept_boruta_10splits2' + save_ext, boruta_visu_xcoord_npy)
 
 print('Numpy saved.')
 
+
+
+##############################################################
+## Save text file
+##############################################################
+
+
+txtfilename = classifier_name + '_run1_info' 
+
+save_txt_ext = '.txt'
+save_text_path = save_results_path + txtfilename + save_txt_ext
+
+
+## ADD NAME OF CLASSIFER THAT WAS RUNNING
+
+print('Start saving name and number of feature kept in best case')
+
+with open(save_text_path, 'w') as file:
+    file.write('** With {} classifier **'.format(classifier_name))
+
+    file.write('\n\n\n\n ** mannwhitneyu **')
+    file.write('\n\nBest mean balanced accuracy is:' + str(best_mean_mannwhitneyu))  
+    file.write('\n\nThe number of kept features in the best scenario is:' + str(nbr_kept_features_mannwhitneyu))  
+    file.write('\n\nThese features are:' +  str(kept_features_mannwhitneyu)) 
+    file.write('\n\nThe best 5 features are:' +  str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu])
+
+    file.write('\n\n\n\n ** mrmr **')
+    file.write('\n\nBest mean balanced accuracy is:' +  str(best_mean_mrmr))  
+    file.write('\n\nThe number of kept features in the best scenario is:' + str(nbr_kept_features_mrmr))  
+    file.write('\n\nThese features are:' + str(kept_features_mrmr)) 
+    file.write('\n\nThe best 5 features are:' +  str([kept_features[0:4] for kept_features in kept_features_mrmr]) 
+
+    file.write('\n\n\n\n ** boruta **')
+    file.write('\n\nMean balanced accuracy is:' +  str(mean_ba_boruta_npy)) 
+    file.write('\n\nhe numbers of kept features are:' + str(number_feat_kept_boruta))  
+    file.write('\n\nThese features are:' + str(selfeat_boruta_allsplits)) 
+    
+
+
+print('Text files saved.')
 
 
 

@@ -1,10 +1,13 @@
 #Folders
 
 scripts/multi_launch
+scripts/archive
+scripts/training-tests
 src/archive 
 docs4paper
 .idea
 
 #Files
 
-.DS_Store
+*.DS_Store
+*._.DS_Store

@@ -22,6 +22,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathtofolder = config.paths.folders.classification_evaluation
+eval_folder_name = config.names.eval_folder
 pathtosavefolder = config.paths.folders.visualizations
 
 
@@ -30,15 +31,15 @@ pathtosavefolder = config.paths.folders.visualizations
 ## PLot curves
 #############################################################
 
-path2vectors = pathtofolder + '/varfeat-classic-xgoost-logs-vici/' 
+path2vectors = pathtofolder + '/' + eval_folder_name + '/' 
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost_10splits_allCohorts' + ext)
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost_10splits_allCohorts' + ext)
-xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost_10splits_allCohorts' + ext)
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits_allCohorts' + ext):
-     nbr_featkept_xgb_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits_allCohorts' + ext)
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost' + ext)
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost' + ext)
+xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost' + ext)
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta' + ext):
+     nbr_featkept_xgb_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta' + ext)
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
@@ -61,7 +62,7 @@ x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
 
 
 
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_xgboost_10splits_allCohorts' + ext):
+if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_10splits' + ext):
     # need to duplicate the value for boruta 
     xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
     xgb_xboruta = nbr_featkept_xgb_boruta
@@ -98,7 +99,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-classic-ranking-xgboost-logs-vici.png')
+plt.savefig(pathtosavefolder + 'varfeat-classic-xgboost-10splits-2.png')
 plt.clf()
 
 

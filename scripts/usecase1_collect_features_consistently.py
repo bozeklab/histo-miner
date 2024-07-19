@@ -31,7 +31,7 @@ pathfeatselect = config.paths.folders.feature_selection_main
 patientid_csv = config.paths.files.patientid_csv
 patientid_avail = config.parameters.bool.patientid_avail
 perpatient_feat = config.parameters.bool.perpatient_feat
-
+calculate_vicinity = config.parameters.bool.calculate_vicinity
 
 
 #####################################################################
@@ -53,8 +53,8 @@ perpatient_feat = config.parameters.bool.perpatient_feat
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
 tissueanalyser_folder = pathanalyserout 
-norec_analyse_folder = tissueanalyser_folder + '/' + 'no_recurrence'
-rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence' 
+norec_analyse_folder = tissueanalyser_folder + '/' + 'no_response'
+rec_analyse_folder = tissueanalyser_folder + '/' + 'response' 
 
 
 
@@ -80,21 +80,20 @@ rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
 pathto_sortedfolder = tissueanalyser_folder
 jsonfiles = list()
 cllist = list()
-# cllist stands for for classification list (recurrence (1) or norecurrence (0))
+# cllist stands for for classification list (response (1) or noresponse (0))
 for root, dirs, files in os.walk(pathto_sortedfolder):
     if files:  # Keep only the not empty lists of files
         # Because files is a list of file name here, and not a srting. You create a string with this:
         for file in files:
             namewoext, extension = os.path.splitext(file)
             filepath = root + '/' + file
-            if extension == '.json' and 'analysed' in namewoext:
-                if not 'recurrence' in namewoext:
-                    raise ValueError('Some features are not associated to a recurrence '
-                                     'or norecurrence WSI classification. User must sort JSON and rename it'
-                                     ' with the corresponding reccurence and noreccurence caracters')
+            if extension == '.json' and 'analysed' and not '._' in namewoext:
+                if not 'response' in namewoext:
+                    raise ValueError('Some features are not associated to a response '
+                                     'or noresponse WSI classification. User must sort JSON and rename it'
+                                     ' with the corresponding response and no_response caracters')
                 else:
                     jsonfiles.append(filepath)
-
 
 ####### If applicable create a dict file from the patient ID csv file 
 # And initializa the futur ordered patient ID list
@@ -117,14 +116,21 @@ for jsonfile in jsonfiles:
 
         # If applicable, create a list of patient ID with same order of feature array and clarray
         if patientid_avail:
-            if 'recurrence' in nameoffile:
-                if 'no_recurrence' in nameoffile:
-                    namesimplified = nameoffile.replace('_no_recurrence_analysed','')
+            if 'response' in nameoffile:
+                if calculate_vicinity:
+                    if 'no_response' in nameoffile:
+                        namesimplified = nameoffile.replace('_vicinity_no_response_analysed','')
+                    else:
+                        namesimplified = nameoffile.replace('_vicinity_response_analysed','')
                 else:
-                    namesimplified = nameoffile.replace('_recurrence_analysed','')
+                    if 'no_response' in nameoffile:
+                        namesimplified = nameoffile.replace('_no_response_analysed','')
+                    else:
+                        namesimplified = nameoffile.replace('_response_analysed','')
             patientid_list.append(patientid_dict.get(namesimplified))
 
         # extract information of the JSON as a string
+        print(filename)
         analysisdata = filename.read()
         # read JSON formatted string and convert it to a dict
         analysisdata = json.loads(analysisdata)
@@ -141,14 +147,14 @@ for jsonfile in jsonfiles:
 
         # Generate the list of WSI binary classification
         # No list comprehension just to exhibit more clearly the error message
-        if 'recurrence' in nameoffile:
-            if 'no_recurrence' in nameoffile:
+        if 'response' in nameoffile:
+            if 'no_response' in nameoffile:
                 cllist.append(int(0))
             else:
                 cllist.append(int(1))
         else:
-            raise ValueError('Some features are not associated to a recurrence '
-                             'or norecurrence WSI classification. User must sort JSON and rename it'
+            raise ValueError('Some features are not associated to a response '
+                             'or noresponse WSI classification. User must sort JSON and rename it'
                              'with the corresponding reccurence and noreccurence caracters'
                              'User can check src.utils.filemanagement.anaylser2featselect function for more details.')
 
@@ -168,22 +174,22 @@ for jsonfile in jsonfiles:
 
 
 
-# Check if there are recurrence and no recurrence data in the training set (both needed)
+# Check if there are response and no response data in the training set (both needed)
 if cllist:
     if 0 not in cllist:
         raise ValueError(
-            'The data contains only no recurrence data or json named as being norecurrence. '
-            'To run statistical test we need both recurrence and norecurrence examples')
+            'The data contains only no response data or json named as being noresponse. '
+            'To run statistical test we need both response and noresponse examples')
 
     if 1 not in cllist:
         raise ValueError(
-            'The data contains only recurrence data or json named as being recurrence. '
-            'To run statistical test we need both recurrence and norecurrence examples')
+            'The data contains only response data or json named as being response. '
+            'To run statistical test we need both response and noresponse examples')
 
 clarray = np.asarray(cllist)
-# clarray stands for for classification array (recurrence or norecurrence)
+# clarray stands for for classification array (response or noresponse)
 
-##### Display Feature Matrix and its corresponding classification vectors (reccurence or no recurrence)
+##### Display Feature Matrix and its corresponding classification vectors (reccurence or no response)
 print("Feature Matrix Shape is", featarray.shape)
 print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
@@ -285,7 +291,7 @@ if patientid_avail:
     np.save(pathpatientids, patientid_array)
 
 
-# Calculate Pearson correlation regardless of the class recurrence, no-recurrence
+# Calculate Pearson correlation regardless of the class response, no-response
 corrmat =  np.corrcoef(featarray)
 path_corrmat = pathoutput + 'correlation_matrix' + ext
 np.save(path_corrmat, corrmat)

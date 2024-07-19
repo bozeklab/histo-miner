@@ -36,8 +36,8 @@ boruta_random_state = config.parameters.int.boruta_random_state
 
 ext = '.npy'
 
-pathfeatarray = pathfeatselect + 'repslidesx_featarray' + ext
-pathclarray = pathfeatselect + 'repslidesx_clarray' + ext
+pathfeatarray = pathfeatselect + 'perwsi_featarray' + ext
+pathclarray = pathfeatselect + 'perwsi_clarray' + ext
 pathfeatnames = pathfeatselect + 'featnames' + ext
 featarray = np.load(pathfeatarray)
 clarray = np.load(pathclarray)

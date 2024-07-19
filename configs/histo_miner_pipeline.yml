@@ -12,20 +12,23 @@
 
 
         tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-        cSCC_CPI_folders/cSCC_CPI_tissue_analysis_output_test/"
-        
-
-        feature_selection_main: "/data/shared/scc/histo-miner/data_analysis/feature_selection/\
-        all_Cohorts_withlogs_withvicinity/"
+        Analyses_cSCC_CPI/tissue_analyser_output"
 
 
-        feature_selection_output: ""
+        feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        Analyses_cSCC_CPI/feature_selection/"
 
 
-        classification_evaluation: "/data/shared/scc/histo-miner/data_analysis/classification_evaluation/"
+        feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        Analyses_cSCC_CPI/feature_selection/feature_selection_output/"
 
 
-        visualizations: "/data/shared/scc/histo-miner/data_analysis/visualizations/"
+        classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        Analyses_cSCC_CPI/feature_selection/classification_evaluation/"
+
+
+        visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+        Analyses_cSCC_CPI/feature_selection/visualization/"
 
 
         workingfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
@@ -34,15 +37,15 @@
       
         
     files:
-      patientid_csv: "/data/shared/scc/histo-miner/data_analysis/crea_patient_ID_lst/AllCohorts_PatientIDs.csv"
+      patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/PatientIDs.csv"
       #it is including extension of the file as well (.csv)
 
 
 # All parameters of string names
   names:
       hovernet_mode: tile
-
-      eval_folder: varfeat-classic-ranking-lgbm-logs-vici
+      eval_folder: varfeat-classic-xgboost-10splits 
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string
@@ -104,7 +107,7 @@
 
       nbr_keptfeat: 56
 
-      boruta_max_depth: 10
+      boruta_max_depth: 4
       # boruta_max_depth: 18 leading to best results so far
       # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
       # parenthesis are for Boruta applied to selected slides 
@@ -126,7 +129,7 @@
 
       calculate_distances: True 
 
-      patientid_avail: True
+      patientid_avail: True 
       
       perpatient_feat: False
       # Now this name is very missleading should be updated 

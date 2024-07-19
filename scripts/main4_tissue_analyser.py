@@ -167,10 +167,18 @@ for jsonfile in jsonfiles:
 
 
     # Write information inside a json file and save it for the whole analysis
-    with open(pathtosavewoext + '_vicinity_analysed.json', 'w') as outfile:
-        json.dump(jsondata, outfile, cls=NpEncoder)
+    if calculate_vicinity:
+        with open(pathtosavewoext + '_vicinity_analysed.json', 'w') as outfile:
+            json.dump(jsondata, outfile, cls=NpEncoder)
 
-    print('Json file written :', pathwoext + '_vicinity_analysed.json \n**********')
+        print('Json file written :', pathwoext + '_vicinity_analysed.json \n**********')
+
+    else: 
+        with open(pathtosavewoext + '_analysed.json', 'w') as outfile:
+            json.dump(jsondata, outfile, cls=NpEncoder)
+
+        print('Json file written :', pathwoext + '_analysed.json \n**********')
+
 
 
 print('Tissue Analysis Done')
