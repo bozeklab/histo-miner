@@ -11,6 +11,7 @@ from itertools import product
 import PIL
 import cv2
 import numpy as np
+import scipy
 import shapely.geometry
 from PIL import Image
 from skimage.measure import regionprops
@@ -356,6 +357,306 @@ def cells_insidemargin_classjson(maskmap: str,
                       "dict_numinstanceperclass_vicinity": numinstanceperclass_dict_vicinity,
                       "dict_totareainstanceperclass_vicinity": totareainstanceperclass_dict_vicinity}
         return outputdict
+
+
+
+
+def cells_insidemask_classjson(maskmap: str, 
+                               classjson: str, 
+                               selectedclasses: list,
+                               maskmapdownfactor: int = 1, 
+                               classnameaskey: list = None) -> dict:
+    """
+    Calculate number of instances from each class contained in "selectedclasses", that are inside the mask from maskmap.
+    Maskmap and classjson containing information of all json class are used as input.
+
+    Note: the json has to be correctly formated
+
+    Parameters
+    ----------
+    maskmap: str
+        Path to the binary image, mask of a specific region of the original image.
+        The image must be in PIL supported format.
+    classjson: str
+        Path to the json file (for instance output of hovernet then formatted according to the note above).
+        It must contains, inside each object ID key (numbers):
+        - a 'centroid' key, containing the centroid coordinates of the object
+        - a 'type" key, containing the class type of the object (classification)
+        - a 'contour' key, containing the coordinates of border points of the object
+    selectedclasses: list
+        List containing the different class from what the user wants the caclulation to be done.
+    maskmapdownfactor: int, optional
+        Set what was the downsample factor when the maksmap (tumor regions) were generated
+    classnameaskey: list, optional
+        List object containing the name of the classes to replace their number in the final output.
+        To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
+    Returns
+    -------
+    outputdict: dict
+        Dictionnary containing NUMBER TO DEFINE keys:
+        - "masktotarea": int : total area in pixel of the mask
+        - "list_numinstanceperclass": list : number of instances inside the mask region for each selected class
+    """
+    with open(classjson, 'r') as filename:
+        classjson = json.load(filename)  # data must be a dictionnary
+    # Loading of mask map is really heavy (local ressources might be not enough)
+    maskmap = Image.open(maskmap)
+    maskmap = np.array(maskmap)  # The maskmap siize is not the same as the input image, it is downsampled
+    # Check shape of the input file
+    if len(maskmap.shape) != 2 and len(maskmap.shape) != 3:
+        raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    elif len(maskmap.shape) == 3:
+        if maskmap.shape[2] == 3:
+            maskmap = maskmap[:, :, 0]  # Keep only one channel of the image if the image is 3 channels (RGB)
+        else:
+            raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    # Extract centroids + Class information for each nucleus in the dictionnary and also countour coordinates
+    # loop on dict
+    allnucl_info = [[int(classjson[nucleus]['centroid'][0]),
+                     int(classjson[nucleus]['centroid'][1]),
+                     classjson[nucleus]['type'],
+                     classjson[nucleus]['contour']]
+                    for nucleus in classjson.keys()]  # should extract only first level keys
+    # Idea of creating a separated list for coordinates is too keep for now
+    # nucl_coordinates = [classjson[nucleus]['contour'] for nucleus in classjson.keys()
+    numinstanceperclass = np.zeros(len(selectedclasses))
+    totareainstanceperclass = np.zeros(len(selectedclasses))
+    maskmapdownfactor = int(maskmapdownfactor)
+    # Normally not necessaty but depend how the value is given as output (could be str)
+
+    for count, nucl_info in tqdm(enumerate(allnucl_info)):
+        # Check if cell is inside tumor (mask) region
+        if maskmap[int(nucl_info[1] / maskmapdownfactor), int(nucl_info[0] / maskmapdownfactor)] == 255:
+            if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
+                indexclass = selectedclasses.index(nucl_info[2])
+                numinstanceperclass[indexclass] += 1
+                # Add Area Calculation by importing all the edges of polygons
+                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+                instancearea = polygoninfo.area
+                totareainstanceperclass[indexclass] += instancearea
+    # print('count=', count)
+
+    numinstanceperclass = numinstanceperclass.astype(int)
+    totareainstanceperclass = totareainstanceperclass.astype(int)
+
+    # Aggregate all the informations about number and areas of cells in the masked regions
+    # create a dictionnary of list if classnameaskey is not given as input
+    # (then the class keys corresponds to the index of the value in the list)
+    # or a dictionnary of dictionnaries if classnameaskey is given
+    if not classnameaskey:
+        outputlist = {"list_numinstanceperclass": numinstanceperclass,
+                      "list_totareainstanceperclass": totareainstanceperclass}
+        return outputlist
+    else:
+        #update classnames with the selectedclasses
+        updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
+        #now we use zip method to match class number with its name 
+        numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
+        totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
+        outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
+                      "dict_totareainstanceperclass": totareainstanceperclass_dict}
+        return outputdict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def morph_insidemask_classjson(maskmap: str, 
+                                    classjson: str, 
+                                    selectedclasses: list,
+                                    maskmapdownfactor: int = 1, 
+                                    classnameaskey: list = None) -> dict:
+    """
+    Calculate morphology features area, circularity and aspect ratio of all instances from each class contained in "selectedclasses",
+    that are inside the mask from maskmap. Also calculate information about the distribution of the features such as mean, std, mediam, 
+    MAD, skew, kurtosis, interquatile range.
+    Maskmap and classjson containing information of all json class are used as input.
+
+    Note: the json has to be correctly formated
+
+    Parameters
+    ----------
+    Returns
+    -------
+    """
+    with open(classjson, 'r') as filename:
+        classjson = json.load(filename)  # data must be a dictionnary
+    # Loading of mask map is really heavy (local ressources might be not enough)
+    maskmap = Image.open(maskmap)
+    maskmap = np.array(maskmap)  # The maskmap siize is not the same as the input image, it is downsampled
+    # Check shape of the input file
+    if len(maskmap.shape) != 2 and len(maskmap.shape) != 3:
+        raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    elif len(maskmap.shape) == 3:
+        if maskmap.shape[2] == 3:
+            maskmap = maskmap[:, :, 0]  # Keep only one channel of the image if the image is 3 channels (RGB)
+        else:
+            raise ValueError('The input image (maskmap) is not an image of 1 or 3 channels. Image type not supported ')
+    # Extract centroids + Class information for each nucleus in the dictionnary and also countour coordinates
+    # loop on dict
+    allnucl_info = [[int(classjson[nucleus]['centroid'][0]),
+                     int(classjson[nucleus]['centroid'][1]),
+                     classjson[nucleus]['type'],
+                     classjson[nucleus]['contour']]
+                    for nucleus in classjson.keys()]  # should extract only first level keys
+    # Idea of creating a separated list for coordinates is too keep for now
+    # nucl_coordinates = [classjson[nucleus]['contour'] for nucleus in classjson.keys()
+    numinstanceperclass = np.zeros(len(selectedclasses))
+    totareainstanceperclass = np.zeros(len(selectedclasses))
+    maskmapdownfactor = int(maskmapdownfactor)
+    # Normally not necessaty but depend how the value is given as output (could be str)
+
+
+    # Initialize the morphology features
+    areas = []
+    circularities = []
+    aspectratios = []
+
+
+    for count, nucl_info in tqdm(enumerate(allnucl_info)):
+        # Check if cell is inside tumor (mask) region
+        if maskmap[int(nucl_info[1] / maskmapdownfactor), int(nucl_info[0] / maskmapdownfactor)] == 255:
+            if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
+                indexclass = selectedclasses.index(nucl_info[2])
+                numinstanceperclass[indexclass] += 1
+
+                # Retrieve all information about the object polygon 
+                polygoninfo = shapely.geometry.Polygon(nucl_info[3])
+
+                # Calculation of morphology features
+                instance_area = polygoninfo.area
+                instance_perimeter = polygoninfo.lenght
+                bbxminx, bbxminy, bbxmaxx, bbxmaxy = polygoninfo.bounds
+
+                # The area is already retrieved, no calculation needed
+
+                # Calculation of Circularity
+                instance_circularity = (4 * math.pi * instance_area) / (instance_perimeter ** 2)
+
+                # Calculation of Aspect Ratio
+                bbxwidth = bbxmaxx - bbxminx
+                bbxheight = bbxmaxy - bbxminy
+                instance_aspectratio = min(bbxwidth,bbxheight) / max(bbxwidth,bbxheight)
+
+                # Update lists
+                areas.append(instance_area)
+                circularities.append(instance_circularity)
+                aspectratios.append(instance_aspectratio)
+
+
+
+    # Calculate features describing distribution
+
+    npyareas = np.asarray(areas)
+    npycircularities = np.asarray(circularities)
+    npyaspectratios = np.asarray(aspectratios)
+
+    # Calculations
+
+    # Areas distribution
+    areas_mean = np.mean(npyareas)
+    areas_std = np.std(npyareas)
+    areas_median = np.median(npyareas)
+    areas_mad = np.mean(np.abs(npyareas - np.mean(npyareas)))
+    areas_skewness = scipy.stats.skew(npyareas)
+    areas_kurt = scipy.stats.kurtosis(npyareas)
+    areas_iqr_value = scipy.stats.iqr(npyareas)
+
+    # circularities distribution
+    circularities_mean = np.mean(npycircularities)
+    circularities_std = np.std(npycircularities)
+    circularities_median = np.median(npycircularities)
+    circularities_mad = np.mean(np.abs(npycircularities - np.mean(npycircularities)))
+    circularities_skewness = scipy.stats.skew(npycircularities)
+    circularities_kurt = scipy.stats.kurtosis(npycircularities)
+    circularities_iqr_value = scipy.stats.iqr(npycircularities)
+
+    # aspectratios distribution
+    aspectratios_mean = np.mean(npyaspectratios)
+    aspectratios_std = np.std(npyaspectratios)
+    aspectratios_median = np.median(npyaspectratios)
+    aspectratios_mad = np.mean(np.abs(npyaspectratios - np.mean(npyaspectratios)))
+    aspectratios_skewness = scipy.stats.skew(data)
+    aspectratios_kurt = scipy.stats.kurtosis(data)
+    aspectratios_iqr_value = scipy.stats.iqr(data)
+
+
+
+
+
+
+    numinstanceperclass = numinstanceperclass.astype(int)
+    totareainstanceperclass = totareainstanceperclass.astype(int)
+
+    # Aggregate all the informations about number and areas of cells in the masked regions
+    # create a dictionnary of list if classnameaskey is not given as input
+    # (then the class keys corresponds to the index of the value in the list)
+    # or a dictionnary of dictionnaries if classnameaskey is given
+    if not classnameaskey:
+        outputlist = {"list_numinstanceperclass": numinstanceperclass,
+                      "list_totareainstanceperclass": totareainstanceperclass}
+        return outputlist
+    else:
+        #update classnames with the selectedclasses
+        updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
+        #now we use zip method to match class number with its name 
+        numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
+        totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
+        outputdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
+                      "dict_totareainstanceperclass": totareainstanceperclass_dict}
+        return outputdict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
