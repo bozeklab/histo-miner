@@ -77,7 +77,7 @@ for jsonfile in jsonfiles:
    # Creating the dictionnary to count the cells using countjson function:
     pathwoext = os.path.splitext(jsonfile)[0]
     namewoext = os.path.splitext(os.path.split(jsonfile)[1])[0] 
-    pathtosavewoext = pathanalyserout + namewoext
+    pathtosavewoext = pathanalyserout + '/' +  namewoext
 
     print('********** \nProcess file:', pathwoext)
     print('Process count of cells per cell type in the whole slide image...')
@@ -104,12 +104,14 @@ for jsonfile in jsonfiles:
         print('Detected mask file:', maskmappath)
 
         # Analysis
+        # Tumor Area -----------
         tumor_tot_area = analyser.count_pix_value(maskmappath, 255) * (maskmap_downfactor ** 2)
         print('Process cells identification '
               '(number of cells and tot area of cells) inside tumor regions...')
 
+        # Calculation of pourcentages of cells and ratios -----
         if calculate_vicinity:
-            cells_inmask_dict = analyser.cells_insidemargin_classjson(
+            cells_inregion_dict = analyser.cells_classandmargin_classjson(
                                                             maskmappath, 
                                                             jsonfile,
                                                             selectedcls_ratio,
@@ -120,7 +122,7 @@ for jsonfile in jsonfiles:
                                                             )
         
         else:
-            cells_inmask_dict = analyser.cells_insidemask_classjson(
+            cells_inregion_dict = analyser.cells_insidemask_classjson(
                                                             maskmappath, 
                                                             jsonfile, 
                                                             selectedcls_ratio,
@@ -128,10 +130,38 @@ for jsonfile in jsonfiles:
                                                             classnameaskey=classnames
                                                             )
 
-        print('Cells_inmask_dict generated as follow:', cells_inmask_dict)
+        print('cells_inregion_dict generated as follow:', cells_inregion_dict)
+
+        # Calculation of morphology features -----
+        if calculate_vicinity:
+            # Temporary test to modify!
+            morph_inregion_dict = analyser.morph_classandmargin_classjson(
+                                                            maskmappath, 
+                                                            jsonfile,
+                                                            selectedcls_ratio,
+                                                            selectedcls_ratiovic,
+                                                            maskmapdownfactor=maskmap_downfactor,
+                                                            classnameaskey=classnames,
+                                                            tumormargin=default_tumormargin
+                                                            )
         
+        else:
+            morph_inregion_dict = analyser.morph_insidemask_classjson(
+                                                            maskmappath, 
+                                                            jsonfile, 
+                                                            selectedcls_ratio,
+                                                            maskmapdownfactor=maskmap_downfactor,
+                                                            classnameaskey=classnames
+                                                            )
+
+        print('morph_inregion_dict generated!')
+        # a bit too large to pring: print('morph_inregion_dict generated as follow:', morph_inregion_dict)
+        
+        
+        # Distance calculation --------
         # Needs to create an empty dict even if the distances are not calculated
         cellsdist_inmask_dict = dict()
+        
         if calculate_distances: 
             print('Process distance calculcations inside tumor regions...')  
             cellsdist_inmask_dict = analyser.mpcell2celldist_classjson(
@@ -147,15 +177,19 @@ for jsonfile in jsonfiles:
 
     else:
         tumor_tot_area = 0
-        cells_inmask_dict = None
+        cells_inregion_dict = None
+        morph_inregion_dict = None
         cellsdist_inmask_dict = None
-        print('Cellsratio_inmask_dict not generated')
+        print('Cells_inregion_dict not generated')
+        print('Morph_inregion_dict not generated')
         print('Cellsdist_inmask_dict not generated')
+
 
 
     jsondata = analyser.hvn_outputproperties(
                                     allcells_in_wsi_dict,
-                                    cells_inmask_dict, 
+                                    cells_inregion_dict,
+                                    morph_inregion_dict, 
                                     cellsdist_inmask_dict,
                                     masktype='Tumor',
                                     calculate_vicinity=calculate_vicinity,
