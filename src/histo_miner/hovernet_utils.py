@@ -338,3 +338,4 @@ def gen_hvn_training_patches(rawimage_folder: str,
         else:
             print('Warning: You tried to generate a training patch that was already generated previously'
                   ', skipping...')
+            

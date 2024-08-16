@@ -32,7 +32,7 @@ output_dir=$(yaml $config_path "['inference']['paths']['output_dir']")
 
 
 
-############### SCRIPT
+############### DOWNSAMPLING
 
 if [ $downsample_needed = true ]; then
 
@@ -62,16 +62,6 @@ cd ../src/models/mmsegmentation/
 export LD_LIBRARY_PATH="/data/lsancere/miniconda3/envs/mmsegmentation2/$LD_LIBRARY_PATH"
 
 
-# --------------------------------------------------------
-# TO DO? WE CAN ALSO DOWNLOAD USING THE MAIN README
-# No need Yet----
-# Download weigths to add
-## Add script to download weights only if there are not already downloaded
-## for dev purposes, download it from google drive
-## for publication purposes, download if from Zenodo
-# --------------------------------------------------------
-
-
 # Change input dir to the downsampled images now if the downsampling is needed:
 if [ $downsample_needed = true ]; then
 
@@ -83,13 +73,57 @@ fi
 echo "Run mmsegmentation submodule inference..."
 
 
-# FOR DEV PURPOSE ---------------------------------------------------------------------------
-# Create code to overwritte config in the following way;
-# - erase the line with inference_root and rewrite it with inference_root=$input_dir
-# - erase the line with data.samples_per_gpu and rewrite it with data.samples_per_gpu=$samples_per_gpu
-# - erase the line with data.workers_per_gpu=$workers_per_gpu and rewrite it with data.workers_per_gpu=$workers_per_gpu=$input_dir
 
-# explain that cfg-option is not working with our version of mmsegmentation very likely
+############### UPDATE CONFIG
+
+# Rewrite segmenter config to take into account mmsegementation.yml config
+# cfg-option from mmsegmentation is not working to overwritte config (with this version)
+
+FILE_PATH=./configs/_base_/datasets/mc_sccskin184.py
+
+LINE_INFERENCE_ROOT="4"
+TEXT_INFERENCE_ROOT="inference_root='$input_dir'"
+LINE_SAMPLES_PER_GPU="54"
+TEXT_SAMPLES_PER_GPU="    samples_per_gpu=$samples_per_gpu,"
+LINE_WORKERS_PER_GPU="55"
+TEXT_WORKERS_PER_GPU="    workers_per_gpu=$workers_per_gpu,"
+
+# Check if the file exists
+if [ ! -f "$FILE_PATH" ]; then
+  echo "File not found!"
+fi
+
+# Create a temporary file
+TEMP_FILE=$(mktemp)
+
+# Debug: Display the variables
+echo "Replacing lines in $FILE_PATH"
+echo "Line $LINE_INFERENCE_ROOT with: $TEXT_INFERENCE_ROOT"
+echo "Line $LINE_SAMPLES_PER_GPU with: $TEXT_SAMPLES_PER_GPU"
+echo "Line $LINE_WORKERS_PER_GPU with: $TEXT_WORKERS_PER_GPU"
+
+# Replace the specified lines with the new text
+awk -v line1="$LINE_INFERENCE_ROOT" -v text1="$TEXT_INFERENCE_ROOT" \
+    -v line2="$LINE_SAMPLES_PER_GPU" -v text2="$TEXT_SAMPLES_PER_GPU" \
+    -v line3="$LINE_WORKERS_PER_GPU" -v text3="$TEXT_WORKERS_PER_GPU" \
+'NR == line1 {print text1; next}
+ NR == line2 {print text2; next}
+ NR == line3 {print text3; next}
+ {print $0}' "$FILE_PATH" > "$TEMP_FILE"
+
+# Check if the temporary file was created successfully
+if [ $? -ne 0 ]; then
+  echo "Error creating the temporary file."
+  exit 1
+fi
+
+# Overwrite the original file with the temporary file
+mv "$TEMP_FILE" "$FILE_PATH"
+echo "Config updated"
+
+
+
+############### RUN SEGMENTER INFERENCE 
 
 
 if [ $gpu <= 1 ]; then

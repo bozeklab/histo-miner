@@ -147,4 +147,5 @@ def remap_label(pred, by_size=False):
     new_pred = np.zeros(pred.shape, np.int32)
     for idx, inst_id in enumerate(pred_id):
         new_pred[pred == inst_id] = idx + 1
+        maxpred = np.max(new_pred) # for debug purposes 
     return new_pred

@@ -3,7 +3,7 @@
 
   inference:
 
-    hovernet_mode: tile
+    hovernet_mode: wsi
 
     gpulist: "0,1"
 
@@ -11,14 +11,14 @@
       
       checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/hvn_bestweights.tar"
 
-      input_dir:  "/data/lsancere/Data_General/Other_Dataset/HEIHC-ext-qupath/\
-      ExportRawBackground/4811_18_HE/"
+      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      cSCC_CPI_extra_folders/cSCC_CPI_extra2/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/Images/"
 
-      output_dir:  "/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/\
-      4811_18_HE/"
+      output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      cSCC_CPI_extra_folders/cSCC_CPI_extra2_hvnoutput/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/InfonVal_output/"

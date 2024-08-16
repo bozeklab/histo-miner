@@ -140,10 +140,10 @@ def cells_insidemask_classjson(maskmap: str,
         To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
     Returns
     -------
-    outputdictdict: dict
-        Dictionnary containing NUMBER TO DEFINE keys:
-        - "masktotarea": int : total area in pixel of the mask
-        - "list_numinstanceperclass": list : number of instances inside the mask region for each selected class
+    outputdictdict: dict[dict]
+        Dictionnary containing 2 nested dictionnaries:
+        - "dict_numinstanceperclass": number of instances per class dict
+        - "dict_totareainstanceperclass": sum of areas of instances per class dict
     """
     with open(classjson, 'r') as filename:
         classjson = json.load(filename)  # data must be a dictionnary
@@ -246,10 +246,12 @@ def cells_classandmargin_classjson(maskmap: str,
         To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
     Returns
     -------
-    outputdictdict: dict
-        Dictionnary containing NUMBER TO DEFINE keys:
-        - "masktotarea": int : total area in pixel of the mask
-        - "list_numinstanceperclass": list : number of instances inside the mask region for each selected class
+    outputdictdict: dict[dict]
+        Dictionnary containing 4 nested dictionnaries:
+        - "dict_numinstanceperclass": number of instances per class, in the tumor region, dict 
+        - "dict_totareainstanceperclass": sum of areas of instances, in the tumor region, per class dict 
+        - "dict_numinstanceperclass_vicinity": number of instances per class, in the vicinity of the tumor, dict
+        - "dict_totareainstanceperclass_vicinity": sum of areas of instances, in the vicinity of the tumor, per class dict 
     """
     with open(classjson, 'r') as filename:
         classjson = json.load(filename)  # data must be a dictionnary
@@ -390,8 +392,10 @@ def morph_insidemask_classjson(maskmap: str,
         To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
     Returns
     -------
-    TO WRITTE
-
+    outputdictdict: dict[dict]
+        Dictionnary containing 1 nested dictionnary:
+        - "dict_morphologyfeatperclass" : Dict of areas, circularities and aspect ratios features (std, mean ...)
+        for each class
     """
     with open(classjson, 'r') as filename:
         classjson = json.load(filename)  # data must be a dictionnary
@@ -641,8 +645,14 @@ def morph_classandmargin_classjson(maskmap: str,
         To say it an other way numinstanceperclass list will be replaced by a dictionnary with class names as keys.
     Returns
     -------
-    TO WRITTE
-
+    Returns
+    -------
+    outputdictdict: dict[dict]
+        Dictionnary containing 2 nested dictionnaries:
+        - "dict_morphologyfeatperclass" : Dict of areas, circularities and aspect ratios features (std, mean ...)
+        for the instances, in the tumor regions, of each class 
+        - "dict_morphologyfeatperclass_vicinity" : Dict of areas, circularities and aspect ratios features (std, mean ...)
+        for the instances, in the vicintiy of the tumor regions, of each class 
     """
     with open(classjson, 'r') as filename:
         classjson = json.load(filename)  # data must be a dictionnary
@@ -1297,16 +1307,15 @@ def mpcell2celldist_classjson(classjson: str,
         for the cell to cell distance calculation.
     Returns
     -------
-    dist_nestedlist : list of dict
-
-        TO COMPLETE
-
-        The dist_nestedlist contains average of the closest neighboor distances between all cells from one type and
-        all cells from another
+    dist_nestedlist : list[dict]
+        The dist_nestedlist contains dictionnaries of distance features (mean, std of distribution of dist and more)
         It is generated as the following (example for 5 classes)
-        [ [ [dist class 0 to class 1] [dist class 0 to class 2] [dist class 0 to class 3] [dist class 0 to class 4] ],
-          [ [dist class 1 to class 2] [dist class 1 to class 3] [dist class 1 to class 4] ] ,
-          [ [dist class 2 to class 3] [dist class 2 to class 4] ],  [ [dist class 3 to class 4] ]]
+        [ [ [dist class 0 to class 1 features dict] [dist class 0 to class 2 features dict] 
+            [dist class 0 to class 3 features dict] [dist class 0 to class 4 features dict] ],
+          [ [dist class 1 to class 2 features dict] [dist class 1 to class 3 features dict]
+            [dist class 1 to class 4] ] ,
+          [ [dist class 2 to class 3 features dict] [dist class 2 to class 4 features dict] ],  
+          [ [dist class 3 to class 4 features dict] ]]
     """
     with open(classjson, 'r') as filename:
         classjson = json.load(filename)  # data must be a dictionnary
@@ -1422,12 +1431,6 @@ def multipro_distc2c(allnucl_info,
     Function to allow multiprocessing on the distance calculation.
     See mpcell2celldist_classjson function
 
-    Parameters
-    ----------
-
-    Returns
-    -------
-
     """
     # In the case we take all the cells inside the tumor region only
     # or we take all the cells inside the tumor region + a margin
@@ -1531,9 +1534,6 @@ def multipro_distc2c(allnucl_info,
         else:
             avgdist = False
 
-        # In sourceclass_allavgdist
-
-        # TEST ------
         # Calculate all distribution feature:
 
         npymindist = np.asarray(allmindist)
@@ -1559,27 +1559,13 @@ def multipro_distc2c(allnucl_info,
 
         # Define features name for further dictionnary    
         featurenames = [
-                    'areas_mean',
-                    'areas_std',
-                    'areas_median',
-                    'areas_MAD',
-                    'areas_skewness',
-                    'areas_kurt',
-                    'areas_iqr',
-                    'circularities_mean',
-                    'circularities_std',
-                    'circularities_median',
-                    'circularities_MAD',
-                    'circularities_skewness',
-                    'circularities_kurt',
-                    'circularities_iqr',
-                    'aspectratios_mean',
-                    'aspectratios_std',
-                    'aspectratios_median',
-                    'aspectratios_MAD',
-                    'aspectratios_skewness',
-                    'aspectratios_kurt',
-                    'aspectratios_iqr'
+                    'dist_mean',
+                    'dist_std',
+                    'dist_median',
+                    'dist_MAD',
+                    'dist_skewness',
+                    'dist_kurt',
+                    'dist_iqr'
                     ]
 
         # Create dictionnary from feature list
@@ -1622,27 +1608,13 @@ def multipro_distc2c(allnucl_info,
 
         # Define features name for further dictionnary    
         featurenames = [
-                    'areas_mean',
-                    'areas_std',
-                    'areas_median',
-                    'areas_MAD',
-                    'areas_skewness',
-                    'areas_kurt',
-                    'areas_iqr',
-                    'circularities_mean',
-                    'circularities_std',
-                    'circularities_median',
-                    'circularities_MAD',
-                    'circularities_skewness',
-                    'circularities_kurt',
-                    'circularities_iqr',
-                    'aspectratios_mean',
-                    'aspectratios_std',
-                    'aspectratios_median',
-                    'aspectratios_MAD',
-                    'aspectratios_skewness',
-                    'aspectratios_kurt',
-                    'aspectratios_iqr'
+                    'dist_mean',
+                    'dist_std',
+                    'dist_median',
+                    'dist_MAD',
+                    'dist_skewness',
+                    'dist_kurt',
+                    'dist_iqr'
                     ]
 
         # Create dictionnary from feature list
@@ -2203,136 +2175,5 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
 
 
-########
-# UNDER CONSTRUCTIONS FUNCTIONS
-########
 
 
-
-def multipro_distc2c_test(allnucl_info,
-                     sourceclass,
-                     targetclass,
-                     regions,
-                     maskmap,
-                     tumorid_map,
-                     cellfilter,
-                     maskmapdownfactor,
-                     queue):
-    """
-    Function to allow multiprocessing on the distance calculation.
-    See mpcell2celldist_classjson function
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-
-    """
-    # In the case we take all the cells inside the tumor region only
-    # or we take all the cells inside the tumor region + a margin
-    # Keep in mind that the maskmap (tumormap) is a downsampled version of the WSI
-    if cellfilter == 'Tumor' or cellfilter == 'TumorMargin':
-        # keep only the nucleus of source class inside the tumor region:
-        sourceclass_list = [nucl_info for nucl_info in allnucl_info
-                            if nucl_info[2] == sourceclass and
-                            maskmap[int(nucl_info[1] / maskmapdownfactor),
-                                    int(nucl_info[0] / maskmapdownfactor)] == 255]
-
-        # keep only the nucleus of target class inside the tumor region:
-        targetclass_list = [nucl_info for nucl_info in allnucl_info
-                            if nucl_info[2] == targetclass and
-                            maskmap[int(nucl_info[1] / maskmapdownfactor),
-                                    int(nucl_info[0] / maskmapdownfactor)] == 255]
-    # In the case we take all the cells
-    else:
-        sourceclass_list = [nucl_info for nucl_info in allnucl_info if
-                            nucl_info[2] == sourceclass]  # keep only the nucleus of source class
-        targetclass_list = [nucl_info for nucl_info in allnucl_info if
-                            nucl_info[2] == targetclass]  # keep only the nucleus of target class
-
-    # maybe create a 2 different reseacrch areas size and if there is no cells in the first area, go to the second,
-    # if there is no cells in the second area  go to everything
-    # create a chain of this the areea size will be linked to the tumor region area (maybe taking the extreme points)
-
-    # Pick a  nucleus of source class, calculate distance with it and all the other class, keep
-    # the lowest and delete the list
-    allmindist = list()
-    min_dist = []
-    for source_info in tqdm(sourceclass_list):
-        alldist = list()
-        all_trgpoints = list()
-        if cellfilter == 'Tumor' or cellfilter == 'TumorMargin':
-            for target_info in targetclass_list:
-                source_tumor_id = tumorid_map[int(source_info[1] / maskmapdownfactor),
-                                              int(source_info[0] / maskmapdownfactor)]
-                target_tumor_id = tumorid_map[int(target_info[1] / maskmapdownfactor),
-                                              int(target_info[0] / maskmapdownfactor)]
-                if source_tumor_id == target_tumor_id:
-                    # we calculate the distance only if we are in the same tumor region
-                    all_trgpoints.append(
-                        [int(target_info[0]), int(target_info[1])])  # /!\ x and y are kept inverted (as in the json)
-        else:
-            all_trgpoints = [[int(target_info[0]), int(target_info[1])] for target_info in targetclass_list]
-        selectedtrg_points = list()
-        multfactor = 1
-        # define the bounding box of the tumor region, and the length and wide of the bbox
-        bboxcoord = [r.bbox for r in regions if r.label == source_tumor_id]
-        # Bounding box (min_row, min_col, max_row, max_col).
-        bbmin_row, bbmax_row, bbmin_col, bbmax_col = bboxcoord[0][0], bboxcoord[0][2], bboxcoord[0][1], bboxcoord[0][3]
-        bboxlength = bbmax_col - bbmin_col
-        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
-        bboxwide = bbmax_row - bbmin_row
-        # bboxcoord mmust be a LIST of ONE TUPLE, this explain the double brackets.
-        # BE CAREFUL ALL THESE LENGHT ARE IN THE DOWNSIZE MAP
-        # Find all the points belonging to the subset of the bounding box around the source class cell
-        # We continue to expand the subset size if we don't find any cell or until the subset is the bounding box itself
-        ratioindex = 0
-        sizeratios = [0.05, 0.1, 0.25, 0.5, 1, 'stop']
-        while len(selectedtrg_points) == 0 and sizeratios[ratioindex] != 'stop':
-            sizeratio = int(sizeratios[ratioindex])
-            xminthr = source_info[0] - bboxlength * sizeratio * maskmapdownfactor
-            xmaxthr = source_info[0] + bboxlength * sizeratio * maskmapdownfactor
-            yminthr = source_info[1] - bboxwide * sizeratio * maskmapdownfactor
-            ymaxthr = source_info[1] + bboxwide * sizeratio * maskmapdownfactor
-            selectedtrg_points = [trgpoint for trgpoint in all_trgpoints if
-                                  max(xminthr, bbmin_col * maskmapdownfactor) <= trgpoint[0]
-                                  <= min(xmaxthr, bbmax_col * maskmapdownfactor) and
-                                  max(yminthr, bbmin_row) <= trgpoint[1]
-                                  <= min(ymaxthr, bbmax_row * maskmapdownfactor)]
-            ratioindex += 1
-
-        # We calculate all the distances for the points in the subset
-        # print('len of selectedtrg_points', len(selectedtrg_points))
-        for selectedtrg_point in selectedtrg_points:
-            dist = math.sqrt((int(source_info[0]) - selectedtrg_point[0]) ** 2 + (
-                    int(source_info[1]) - selectedtrg_point[1]) ** 2)  # distance calculation
-            # In alldist there is all the distances between cell of source class and all cells of target class
-            alldist.append(dist)
-        # We keep only the min distance
-        if alldist:  # We need to check if the list is not empty to continue
-            # (because it is possible that no target cells are in the same tumor region)
-            min_dist = min(alldist)
-        del alldist
-        # In allmindist there is all the minimum distances between each cell of source class and
-        # all cells of target class
-
-        # if not min_dist:  # in case there is no neighbour beetwen the 2 classes
-        #     dist_nestedlist.append({})
-
-        if min_dist:  # redundant but better readibility
-            allmindist.append(min_dist)
-
-    del sourceclass_list
-    del targetclass_list
-    if min_dist:
-        avgdist = sum(allmindist) / len(allmindist)  # take the average of all closest neighbour distance
-    else:
-        avgdist = False
-
-    # In sourceclass_allavgdist
-
-    queue.put(avgdist)
-
-    # outlist = [avgdist, min_dist]
-    # list(map(queue.put, outlist))

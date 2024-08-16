@@ -63,7 +63,9 @@ for root, dirs, files in os.walk(pathtofolder):
             filepath = root + '/' + file
             if extension == '.json' and not any(keyword in namewoext for keyword in ['data', 'analysed', 'cellnbr']):
                 # 'data' not in name of files means it is not a json file coming from the analysis
-                if os.path.exists(pathanalyserout + namewoext + '_analysed.json'):
+                if os.path.exists(pathanalyserout + namewoext + '_analysed.json') or os.path.exists(
+                    pathanalyserout + namewoext + '_vicinity_analysed.json'
+                    ): 
                     print('Detected an already processed file:', file)
                     continue
                 else:
@@ -205,13 +207,13 @@ for jsonfile in jsonfiles:
         with open(pathtosavewoext + '_vicinity_analysed.json', 'w') as outfile:
             json.dump(jsondata, outfile, cls=NpEncoder)
 
-        print('Json file written :', pathwoext + '_vicinity_analysed.json \n**********')
+        print('Json file written :', pathtosavewoext + '_vicinity_analysed.json \n**********')
 
     else: 
         with open(pathtosavewoext + '_analysed.json', 'w') as outfile:
             json.dump(jsondata, outfile, cls=NpEncoder)
 
-        print('Json file written :', pathwoext + '_analysed.json \n**********')
+        print('Json file written :', pathtosavewoext + '_analysed.json \n**********')
 
 
 
