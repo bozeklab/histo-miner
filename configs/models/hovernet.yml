@@ -12,7 +12,7 @@
       checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/hvn_bestweights.tar"
 
       input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra2/"
+      cSCC_CPI_extra_folders/cSCC_CPI_extra2__temp/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/Images/"

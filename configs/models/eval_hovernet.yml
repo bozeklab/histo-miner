@@ -1,0 +1,33 @@
+
+
+# parameter for evaluaton
+  eval_paths:
+    eval_folders:
+        parentfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
+        ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/"
+      
+        instancemap_subfolder: '/InfonVal_output/mat/InstancesMaps/'
+
+        classvector_subfolder: '/InfonVal_output/mat/InstancesTypes/'
+
+        prediction_subfolder:  '/InfonVal_output/mat/InstancesTypes/ClassMaps/'
+
+        gt_subfolder: '/TrainingSet/Val/Labels/'
+         
+
+# All not strings parameters
+  parameters:
+
+    int:
+      nbr_classes: 5
+      #number of cell classes 
+
+    bool:
+      calculate_pq: True  
+      # Calculate or not panoptic quality
+
+      calculate_confusion: False 
+      # Calculate or not confusion matrix
+
+      create_classmap: True
+      # Generate class map from class vector output of Hovernet 

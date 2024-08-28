@@ -11,7 +11,7 @@ import yaml
 from attrdictionary import AttrDict as attributedict
 
 from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict, \
-                                       convert_names_to_orderedint, get_indices_by_value
+                                       convert_names_to_orderedint, get_indices_by_value, rename_last_key
 from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
@@ -32,6 +32,7 @@ patientid_csv = config.paths.files.patientid_csv
 patientid_avail = config.parameters.bool.patientid_avail
 perpatient_feat = config.parameters.bool.perpatient_feat
 calculate_vicinity = config.parameters.bool.calculate_vicinity
+redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
 
 
 #####################################################################
@@ -161,9 +162,14 @@ for jsonfile in jsonfiles:
     if  feature_init:
         #Create a list of names of the features, (only done once as all the json have the same features)
         #We create a new dictionnary that is using not the same keys name, but simplified ones.
+        
+        #Be carefukl in the redundancy we have in the areas, circularity, aspect ratio and dis features
+        renamed_analysisdata = rename_last_key(analysisdata, redundant_feat_names)
+
         #Check the difference between convert_flatten and convert_flatten_redundant docstrings
-        simplifieddata =  convert_flatten(analysisdata)
+        simplifieddata =  convert_flatten(renamed_analysisdata)
         featnameslist = list(simplifieddata.keys())
+
         # The first row of the featarray is not concatenated to anything so we have an initialiation
         #step that is slightly different than the other steps.
         featarray = valuearray
