@@ -20,7 +20,7 @@ from attrdictionary import AttrDict as attributedict
 from plotnine import ggplot, aes, geom_boxplot, xlab, ylab, labs, theme, \
                     element_text, geom_density, scale_color_manual, scale_fill_manual
 
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, rename_with_ancestors
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 
 # - Plot the correlation matrix in a nice way (seaborn?). In a first step it could stay as just the 56 features. Later-on maybe only display few names or few features, the most interesting ones
@@ -38,10 +38,11 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtomainfolder = config.paths.folders.main
 pathtoworkfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
-example_json = config.names.example_json
+path_exjson = config.paths.files.example_json
+redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
+
 
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
@@ -64,19 +65,21 @@ featarray = np.load(pathtoworkfolder + featarray_name + ext)
 clarray = np.load(pathtoworkfolder + classarray_name + ext)
 clarray_list = list(clarray)
 
-clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in clarray_list]
+clarray_names = ['no_response' if value == 0 else 'response' for value in clarray_list]
 
 # We can create the list of feature name just by reading on jsonfile
-pathto_sortedfolder = pathtomainfolder + '/' + 'tissue_analyses_sorted/'
-path_exjson = pathto_sortedfolder + example_json
 with open(path_exjson, 'r') as filename:
     analysisdata = filename.read()
     analysisdata = json.loads(analysisdata)
-    # flatten the dict (with redundant keys in nested dict, see function)
-    # Convert flatten allow to have only the last snested key as name!
-    analysisdataflat = convert_flatten(analysisdata)
 
-featnames = list(analysisdataflat.keys())
+    #Be carefukl in the redundancy we have in the areas, circularity, aspect ratio and dis features
+    renamed_analysisdata = rename_with_ancestors(analysisdata, redundant_feat_names)
+
+    #Check the difference between convert_flatten and convert_flatten_redundant docstrings
+    simplifieddata =  convert_flatten(renamed_analysisdata)
+
+
+featnames = list(simplifieddata.keys())
 
 
 
@@ -269,7 +272,7 @@ if pca:
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    X = X.astype('float32')
+    # X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -277,7 +280,7 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # PCA fitting
     pca_result = pca.fit(X_scaled).transform(X_scaled)
@@ -318,7 +321,7 @@ if pca:
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    X = X.astype('float32')
+    # X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -326,7 +329,7 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # PCA fitting
     pca_result = pca3D.fit(X_scaled).transform(X_scaled)
@@ -420,7 +423,7 @@ if tsne:
     target = pd.Series(clarray)
     target = target.astype('int8')
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # TSNE fitting
     z = tsne.fit_transform(X_scaled)

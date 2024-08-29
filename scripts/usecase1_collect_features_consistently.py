@@ -11,7 +11,7 @@ import yaml
 from attrdictionary import AttrDict as attributedict
 
 from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict, \
-                                       convert_names_to_orderedint, get_indices_by_value, rename_last_key
+                                       convert_names_to_orderedint, get_indices_by_value, rename_with_ancestors
 from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 
@@ -164,7 +164,7 @@ for jsonfile in jsonfiles:
         #We create a new dictionnary that is using not the same keys name, but simplified ones.
         
         #Be carefukl in the redundancy we have in the areas, circularity, aspect ratio and dis features
-        renamed_analysisdata = rename_last_key(analysisdata, redundant_feat_names)
+        renamed_analysisdata = rename_with_ancestors(analysisdata, redundant_feat_names)
 
         #Check the difference between convert_flatten and convert_flatten_redundant docstrings
         simplifieddata =  convert_flatten(renamed_analysisdata)

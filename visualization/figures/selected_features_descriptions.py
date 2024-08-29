@@ -41,10 +41,9 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtomainfolder = config.paths.folders.main
 pathtoworkfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
-example_json = config.names.example_json
+path_exjson = config.paths.files.example_json
 
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
@@ -71,8 +70,6 @@ clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in cl
 
 
 # We can create the list of feature name just by reading on jsonfile
-pathto_sortedfolder = pathtomainfolder + '/' + 'tissue_analyses_sorted/'
-path_exjson = pathto_sortedfolder + example_json
 with open(path_exjson, 'r') as filename:
     analysisdata = filename.read()
     analysisdata = json.loads(analysisdata)

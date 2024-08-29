@@ -127,7 +127,7 @@ def convert_flatten(inputdic: dict, parent_key: str = '') -> dict:
     return dict(items)
 
 
-def rename_last_key(nested_dict: dict, key_list: list) -> dict:
+def rename_with_parent(nested_dict: dict, key_list: list) -> dict:
     """
     Rename the last key in nested dictionaries if the key matches one of the names in a given list.
 
@@ -155,7 +155,7 @@ def rename_last_key(nested_dict: dict, key_list: list) -> dict:
         'level1': {
             'level2a': {
                 'key1': 'value1',
-                'level2akey_to_rename': 'value2'
+                'level2a_key_to_rename': 'value2'
             },
             'level2b': {
                 'key2': 'value3'
@@ -183,6 +183,71 @@ def rename_last_key(nested_dict: dict, key_list: list) -> dict:
             else:
                 if k in key_list:
                     new_key = parent_key + '_' + k
+                    new_dict[new_key] = v
+                else:
+                    new_dict[k] = v
+        return new_dict
+
+    return recurse(nested_dict)
+
+
+
+def rename_with_ancestors(nested_dict: dict, key_list: list) -> dict:
+    """
+    Rename the last key in nested dictionaries if the key matches one of the names in a given list.
+
+    This function traverses a nested dictionary, and for each key-value pair, if the key matches 
+    a name in the provided list, the key is renamed by concatenating the grandparent's key, the parent's key,
+    and the current key. The function returns a new dictionary with the modifications.
+
+    Examples:
+    - Given the following input dictionary:
+    {
+        'level1': {
+            'level2a': {
+                'key1': 'value1',
+                'key_to_rename': 'value2'
+            },
+            'level2b': {
+                'key2': 'value3'
+            }
+        }
+    }
+    - And the following list of keys to rename:
+    ['key_to_rename']
+    - The output dictionary will be:
+    {
+        'level1': {
+            'level2a': {
+                'key1': 'value1',
+                'level1_level2a_key_to_rename': 'value2'
+            },
+            'level2b': {
+                'key2': 'value3'
+            }
+        }
+    }
+
+    Parameters:
+    -----------
+    nested_dict: dict
+        The nested dictionary in which keys will be checked and potentially renamed.
+    key_list: list
+        A list of keys that should be renamed if they are the last key in a nested dictionary.
+
+    Returns:
+    --------
+    dict
+        A new dictionary with the renamed keys where applicable.
+    """
+    def recurse(d, grandparent_key='', parent_key=''):
+        new_dict = {}
+        for k, v in d.items():
+            if isinstance(v, MutableMapping):
+                new_dict[k] = recurse(v, parent_key=k, grandparent_key=parent_key)
+            else:
+                if k in key_list:
+                    new_key = grandparent_key + '_' + parent_key + '_' + k
                     new_dict[new_key] = v
                 else:
                     new_dict[k] = v

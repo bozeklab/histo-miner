@@ -13,6 +13,8 @@
 
 # All parameters of string names
   names:
+    run_name: "run1"
+
     permutation_idx:
 
       perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
@@ -36,7 +38,7 @@
 
         xgboost: True  
 
-        light_gbm: False     
+        light_gbm: False      
 
       save_evaluations: True
 
@@ -44,6 +46,8 @@
 
 
     int:
+      nbr_of_splits: 2
+
       split_pourcentage: 15
 
 

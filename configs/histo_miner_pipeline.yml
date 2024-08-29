@@ -14,25 +14,30 @@
       tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/tissue_analyser_output_pretest/"
 
+
       feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/feature_selection_pretest/"
 
 
       feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection/feature_selection_output_pretest/"
+      Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_pretest/"
 
 
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection/classification_evaluation/"
+      Analyses_cSCC_CPI/classification_evaluation_pretest/"
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection/visualization/"
+      Analyses_cSCC_CPI/feature_selection_pretest/visualization/"
         
+
     files:
       patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/PatientIDs.csv"
-      #it is including extension of the file as well (.csv)     
+      #it is including extension of the file as well (.csv)
+
+      example_json: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/cSCC_CPI_tissue_analysis_output1/S03646_02_vicinity_analysed.json"     
 
 
 # All parameters of string names
@@ -65,8 +70,6 @@
 
         newstr2_wsimode: >-
           }}
-
-      example_json: "no_recurrence/147_21_no_recurrence_analysed.json"
 
 
 # All not strings parameters
@@ -131,7 +134,7 @@
     int:
       maskmap_downfactor: 32
 
-      nbr_keptfeat: 318
+      nbr_keptfeat: 317
 
       boruta_max_depth: 4
       # boruta_max_depth: 18 leading to best results so far
@@ -164,15 +167,15 @@
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 
-        boxplots: True
+        boxplots: False
 
-        distributions: True 
+        distributions: False 
 
         pca: True
 
-        tsne: True
+        tsne: False
 
-        delete_outliers: True 
+        delete_outliers: False 
 
       display_classification_predictions: False
 

@@ -48,6 +48,7 @@ newstr2_wsimode = config.names.managment.newstr2_wsimode
 #############################################################
 ## Update parameters depending on hovernet_mode
 #############################################################
+
 if hovernet_mode == 'tile':
     string2replace = str(str2replace_tilemode)
     newstring = str(newstr_tilemode)

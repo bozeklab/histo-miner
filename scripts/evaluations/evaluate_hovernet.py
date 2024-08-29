@@ -11,11 +11,12 @@ from tqdm import tqdm
 from attrdictionary import AttrDict as attributedict
 from itertools import product
 
-from src.histo_miner.evaluations import get_fast_pq, remap_label
+from src.histo_miner.evaluations import get_fast_pq, remap_label, pairing_cells
 from src.histo_miner.hovernet_utils import classmap_from_classvector
 import joblib
 import cv2
 import copy
+import sklearn.metrics
 
 # add the script to transform mat files into npy for instances and npy for types (using hovernet utils)
 
@@ -48,11 +49,13 @@ predfolder = pathtofolder + prediction_subfolder
 gtfolder = pathtofolder + gt_subfolder
 
 
+
 #############################################################
-## Metrics calculations 
+## Create Class Map if needed
 #############################################################
 
-
+# Generate class map from TypeMaps output from hovernet! The gt classmap is already generated when
+# the training set is created
 if create_classmap:
 	classmap_from_classvector(instancemapfolder=instancemapfolder, 
 							  classvectorfolder=classvectorfolder, 
@@ -60,7 +63,13 @@ if create_classmap:
 	print("Createclassmap ran. Script stopped. Change config to prevent Class Map creation")
 	sys.exit()
 
-##### PQ Calculation
+
+
+
+#############################################################
+## PQ Calculation. 
+#############################################################
+
 
 if calculate_pq:
 	
@@ -73,23 +82,10 @@ if calculate_pq:
 	pq_for_class5 = []
 
 	# Count number of time remap problems occurs (should be None!)
-
 	count_legitmiss_pred = 0
 	count_legitcalculations = 0
 	count_remap_prblms = 0
 
-
-	count_remap_prblms_cls1 = 0
-	count_remap_prblms_cls2 = 0
-	count_remap_prblms_cls3 = 0
-	count_remap_prblms_cls4 = 0
-	count_remap_prblms_cls5 = 0
-
-	countlegitcalculations_cls1 = 0
-	countlegitcalculations_cls2 = 0
-	countlegitcalculations_cls3 = 0
-	countlegitcalculations_cls4 = 0
-	countlegitcalculations_cls5 = 0
 
 	files = os.path.join(predfolder, '*.npy')
 	files = glob.glob(files)
@@ -114,50 +110,14 @@ if calculate_pq:
 			# load gt instmap
 			gtnpy_instmap = gtnpy_hvnformat[:, :, 3]
 
-			# Generate inst map from class map: because the coordinates should match object,
-			# Not like with predicted instance map
-
-			# prednpy_genebin_instmap = copy.deepcopy(prednpy_classmap)
-
-			# #Make a binary map
-			# for x, y in product(range(prednpy_genebin_instmap.shape[0]), range(prednpy_genebin_instmap.shape[1])):
-			# 	if prednpy_genebin_instmap[x,y] > 0 :
-			# 		prednpy_genebin_instmap[x,y] = 1
-
-			# # Connected components from the binary map
-			# prednpy_genebin_instmap = prednpy_genebin_instmap.astype('uint8')
-			# prednum_labels, prednpy_geneinstmap = cv2.connectedComponents(prednpy_genebin_instmap, connectivity=8)
-
-			# gtnpy_genebin_instmap = copy.deepcopy(gtnpy_classmap)
-
-			# #Make a binary map
-			# for x, y in product(range(gtnpy_genebin_instmap.shape[0]), range(gtnpy_genebin_instmap.shape[1])):
-			# 	if gtnpy_genebin_instmap[x,y] > 0 :
-			# 		gtnpy_genebin_instmap[x,y] = 1
-
-			# # Connected components from the binary map   
-			# gtnpy_genebin_instmap = gtnpy_genebin_instmap.astype('uint8')	 
-			# gtnum_labels, gtnpy_geneinstmap = cv2.connectedComponents(gtnpy_genebin_instmap, connectivity=8)
-
 			# Initialize the list for the pq values
 			list_pq_for_each_class = []
 
+			# We do the pq calculations for each class 
 			for label in range(1, nbr_classes + 1):
 
 				if label in gtnpy_classmap and label in prednpy_classmap:
 					count_legitcalculations += 1
-
-					#very hugly but needed quickly for the presentation
-					if label == 1:
-						countlegitcalculations_cls1 += 1
-					if label == 2:
-						countlegitcalculations_cls2 += 1
-					if label == 3:
-						countlegitcalculations_cls3 += 1
-					if label == 4:
-						countlegitcalculations_cls4 += 1
-					if label == 5:
-						countlegitcalculations_cls5 += 1
 
 					pred_newinstmap = np.zeros(prednpy_instmap.shape)
 					gt_newinstmap = np.zeros(gtnpy_instmap.shape)
@@ -186,17 +146,8 @@ if calculate_pq:
 						list_pq_for_each_class.append(str(None))
 						count_remap_prblms += 1
 
-						#very hugly but needed quickly for the presentation
-						if label == 1:
-							count_remap_prblms_cls1 += 1
-						if label == 2:
-							count_remap_prblms_cls2 += 1
-						if label == 3:
-							count_remap_prblms_cls3 += 1
-						if label == 4:
-							count_remap_prblms_cls4 += 1
-						if label == 5:
-							count_remap_prblms_cls5 += 1
+						# here raise an error instead (find the best one to raise)
+
 
 					else:
 						#calculate panoptic quality results
@@ -265,31 +216,81 @@ if calculate_pq:
 	mean_pq_class5 = np.mean(pq_class5)
 
 
+devink = True
 
 
-##### Confusion matrix Calculation
+
+
+
+
+
+
+#############################################################
+## Confusion matrix Calculation. 
+#############################################################
+
 
 if calculate_confusion:
 
-	
+	alltrue_labels = list()
+	allpred_labels = list()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-        		
-
+	files = os.path.join(predfolder, '*.npy')
+	files = glob.glob(files)
+	for path in tqdm(files):
+		if os.path.exists(path):
+			#keep name of the file and not only path
+			fname = os.path.split(path)[1]
+			print('Patch beeing processed is,',fname)
 			
+			# load pred classmap
+			prednpy_classmap = np.load(path)
 
-# we need to add a selection in case the gt as no cells of the label
+			# load gt classmap
+			gtname = gtfolder + fname
+			gtnpy_hvnformat = np.load(gtname)
+			gtnpy_classmap = gtnpy_hvnformat[:, :, 4]
+
+			# load pred instmap
+			predinstmap_name = instancemapfolder + fname
+			prednpy_instmap = np.load(predinstmap_name)
+			 
+			# load gt instmap
+			gtnpy_instmap = gtnpy_hvnformat[:, :, 3]
+
+			# to ensure that the instance numbering is contiguous
+			pred_newinstmap = remap_label(prednpy_instmap, by_size=False)
+			gt_newinstmap = remap_label(gtnpy_instmap, by_size=False)
+
+			paired_true_id, paired_pred_id = pairing_cells(gt_newinstmap, pred_newinstmap)
+
+			########################################################
+		    # Maybe ADD sanity checks here
+		    # first the len of paired shiuld be the same
+		    # and no element with 0s in the class map - have to be caregful on this
+		    ########################################################
+
+			# Create a list of class label instead of ID of cells
+
+			for label in paired_true_id:
+				indices = np.argwhere(gt_newinstmap == label)
+				centroid = indices.mean(axis=0)
+				centroid = [int(centroid[0]), int(centroid[1])]
+
+				true_class = gtnpy_classmap[centroid[0], centroid[1]]
+				alltrue_labels.append(true_class)
+
+			for label in paired_pred_id: 
+				indices = np.argwhere(pred_newinstmap == label)
+				centroid = indices.mean(axis=0)
+				centroid = [int(centroid[0]), int(centroid[1])]
+
+				true_class = prednpy_classmap[centroid[0], centroid[1]]
+				allpred_labels.append(true_class)
+
+	cfmatrix = sklearn.metrics.confusion_matrix(alltrue_labels,allpred_labels)
+
+	devink = True
 
 

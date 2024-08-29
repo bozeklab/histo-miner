@@ -23,11 +23,11 @@
       #number of cell classes 
 
     bool:
-      calculate_pq: True  
+      calculate_pq: False 
       # Calculate or not panoptic quality
 
-      calculate_confusion: False 
+      calculate_confusion: True 
       # Calculate or not confusion matrix
 
-      create_classmap: True
+      create_classmap: False
       # Generate class map from class vector output of Hovernet 
