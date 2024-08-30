@@ -13,7 +13,7 @@ import xgboost
 import lightgbm
 from attrdictionary import AttrDict as attributedict
 from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold, StratifiedKFold
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, roc_curve
 from collections import Counter, defaultdict
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSelector
@@ -200,7 +200,7 @@ if run_xgboost and not run_lgbm:
         # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
         selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
         selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
-        selfeat_mannwhitneyu_id_allsplitsappend(selfeat_mannwhitneyu_index)
+        selfeat_mannwhitneyu_id_allsplits.append(selfeat_mannwhitneyu_index)
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
@@ -398,7 +398,7 @@ elif run_lgbm and not run_xgboost:
         # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
         selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]   
         selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
-        selfeat_mannwhitneyu_id_allsplitsappend(selfeat_mannwhitneyu_index)
+        selfeat_mannwhitneyu_id_allsplits.append(selfeat_mannwhitneyu_index)
 
         ## mr.MR calculations
         print('Selection of features with mrmr method...')
@@ -484,7 +484,6 @@ elif run_lgbm and not run_xgboost:
                 y_pred_mannwhitneyu = lightgbm_mannwhitneyu_training_inst.predict(
                     X_test[:, selfeat_mannwhitneyu_index_reduced]
                     )
-
                 # Calculate balanced accuracy for the current split
                 balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
                                                                          y_pred_mannwhitneyu)
@@ -693,7 +692,7 @@ std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 
 
 ####################################################################
-## Select best features 
+## Select best features after cross-validation
 ####################################################################
 
 # We will just keep the features that are most kept on the cross
@@ -701,70 +700,88 @@ std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 # than we keep them
 
 
-devink = True 
+# Create a score for feature selection
+featscores = [10000, 1000, 100, 10, 1] * nbr_of_splits
+
+# We keep it hardcoded for now
+nbr_kept_feat = 5
 
 
+##### Best slected features by Mannwhitney U 
 
 # We start by counting number of occurance in top 5
+bestsel_mannwhitneyu_index = [
+    featindex 
+    for splitindex in range(0, nbr_of_splits)
+    for featindex in selfeat_mannwhitneyu_id_allsplits[splitindex][0:nbr_kept_feat]  
+    ]
 
+# Count occurrences of each featindex
+featindex_counts_mannwhitneyu = Counter(bestsel_mannwhitneyu_index)
+
+# Calculate score of each featindex (in case of draw we advantage feat arriving first more often)
+score_sums = defaultdict(int)
+for idx, featindex in enumerate(bestsel_mannwhitneyu_index):
+    score_sums[featindex] += featscores[idx]
+
+# Sort featindex by occurrence count and then by  scores
+sorted_bestfeatindex_mannwhitneyu = sorted(
+        featindex_counts_mannwhitneyu.keys(), 
+        key=lambda x: (-featindex_counts_mannwhitneyu[x], -score_sums[x])
+        )
+
+# Retrieve names of best selected features
+mannwhitneyu_finalselfeat_names = featnames[sorted_bestfeatindex_mannwhitneyu]
+
+
+##### Best slected features by MRMR 
+
+# We start by counting number of occurance in top 5
 bestsel_mrmr_index = [
     featindex 
     for splitindex in range(0, nbr_of_splits)
-    for featindex in selfeat_mrmr_names_allsplits[splitindex, 0:5]  
+    for featindex in selfeat_mrmr_id_allsplits[splitindex][0:nbr_kept_feat]   
     ]
 
-featscores = [10000, 1000, 100, 10, 1] * nbr_of_splits
-
 # Count occurrences of each featindex
-featindex_counts = Counter(bestsel_mrmr_index)
+featindex_counts_mrmr = Counter(bestsel_mrmr_index)
 
 # Calculate score of each featindex (in case of draw we advantage feat arriving first more often)
 score_sums = defaultdict(int)
 for idx, featindex in enumerate(bestsel_mrmr_index):
     score_sums[featindex] += featscores[idx]
 
-# Step 3: Sort featindex by occurrence count and then by  scores
-sorted_featindex = sorted(
-    featindex_counts.keys(), 
-    key=lambda x: (-featindex_counts[x], -score_sums[x])
+# Sort featindex by occurrence count and then by  scores
+sorted_bestfeatindex_mrmr = sorted(
+        featindex_counts_mrmr.keys(), 
+        key=lambda x: (-featindex_counts_mrmr[x], -score_sums[x])
+        )
+
+# Retrieve names of best selected features
+mrmr_finalselfeat_names = featnames[sorted_bestfeatindex_mrmr]
+
+
+###### RMQS TO REMOVE
+
+## For Boruta we could try to find another strategy by keeping the group of feat selected by Boruta that 
+# have the highest occurence of their feature (and no score here as feat should be seen as a group)
+
+# But this is not working much neither....
+
+# Maybe keep the group the closer to have 5 features to stay comparable
+
+######
+
+sorted_bestfeatindex_boruta = utils_misc.find_closest_sublist(
+    selfeat_boruta_id_allsplits, 
+    nbr_kept_feat
     )
 
-# sorted_featindex will contain the featindex values sorted by occurrence and score
-print(sorted_featindex)
+# Retrieve names of best selected features
+boruta_finalselfeat_names = featnames[sorted_bestfeatindex_boruta]
 
 
-bestsel_mrmr_scores = 
-
-for bestfeat_index in bestsel_mrmr_index
-
-
-
-# Count occurrences of each number in featindex_list
-counter = Counter(featindex_list)
-
-# Get the numbers sorted by their frequency in descending order
-most_common_featindex = counter.most_common()
-
-
-
-
-# create a list of scores that is just 10000, 1000, 100, 10, 1 for 5 
-# features kept
-
-
-for featindex in selfeat_mrmr_names_allsplits:
-
-
-
-
-
-
-
-
-
-
-
-
+devink = True 
 
 
 ##############################################################
@@ -790,7 +807,7 @@ if run_lgbm and not run_xgboost:
 
 print('Start saving numpy in folder: ', save_results_path)
 
-name_mannwhitneyu_output = 'ba_mannwhitneyut_' + str(nbr_of_splits) + run_name
+name_mannwhitneyu_output = '_ba_mannwhitneyut_' + str(nbr_of_splits) + 'splits_' + run_name
 np.save(save_results_path + 'mean_' + classifier_name + name_mannwhitneyu_output + save_ext, 
     mean_ba_mannwhitneyu_npy)
 np.save(save_results_path + 'min_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
@@ -799,8 +816,11 @@ np.save(save_results_path + 'max_' + classifier_name + name_mannwhitneyu_output 
     max_ba_mannwhitneyu_npy)
 np.save(save_results_path + 'std_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
     std_ba_mannwhitneyu_npy)
+np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
+    sorted_bestfeatindex_mannwhitneyu)
 
-name_mrmr_output = 'ba_mrmr_' + str(nbr_of_splits) + run_name
+
+name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
 np.save(save_results_path + 'mean_' + classifier_name + name_mrmr_output + save_ext, 
     mean_ba_mrmr_npy)
 np.save(save_results_path + 'max_' + classifier_name + name_mrmr_output + save_ext, 
@@ -809,8 +829,10 @@ np.save(save_results_path + 'min_' + classifier_name + name_mrmr_output + save_e
     max_ba_mrmr_npy)
 np.save(save_results_path + 'std_' + classifier_name + name_mrmr_output + save_ext, 
     std_ba_mrmr_npy)
+np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_mrmr_output + save_ext, 
+    sorted_bestfeatindex_mrmr)
 
-name_boruta_output = 'ba_boruta_' + str(nbr_of_splits) + run_name
+name_boruta_output = '_ba_boruta_' + str(nbr_of_splits) + 'splits_' + run_name
 np.save(save_results_path + 'mean_' + classifier_name + name_boruta_output + save_ext, 
     mean_ba_boruta_npy)
 np.save(save_results_path + 'max_' + classifier_name + name_boruta_output + save_ext, 
@@ -819,6 +841,8 @@ np.save(save_results_path + 'min_' + classifier_name + name_boruta_output + save
     max_ba_boruta_npy)
 np.save(save_results_path + 'std_' + classifier_name + name_boruta_output + save_ext, 
     std_ba_boruta_npy)
+np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_boruta_output + save_ext, 
+    sorted_bestfeatindex_boruta)
 
 np.save(
     save_results_path + classifier_name  + 'nbr_feat_kept_boruta_'  + 
@@ -849,23 +873,39 @@ with open(save_text_path, 'w') as file:
     file.write('** With {} classifier **'.format(classifier_name))
 
     file.write('\n\n\n\n ** mannwhitneyu **')
-    file.write('\n\nBest mean balanced accuracy is:' + str(best_mean_mannwhitneyu))  
-    file.write('\n\nThe number of kept features in the best scenario is:' + str(nbr_kept_features_mannwhitneyu))  
-    file.write('\n\nThese features are:' +  str(kept_features_mannwhitneyu)) 
-    file.write('\n\nThe best 5 features are:' +  str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu]))
+    file.write('\n\nBest mean balanced accuracy is:' + 
+        str(best_mean_mannwhitneyu))  
+    file.write('\n\nThe number of kept features in the best scenario is:' + 
+        str(nbr_kept_features_mannwhitneyu))  
+    file.write('\n\nThese features are:' +  
+        str(kept_features_mannwhitneyu)) 
+    file.write('\n\nThe best 5 features overall are:' +  
+        str([mrmr_finalselfeat_names]))
+    # file.write('\n\nThe best 5 features are:' +  
+    # str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu]))
 
     file.write('\n\n\n\n ** mrmr **')
-    file.write('\n\nBest mean balanced accuracy is:' +  str(best_mean_mrmr))  
-    file.write('\n\nThe number of kept features in the best scenario is:' + str(nbr_kept_features_mrmr))  
-    file.write('\n\nThese features are:' + str(kept_features_mrmr)) 
-    file.write('\n\nThe best 5 features are:' +  str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
+    file.write('\n\nBest mean balanced accuracy is:' +  
+        str(best_mean_mrmr))  
+    file.write('\n\nThe number of kept features in the best scenario is:' + 
+        str(nbr_kept_features_mrmr))  
+    file.write('\n\nThese features are:' +
+        str(kept_features_mrmr)) 
+    file.write('\n\nThe best 5 features overall are:' +  
+        str([mannwhitneyu_finalselfeat_names]))
+    #file.write('\n\nThe best 5 features are:' +  
+    # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 
     file.write('\n\n\n\n ** boruta **')
-    file.write('\n\nMean balanced accuracy is:' +  str(mean_ba_boruta_npy)) 
-    file.write('\n\nhe numbers of kept features are:' + str(number_feat_kept_boruta))  
-    file.write('\n\nThese features are:' + str(selfeat_boruta_names_allsplits)) 
+    file.write('\n\nMean balanced accuracy is:' +  
+        str(mean_ba_boruta_npy)) 
+    file.write('\n\nhe numbers of kept features are:' + 
+        str(number_feat_kept_boruta))  
+    file.write('\n\nThe best group of selected feature close of having 5 features is:' +  
+        str([mannwhitneyu_finalselfeat_names]))
+    file.write('\n\nThese features are:' + 
+        str(selfeat_boruta_names_allsplits)) 
     
-
 
 print('Text files saved.')
 

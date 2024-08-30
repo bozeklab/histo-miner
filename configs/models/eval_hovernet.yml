@@ -13,6 +13,8 @@
         prediction_subfolder:  '/InfonVal_output/mat/InstancesTypes/ClassMaps/'
 
         gt_subfolder: '/TrainingSet/Val/Labels/'
+
+        save_folder: '/data/lsancere/Data_General/Evaluations/Evaluation_Hovernet/'
          
 
 # All not strings parameters

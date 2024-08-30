@@ -20,11 +20,12 @@ from attrdictionary import AttrDict as attributedict
 from plotnine import ggplot, aes, geom_boxplot, xlab, ylab, labs, theme, \
                     element_text, geom_density, scale_color_manual, scale_fill_manual
 
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, rename_with_ancestors
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
+ 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 
-# - Plot the correlation matrix in a nice way (seaborn?). In a first step it could stay as just the 56 features. Later-on maybe only display few names or few features, the most interesting ones
-# --> maybe load it here and then make it nicer with seaborn library
+
+### FOR NOW ONLY BORUTA SELECTED ONES
 
 
 #############################################################
@@ -49,6 +50,7 @@ distributions = config.parameters.bool.plot.distributions
 pca = config.parameters.bool.plot.pca
 tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
+
 
 
 
@@ -83,8 +85,39 @@ featnames = list(simplifieddata.keys())
 
 
 
+
+
+############################################################
+## Load the selected features only 
+############################################################
+
+
+# Do LOAD corresponding indexes 
+
+
+#### Parse the featarray to the class SelectedFeaturesMatrix 
+
+selection_idx_name = 'all_borutas/selfeat_boruta_idx_depth20'
+selfeat = np.load(pathtoworkfolder + selection_idx_name + ext)
+selfeat_idx_list = list(selfeat)
+
+# # Update feature matrix - SEE HOW TO CODE THIS LATER ON
+# SelectedFeaturesMatrix = SelectedFeaturesMatrix(featarray)
+# featarray = SelectedFeaturesMatrix.boruta_matr(selfeat)
+# featarray = np.transpose(featarray)
+
+# #Update classification array and classification array list - SEE HOW TO CODE THIS LATER ON
+# # clarray_list = [label for idx, label in enumerate(clarray_list) if idx in selfeat_idx_list ]
+# # clarray = np.asarray(clarray_list)
+# # clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in clarray_list]
+
+# Update featnames
+featnames = [name for idx, name in enumerate(featnames) if idx in selfeat_idx_list]
+
+
+
 #############################################################
-## Plot boxplots for every features (with plotnine)
+## Plot boxplots for the selected features
 #############################################################
 
 if boxplots:
@@ -122,9 +155,9 @@ if boxplots:
             savename = featname + '_boxplot_filterquartile.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/allfeat/'):
-                os.makedirs(pathtosavefolder + '/boxplots/allfeat/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/allfeat/' + savename
+            if not os.path.exists(pathtosavefolder + '/boxplots/'):
+                os.makedirs(pathtosavefolder + '/boxplots/')
+            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
             boxplot.save(saveboxplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
@@ -146,16 +179,16 @@ if boxplots:
             savename = featname + '_boxplot.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/allfeat/'):
-                os.makedirs(pathtosavefolder + '/boxplots/allfeat/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/allfeat/' + savename
+            if not os.path.exists(pathtosavefolder + '/boxplots/'):
+                os.makedirs(pathtosavefolder + '/boxplots/')
+            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
             boxplot.save(saveboxplot_path, dpi=300)
 
 
 
-########################################################################
-## Plot Kernel Density distribution for every features (with plotnine)
-########################################################################
+#############################################################
+## Plot Kernel Density distribution for the selected features
+#############################################################
 
 if distributions:
 
@@ -216,9 +249,9 @@ if distributions:
             savename = featname + '_distribution_filterquartile.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
-                os.makedirs(pathtosavefolder + '/density/allfeat/')
-            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/'):
+                os.makedirs(pathtosavefolder + '/density/')
+            savedensplot_path = pathtosavefolder + '/density/' + savename
             density_plot.save(savedensplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
@@ -252,27 +285,27 @@ if distributions:
             savename = featname + '_distribution.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
-                os.makedirs(pathtosavefolder + '/density/allfeat/')
-            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/'):
+                os.makedirs(pathtosavefolder + '/density/')
+            savedensplot_path = pathtosavefolder + '/density/' + savename
             density_plot.save(savedensplot_path, dpi=300)
 
 
 
 #############################################################
-## PCA and scree plots (with plt ax.scatter and plot)
+## PCA and biplots
 #############################################################
 
 # See https://scikit-learn.org/ Comparison of LDA and PCA 2D projection of Iris dataset
 # For an example of use
 
 if pca: 
-    #### PCA 2D 
+    #### Initialize PCA 2D
     pca = PCA(n_components=2)
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    # X = X.astype('float32')
+    X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -280,7 +313,7 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_response', 'response']
+    target_names = ['no_recurrence', 'recurrence']
 
     # PCA fitting
     pca_result = pca.fit(X_scaled).transform(X_scaled)
@@ -303,10 +336,10 @@ if pca:
     ax.set_xlabel('Principal Component 1')
     ax.set_ylabel('Principal Component 2')
     plt.legend(loc="best", shadow=False, scatterpoints=1)
-    plt.title("PCA of SCC WSIs (all features kept)")
+    plt.title("PCA of SCC WSIs (selected features)")
 
     #Create Name for saving
-    savename = 'PCA_SCC_WSIs_2D_all_features.png'
+    savename = 'PCA_SCC_WSIs_2D_selected_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -316,12 +349,12 @@ if pca:
     plt.clf()
 
 
-    #### PCA 3D
-    pca3D = PCA(n_components=3)
+    #### Initialize PCA 3D
+    pca = PCA(n_components=3)
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    # X = X.astype('float32')
+    X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -329,10 +362,10 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_response', 'response']
+    target_names = ['no_recurrence', 'recurrence']
 
     # PCA fitting
-    pca_result = pca3D.fit(X_scaled).transform(X_scaled)
+    pca_result = pca.fit(X_scaled).transform(X_scaled)
 
     # 3D PCA plot
     fig = plt.figure(figsize=(8, 6))
@@ -355,10 +388,10 @@ if pca:
     ax.set_ylabel('Principal Component 2')
     ax.set_zlabel('Principal Component 3')
     ax.legend(loc="best", shadow=False, scatterpoints=1)
-    ax.set_title("3D PCA of SCC WSIs (all features kept)")
+    ax.set_title("3D PCA of SCC WSIs (selected features)")
 
     #Create Name for saving
-    savename = 'PCA_SCC_WSIs_3D_all_features.png'
+    savename = 'PCA_SCC_WSIs_3D_selected_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -370,8 +403,9 @@ if pca:
     print('PCAs saved.')
 
 
-    #### Scree Plot 2D
-    pca_scree = PCA(n_components=20)
+    #### Initialize Scree Plot 2D
+    pca_scree = PCA(n_components=4)
+    # Here 4 because we cannot have more PCA components than feat
     # We need to fit but not to fit + transform!
     # Plus we need more components then 2 or 3
     pca2_result = pca_scree.fit(X_scaled)
@@ -386,10 +420,10 @@ if pca:
         color='royalblue')
     plt.xlabel('Principal Component')
     plt.ylabel('Variance Explained')
-    plt.title("Scree Plot of SCC WSIs (all features kept)")
+    plt.title("Scree Plot of SCC WSIs (selected features)")
 
     #Create Name for saving
-    savename = 'ScreePlot_SCC_WSIs_all_features.png'
+    savename = 'ScreePlot_SCC_WSIs_selected_feature.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -401,8 +435,64 @@ if pca:
     print('Scree Plot saved.')
 
 
+    ### Biplot 
+    # Used https://statisticsglobe.com/biplot-pca-python
+    # Explanation 1 TO FILL
+    # We re use the pca not to do it again for nothing (see above)
+    principalc1 = pca.fit_transform(X_scaled)[:,0]
+    principalc2 = pca.fit_transform(X_scaled)[:,1]
+    ldngs = pca.components_
+    
+    # Explanation 2 TO FILL
+    scale_principalc1 = 1.0/(principalc1.max() - principalc1.min())
+    scale_principalc2 = 1.0/(principalc2.max() - principalc2.min())
+    features = featnames
+    
+    # Define target groups
+    target_groups = np.digitize(clarray, 
+                             np.quantile(clarray, 
+                                         [1/3, 2/3]))
+
+    # Plot 
+    fig, ax = plt.subplots(figsize=(14, 9))
+     
+    for i, feature in enumerate(features):
+        ax.arrow(0, 0, ldngs[0, i], 
+                 ldngs[1, i], 
+                 head_width=0.01, 
+                 head_length=0.01)
+        ax.text(ldngs[0, i] * 1.15, 
+                ldngs[1, i] * 1.15, 
+                feature, fontsize = 11)
+     
+    scatter = ax.scatter(principalc1 * scale_principalc1, 
+                         principalc2 * scale_principalc2, 
+                         c=target_groups, 
+                         cmap='viridis')
+     
+    ax.set_xlabel('Principal Component 1', fontsize=20)
+    ax.set_ylabel('Principal Component 2', fontsize=20)
+    ax.set_title('Bitplot of SCC WSIs (selected features)', fontsize=20)
+     
+    ax.legend(*scatter.legend_elements(),
+                        loc="lower left", 
+                        title="Groups")
+
+    #Create Name for saving
+    savename = 'Biplot_SCC_WSIs_selected_feature.png'
+
+    #Saving
+    if not os.path.exists(pathtosavefolder + '/PCA/'):
+        os.makedirs(pathtosavefolder + '/PCA/')
+    savedpca_path = pathtosavefolder + '/PCA/' + savename
+    plt.savefig(savedpca_path)
+    plt.clf()
+
+    print('Biplot saved.')
+
+
 #############################################################
-## T-SNE plots (with seaborn)
+## T-SNE plots
 #############################################################
 
 
@@ -423,7 +513,7 @@ if tsne:
     target = pd.Series(clarray)
     target = target.astype('int8')
     # Target names for visualization
-    target_names = ['no_response', 'response']
+    target_names = ['no_recurrence', 'recurrence']
 
     # TSNE fitting
     z = tsne.fit_transform(X_scaled)
@@ -444,11 +534,11 @@ if tsne:
         #palette=sns.color_palette("hls", 2),
         palette=colors,
         data=df
-        ).set(title="SCC data T-SNE projection (all features kept)")
+        ).set(title="SCC data T-SNE projection (selected features)")
     plt = plt.gcf()
 
     #Create Name for saving
-    savename = 'T-SNE_SCC_WSIs_2D_all_features.png'
+    savename = 'T-SNE_SCC_WSIs_2D_selected_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/TSNE/'):
@@ -514,7 +604,3 @@ if tsne:
     # plt.savefig(savedtsne_path)
 
     print('T-SNE saved.')
-
-
-
-

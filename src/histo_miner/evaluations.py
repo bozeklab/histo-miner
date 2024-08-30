@@ -2,6 +2,16 @@ import numpy as np
 import scipy
 from scipy.optimize import linear_sum_assignment
 
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
+from attrdictionary import AttrDict as attributedict
+from seaborn import heatmap
+
+
+######################
+### METRICS
+######################
 
 def get_fast_pq(true, pred, match_iou=0.5):
     """
@@ -115,9 +125,10 @@ def get_fast_pq(true, pred, match_iou=0.5):
 
 
 
+######################
+### UTILS
+######################
 
-
-#####
 def remap_label(pred, by_size=False):
     """Rename all instance id so that the id is contiguous i.e [0, 1, 2, 3] 
     not [0, 2, 4, 6]. The ordering of instances (which one comes first) 
@@ -220,6 +231,71 @@ def pairing_cells(true, pred, match_iou=0.5):
     return paired_true, paired_pred
 
 
+######################
+### PLOTS
+######################
+
+
+def plot_conf_matrix(conf_matrix: np.ndarray, 
+                     conf_matrix_normalized: np.ndarray,
+                     conf_matrix_normalized_algpred: np.ndarray,
+                     savefolder: str) -> None:
+    """
+    Plot nice confusion matrix with the help of seaborn (heatmap function).
+
+    Parameters
+    ----------
+    Returns
+    -------
+    """
+    # Store the name of classes
+    selectedclass = [1, 2, 3, 4, 5]
+
+    # Generate first plot, the classic confusion matrix with no normalization
+    _, ax = plt.subplots(figsize=(9, 6))
+    heatmap(conf_matrix, annot=True, linewidths=.5, ax=ax, fmt='g', cmap='YlGnBu')
+    plt.title('Confusion Matrix ')
+    plt.ylabel('Groundtruth')
+    ax.set_xlabel('Predicted')
+    ax.xaxis.set_label_position('top')
+    ax.xaxis.set_ticks_position('top')
+    my_xticks = ['granul        ', 'lympho         ', 'plasma       ', 'stroma       ', 'tumor      ']
+    my_yticks = ['      granul', '      lympho', '      plasma', '      stroma', '       tumor']
+    plt.xticks(ticks=selectedclass, labels=my_xticks)
+    plt.yticks(ticks=selectedclass, labels=my_yticks)
+    plt.savefig(savefolder + '/' + 'conf_mat.png', dpi=1000, bbox_inches='tight')
+    #plt.show()
+
+    # Generate second plot, the confusion matrix with Recall normalization (more conventional)
+    _, ax = plt.subplots(figsize=(9, 6))
+    heatmap(conf_matrix_normalized, annot=True, linewidths=.5, ax=ax, fmt='.2g', cmap='YlGnBu')
+    plt.title('Confusion Matrix: Recall Normalization')
+    plt.ylabel('Groundtruth')
+    ax.set_xlabel('Predicted')
+    ax.xaxis.set_label_position('top')
+    ax.xaxis.set_ticks_position('top')
+    my_xticks = ['granul        ', 'lympho         ', 'plasma       ', 'stroma       ', 'tumor      ']
+    my_yticks = ['      granul', '      lympho', '      plasma', '      stroma', '       tumor']
+    plt.xticks(ticks=selectedclass, labels=my_xticks)
+    plt.yticks(ticks=selectedclass, labels=my_yticks)
+    plt.savefig(savefolder + '/' + 'conf_mat_truenorm.png', dpi=1000, bbox_inches='tight')
+    #plt.show()
+    
+    # Generate third plot, the confusion matrix with Prediction normalization
+    _, ax = plt.subplots(figsize=(9, 6))
+    heatmap(conf_matrix_normalized_algpred, annot=True, linewidths=0.5, ax=ax, fmt='.2g', cmap='YlGnBu')
+    plt.title('Confusion Matrix: Prediction Normalization ')
+    plt.ylabel('Groundtruth')
+    ax.set_xlabel('Predicted')
+    ax.xaxis.set_label_position('top')
+    ax.xaxis.set_ticks_position('top')
+    my_xticks = ['granul        ', 'lympho      ', 'plasma      ', 'stroma       ', 'tumor      ']
+    my_yticks = ['       granul', '      lympho', '      plasma', '      stroma', '       tumor']
+    plt.xticks(ticks=selectedclass, labels=my_xticks)
+    plt.yticks(ticks=selectedclass, labels=my_yticks)
+    plt.savefig(savefolder + '/' + 'conf_mat_prednorm.png', dpi=1000, bbox_inches='tight')
+    #plt.show()
+    #print('All plot shown')
 
 
 

@@ -13,7 +13,7 @@
 
 # All parameters of string names
   names:
-    run_name: "run1"
+    run_name: "pretest_1"
 
     permutation_idx:
 
@@ -46,9 +46,7 @@
 
 
     int:
-      nbr_of_splits: 2
-
-      split_pourcentage: 15
+      nbr_of_splits: 5
 
 
 # Classifiers parameters

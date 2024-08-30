@@ -421,13 +421,7 @@ def convert_names_to_orderedint(name_list: list):
 
 def get_indices_by_value(lst: list ):
     """
-    To describe
-    
-
-    Parameters:
-    -----------
-    Returns:
-    -----------
+    Self explanatory
     """
     indices_by_value = {}
 
@@ -439,6 +433,21 @@ def get_indices_by_value(lst: list ):
 
     return indices_by_value
 
+
+def find_closest_sublist(nested_list: list, nbr_kept_feat: int):
+    """
+    Self explanatory
+    """
+    closest_sublist = None
+    smallest_difference = float('inf')  # Initialize to a very large number
+
+    for sublist in nested_list:
+        difference = abs(len(sublist) - nbr_kept_feat)
+        if difference < smallest_difference:
+            smallest_difference = difference
+            closest_sublist = sublist
+
+    return closest_sublist
 
 
 

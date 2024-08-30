@@ -36,11 +36,12 @@ instancemap_subfolder = config.eval_paths.eval_folders.instancemap_subfolder
 classvector_subfolder = config.eval_paths.eval_folders.classvector_subfolder
 prediction_subfolder = config.eval_paths.eval_folders.prediction_subfolder
 gt_subfolder = config.eval_paths.eval_folders.gt_subfolder
+save_folder = config.eval_paths.eval_folders.save_folder
+
 calculate_pq = config.parameters.bool.calculate_pq
 calculate_confusion = config.parameters.bool.calculate_confusion
 create_classmap = config.parameters.bool.create_classmap
 nbr_classes = config.parameters.int.nbr_classes
-
 
 # Create full path based on given config
 instancemapfolder = pathtofolder + instancemap_subfolder
@@ -215,14 +216,8 @@ if calculate_pq:
 	mean_pq_class4 = np.mean(pq_class4)
 	mean_pq_class5 = np.mean(pq_class5)
 
-
-devink = True
-
-
-
-
-
-
+# Read variables directly on debugger - no save
+debugink = True
 
 
 #############################################################
@@ -265,13 +260,9 @@ if calculate_confusion:
 
 			paired_true_id, paired_pred_id = pairing_cells(gt_newinstmap, pred_newinstmap)
 
-			########################################################
 		    # Maybe ADD sanity checks here
-		    # first the len of paired shiuld be the same
-		    # and no element with 0s in the class map - have to be caregful on this
-		    ########################################################
-
-			# Create a list of class label instead of ID of cells
+		    # first the len of paired should be the same
+		    # and no element with 0s in the class map 
 
 			for label in paired_true_id:
 				indices = np.argwhere(gt_newinstmap == label)
@@ -289,8 +280,43 @@ if calculate_confusion:
 				true_class = prednpy_classmap[centroid[0], centroid[1]]
 				allpred_labels.append(true_class)
 
-	cfmatrix = sklearn.metrics.confusion_matrix(alltrue_labels,allpred_labels)
+	# Remove 0s (we evaluate only classification here)
 
-	devink = True
+	# We need a sanity check by removing all background class prediction (not detected)
+	idxzeros_true_labels = [idx for idx, value in enumerate(alltrue_labels) if value == 0]
+	idxzeros_pred_labels = [idx for idx, value in enumerate(allpred_labels) if value == 0]
 
+	# We create a list of indexes where there is a 0 in at least one of the vectors
+	unique_idxzeros = set(idxzeros_true_labels + idxzeros_pred_labels)
+	idx_zeros = sorted(list(unique_idxzeros))
+
+	# We refine the prediction by removing item where they were a 0, but for both lists not to change order
+	alltrue_labels = [item for i, item in enumerate(alltrue_labels) if i not in idx_zeros]
+	allpred_labels = [item for i, item in enumerate(allpred_labels) if i not in idx_zeros]
+
+	# Calculate confusiton matrices
+
+	conf_mat = sklearn.metrics.confusion_matrix(alltrue_labels, allpred_labels)
+
+	conf_mat_true_normalized = sklearn.metrics.confusion_matrix(
+    	alltrue_labels,
+    	allpred_labels,
+    	normalize='true')
+	conf_mat_pred_normalized = sklearn.metrics.confusion_matrix(
+    	alltrue_labels,
+    	allpred_labels,
+    	normalize='pred')
+
+	conf_mat_name = 'confusion_matrix.npy'
+	conf_mat_name_truenorm = 'confusion_matrix_truenorm.npy'
+	conf_mat_name_prednorm = 'confusion_matrix_prednorm.npy'
+
+	if not os.path.exists(save_folder):
+		os.mkdir(save_folder)
+
+	np.save(save_folder + '/' + conf_mat_name, conf_mat)
+	np.save(save_folder + '/' + conf_mat_name_truenorm, conf_mat_true_normalized)
+	np.save(save_folder + '/' + conf_mat_name_prednorm, conf_mat_pred_normalized)
+
+	print('Confusion matrices files saved in folder {}'.format(save_folder))
 

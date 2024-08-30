@@ -199,7 +199,6 @@ class SelectedFeaturesMatrix:
     Generate the matrix of selected features based on the output of a given feature selection method
 
     Note: No need for Boruta method, as the output is already the matrix of selected features 
-    - still valid?
     """
     def __init__(self, feature_array: np.ndarray):
         """
