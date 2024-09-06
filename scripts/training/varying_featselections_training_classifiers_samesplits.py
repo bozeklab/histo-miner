@@ -593,16 +593,16 @@ for index in range(0, nbr_feat):
         currentsplit =  f"split_{i}"
 
         balanced_accuracy_mannwhitneyu = float(
-            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index]
+            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][nbr_feat - index - 1]
             ) 
         ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
 
 
         # We check if with this index value we can process mrmr metrics (because the size of vect varies)
-        if index <= length_selfeatmrmr[currentsplit]:
+        if (nbr_feat - index + 1) <= length_selfeatmrmr[currentsplit]:
 
             balanced_accuracy_mrmr = np.asarray(
-                balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
+                balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][nbr_feat - index - 1]
                 ) 
             ba_featsel_mrmr.append(balanced_accuracy_mrmr)
 
@@ -616,12 +616,12 @@ for index in range(0, nbr_feat):
 
     # Try to find name of selected features that leads to the best prediction
     if np.mean(ba_featsel_mannwhitneyu) > best_mean_mannwhitneyu:
-        nbr_kept_features_mannwhitneyu = index + 1
-        kept_features_mannwhitneyu = [selfeat[0:index] for selfeat in selfeat_mannwhitneyu_names_allsplits]
+        nbr_kept_features_mannwhitneyu = nbr_feat - index
+        kept_features_mannwhitneyu = [selfeat for selfeat in selfeat_mannwhitneyu_names_allsplits[0: index+1]]
         best_mean_mannwhitneyu = np.mean(ba_featsel_mannwhitneyu)
 
         # We check if with this index value we can process mrmr metrics (because the size of vect varies)
-    if index <= length_selfeatmrmr[currentsplit]:
+    if (nbr_feat - index + 1) <= length_selfeatmrmr[currentsplit]:
 
         ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
 
@@ -632,8 +632,8 @@ for index in range(0, nbr_feat):
 
         # Try to find name of selected features that leads to the best prediction
         if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
-            nbr_kept_features_mrmr = index + 1
-            kept_features_mrmr = [selfeat[0:index] for selfeat in selfeat_mrmr_names_allsplits]
+            nbr_kept_features_mrmr = nbr_feat - index
+            kept_features_mrmr = [selfeat for selfeat in selfeat_mrmr_names_allsplits[0: index+1]]
             best_mean_mrmr = np.mean(ba_featsel_mrmr)
 
 
@@ -731,7 +731,7 @@ sorted_bestfeatindex_mannwhitneyu = sorted(
         )
 
 # Retrieve names of best selected features
-mannwhitneyu_finalselfeat_names = featnames[sorted_bestfeatindex_mannwhitneyu]
+mannwhitneyu_finalselfeat_names = list(featnames[sorted_bestfeatindex_mannwhitneyu[0:nbr_kept_feat]])
 
 
 ##### Best slected features by MRMR 
@@ -758,7 +758,7 @@ sorted_bestfeatindex_mrmr = sorted(
         )
 
 # Retrieve names of best selected features
-mrmr_finalselfeat_names = featnames[sorted_bestfeatindex_mrmr]
+mrmr_finalselfeat_names = list(featnames[sorted_bestfeatindex_mrmr[0:nbr_kept_feat]])
 
 
 ###### RMQS TO REMOVE
@@ -859,7 +859,7 @@ print('Numpy saved.')
 ##############################################################
 
 
-txtfilename = classifier_name + run_name + '_info'
+txtfilename = classifier_name + '_' + str(nbr_of_splits) + 'splits_' +  run_name + '_info'
 
 save_txt_ext = '.txt'
 save_text_path = save_results_path + txtfilename + save_txt_ext

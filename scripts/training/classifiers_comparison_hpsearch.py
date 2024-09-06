@@ -10,7 +10,7 @@ import lightgbm
 from tqdm import tqdm
 from attrdictionary import AttrDict as attributedict
 from sklearn import linear_model, ensemble
-from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold
+from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedKFold
 
 import src.histo_miner.utils.misc as utils_misc
 
@@ -34,7 +34,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 pathtofolder = confighm.paths.folders.feature_selection_main
 classification_eval_folder = confighm.paths.folders.classification_evaluation
-patientid_avail = confighm.parameters.bool.patientid_avail
+
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
@@ -43,6 +43,7 @@ with open("./../../configs/classification_training.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 save_evaluations = config.parameters.bool.save_evaluations
+nbr_of_splits = config.parameters.int.nbr_of_splits
 
 xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
 xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
@@ -76,12 +77,6 @@ train_clarray = np.load(path_clarray)
 train_clarray = np.transpose(train_clarray)
 print('Feature feature arrays and class arrays loaded')
 
-if patientid_avail:
-    patientids_load = np.load(path_patientids_array, allow_pickle=True)
-    patientids_list = list(patientids_load)
-    # patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
-    # patientids = np.asarray(patientids_convert)
-    print('Patient IDs loaded')
 
 path_save_results = classification_eval_folder + 'classifiers_comparison_hpsearch.txt'
 
@@ -137,19 +132,8 @@ permutation_index = np.random.permutation(train_clarray.size)
 train_clarray = train_clarray[permutation_index]
 
 
-### Shuffle patient IDs arrays using the permutation index 
-if not patientid_avail:
-    raise ValueError('The patient IDs need to be available to do the HP search so far')
-
-else:
-    patientids_list = np.asarray(patientids_list)
-    # patientids = patientids_list[permutation_index]
-    # Create a mapping of unique elements to positive integers
-    patientids_ordered = utils_misc.convert_names_to_orderedint(patientids_list)
-
-
 ### Create Stratified Group  instance for the cross validation 
-stratgroupkf = StratifiedGroupKFold(n_splits=10)
+stratkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
 
 
 #### Classification training with all features kept 
@@ -174,8 +158,7 @@ for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
     crossvalid_results = cross_val_score(xgboostvanilla, 
                                          genfeatarray, 
                                          train_clarray,  
-                                         groups=patientids_ordered,
-                                         cv=stratgroupkf,  
+                                         cv=stratkf,  
                                          scoring='balanced_accuracy')
     crossvalid_meanscore = np.mean(crossvalid_results)
     crossvalid_maxscore = np.max(crossvalid_results)
@@ -219,8 +202,7 @@ for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
     crossvalid_results = cross_val_score(lightgbmvanilla, 
                                          genfeatarray, 
                                          train_clarray,  
-                                         groups=patientids_ordered,
-                                         cv=stratgroupkf,  
+                                         cv=stratkf, 
                                          scoring='balanced_accuracy')
     crossvalid_meanscore = np.mean(crossvalid_results)
     crossvalid_maxscore = np.max(crossvalid_results)

@@ -35,17 +35,17 @@ path2vectors = pathtofolder + '/' + eval_folder_name + '/'
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_xgboost' + ext)
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_xgboost' + ext)
-xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_xgboost' + ext)
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta' + ext):
-     nbr_featkept_xgb_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta' + ext)
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_npretest1.npy')
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_npretest1.npy')
+xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_xgboost_ba_boruta_5splits_npretest1.npy')
+if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1.npy'):
+     nbr_featkept_xgb_boruta = np.load(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1.npy')
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
 
 # Creating x coordinates for mrmr and mannwhtneyu
-x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
+x = np.linspace(1, 317,len(xgbmean_aAcc_mannwhitneyu))
 
 
 # lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits_allCohorts' + ext)
@@ -62,10 +62,10 @@ x = np.linspace(56, 1, len(xgbmean_aAcc_mrmr))
 
 
 
-if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_10splits' + ext):
-    # need to duplicate the value for boruta 
-    xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
-    xgb_xboruta = nbr_featkept_xgb_boruta
+# if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1' + ext):
+#     # need to duplicate the value for boruta 
+#     xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
+#     xgb_xboruta = nbr_featkept_xgb_boruta
 
 
 
@@ -75,11 +75,11 @@ plt.figure(figsize=(18, 8))
 plt.figure(figsize=(6, 4))
 
 # First figure with xgboost
-plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+# plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
 # plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
 plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
 # plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
-plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+# plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
 
 
 # plt.plot(xboruta, xgbbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
@@ -99,7 +99,7 @@ plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'varfeat-classic-xgboost-10splits-2.png')
+plt.savefig(pathtosavefolder + 'plot1.png')
 plt.clf()
 
 

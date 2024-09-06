@@ -43,7 +43,7 @@
 # All parameters of string names
   names:
       hovernet_mode: wsi
-      eval_folder: results 
+      eval_folder: results/pre_tests/ 
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string
