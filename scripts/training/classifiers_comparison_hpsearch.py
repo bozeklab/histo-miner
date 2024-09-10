@@ -78,7 +78,7 @@ train_clarray = np.transpose(train_clarray)
 print('Feature feature arrays and class arrays loaded')
 
 
-path_save_results = classification_eval_folder + 'classifiers_comparison_hpsearch.txt'
+path_save_results = classification_eval_folder + 'classifiers_comparison_hpsearch2.txt'
 
 
 
@@ -117,7 +117,9 @@ lgbm_param_grid = {
 
 
 print('Start Classifiers trainings...')
-
+#TEMP
+print('Only searching with xgboost')
+####
 
 ### Create a new permutation and save it
 permutation_index = np.random.permutation(train_clarray.size)
@@ -190,41 +192,41 @@ print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 # lgbm_vanilla = lightgbm.train(lightgbm_paramters, 
 #                               lgbm_traindata_vanilla, 
 #                               lgbm_n_estimators)
-lightgbmvanilla = lightgbm
-# lgbm_vanilla = lightgbmvanilla.fit(genfeatarray, train_clarray)
-# use Grid Search to find the best set of HPs 
-# (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
-cv_bestmean = 0 #cv stands for cross-validation 
-cv_bestsplit = 0 
-for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
-    lightgbmvanilla.set_params(**paramset)
-    # Evaluate the model with cross validation
-    crossvalid_results = cross_val_score(lightgbmvanilla, 
-                                         genfeatarray, 
-                                         train_clarray,  
-                                         cv=stratkf, 
-                                         scoring='balanced_accuracy')
-    crossvalid_meanscore = np.mean(crossvalid_results)
-    crossvalid_maxscore = np.max(crossvalid_results)
-    # Keep best trainings score and parameters set
-    if crossvalid_maxscore > cv_bestsplit:
-        cv_bestsplit = crossvalid_maxscore
-        lgbm_vanilla_bestmaxset = paramset
-        cv_bestmax_scorevect = crossvalid_results
-    if crossvalid_meanscore > cv_bestmean:
-        cv_bestmean = crossvalid_meanscore 
-        lgbm_vanilla_bestmeanset = paramset
-        cv_bestmean_scorevect = crossvalid_results   
+# lightgbmvanilla = lightgbm
+# # lgbm_vanilla = lightgbmvanilla.fit(genfeatarray, train_clarray)
+# # use Grid Search to find the best set of HPs 
+# # (avoid GridSearchCV cause it is also doing not necessarily wanted cross validation)
+# cv_bestmean = 0 #cv stands for cross-validation 
+# cv_bestsplit = 0 
+# for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+#     lightgbmvanilla.set_params(**paramset)
+#     # Evaluate the model with cross validation
+#     crossvalid_results = cross_val_score(lightgbmvanilla, 
+#                                          genfeatarray, 
+#                                          train_clarray,  
+#                                          cv=stratkf, 
+#                                          scoring='balanced_accuracy')
+#     crossvalid_meanscore = np.mean(crossvalid_results)
+#     crossvalid_maxscore = np.max(crossvalid_results)
+#     # Keep best trainings score and parameters set
+#     if crossvalid_maxscore > cv_bestsplit:
+#         cv_bestsplit = crossvalid_maxscore
+#         lgbm_vanilla_bestmaxset = paramset
+#         cv_bestmax_scorevect = crossvalid_results
+#     if crossvalid_meanscore > cv_bestmean:
+#         cv_bestmean = crossvalid_meanscore 
+#         lgbm_vanilla_bestmeanset = paramset
+#         cv_bestmean_scorevect = crossvalid_results   
 
-print('\n\n ** lightgbm_vanilla **')
-print('The best split average accuracy is:',cv_bestsplit)  
-print('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:',
-        lgbm_vanilla_bestmaxset)
-print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
-print('The best mean average accuracy is:',cv_bestmean)
-print('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:',
-        lgbm_vanilla_bestmeanset)
-print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
+# print('\n\n ** lightgbm_vanilla **')
+# print('The best split average accuracy is:',cv_bestsplit)  
+# print('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:',
+#         lgbm_vanilla_bestmaxset)
+# print('Corresponding scores for all splits are:', cv_bestmax_scorevect)
+# print('The best mean average accuracy is:',cv_bestmean)
+# print('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:',
+#         lgbm_vanilla_bestmeanset)
+# print('Corresponding scores for all splits are:', cv_bestmean_scorevect)
 
 
 
@@ -243,14 +245,14 @@ if save_evaluations:
         file.write('Corresponding set of parameters for xgboost_vanilla_bestmeanset is:' 
             + str(xgboost_vanilla_bestmeanset))
         file.write('Corresponding scores for all splits are:' + str( cv_bestmean_scorevect))
-        file.write('\n\n ** lightgbm_vanilla **')
-        file.write('The best split average accuracy is:' + str(cv_bestsplit))
-        file.write('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:' 
-            + str(lgbm_vanilla_bestmaxset))
-        file.write('Corresponding scores for all splits are:' + str( cv_bestmax_scorevect))
-        file.write('The best mean average accuracy is:' + str(cv_bestmean))
-        file.write('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:' 
-            + str(lgbm_vanilla_bestmeanset))
-        file.write('Corresponding scores for all splits are:' + str(cv_bestmean_scorevect))
+        # file.write('\n\n ** lightgbm_vanilla **')
+        # file.write('The best split average accuracy is:' + str(cv_bestsplit))
+        # file.write('Corresponding set of parameters for lgbm_vanilla_bestmaxset is:' 
+        #     + str(lgbm_vanilla_bestmaxset))
+        # file.write('Corresponding scores for all splits are:' + str( cv_bestmax_scorevect))
+        # file.write('The best mean average accuracy is:' + str(cv_bestmean))
+        # file.write('Corresponding set of parameters for lgbm_vanilla_bestmeanset is:' 
+        #     + str(lgbm_vanilla_bestmeanset))
+        # file.write('Corresponding scores for all splits are:' + str(cv_bestmean_scorevect))
 
     print('Evaluations saved at location:', path_save_results)

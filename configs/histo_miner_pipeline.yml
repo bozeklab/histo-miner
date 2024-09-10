@@ -4,19 +4,19 @@
   paths:
     folders:
       inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      /cSCC_CPI_extra_folders/cSCC_CPI_extra2_tissue_analysis_temp/"
+      /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
 
 
       tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      /cSCC_CPI_folders/cSCC_CPI_tissue_analysis_input_kept4/"
+      /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
 
 
       tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_pretest/"
+      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
 
 
       feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_pretest/"
+      Analyses_cSCC_CPI/feature_selection_allpreprint/"
 
 
       feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -24,11 +24,11 @@
 
 
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_pretest/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_pretest/visualization/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint/visualization/"
         
 
     files:
@@ -43,7 +43,7 @@
 # All parameters of string names
   names:
       hovernet_mode: wsi
-      eval_folder: results/pre_tests/ 
+      eval_folder: results/allpreprint/ 
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string

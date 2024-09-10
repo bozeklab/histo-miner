@@ -231,7 +231,10 @@ if run_xgboost and not run_lgbm:
         #     selected_features_matrix.reset_attributes(X_train_tr)
         feature_array = X_train
         ## For Boruta calculations
-        featarray_boruta = feature_array[:, np.transpose(selfeat_boruta_index)]
+        if nbrfeatsel_boruta == 0:      
+            featarray_boruta = np.array([])             
+        else:
+            featarray_boruta = feature_array[:, np.transpose(selfeat_boruta_index)]
 
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 
@@ -430,7 +433,10 @@ elif run_lgbm and not run_xgboost:
         #     selected_features_matrix.reset_attributes(X_train_tr)
         feature_array = X_train
         ## For Boruta calculations
-        featarray_boruta = feature_array[:, np.transpose(selfeat_boruta_index)]
+        if nbrfeatsel_boruta == 0:      
+            featarray_boruta = np.array([])  
+        else:
+            featarray_boruta = feature_array[:, np.transpose(selfeat_boruta_index)]
   
         ##  Mann Whitney U calculations & mr.MR calculations are done later 
 

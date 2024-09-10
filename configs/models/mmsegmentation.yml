@@ -2,7 +2,7 @@
 
   inference:
 
-    downsample_needed: "false"
+    downsample_needed: "true"
     # !boolean in bash is without capital!
 
     gpu: 2
@@ -16,10 +16,10 @@
       checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/segmenter_bestweights.pth"
 
       input_dir:  "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra2__temp/"
+      cSCC_CPI_extra_folders/cSCC_CPI_extra3/"
 
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra2_segmenteroutput/"
+      cSCC_CPI_extra_folders/cSCC_CPI_extra3_segmenteroutput/"
 
      
 

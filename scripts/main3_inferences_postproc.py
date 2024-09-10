@@ -31,9 +31,9 @@ pathtofolder = config.paths.folders.inferences_postproc_main
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
 maskmapext = str(config.parameters.str.maskmap_ext)
 hovernet_mode = str(config.names.hovernet_mode)
+
 values2change = list(config.parameters.lists.values2change)
 newvalues = list(config.parameters.lists.newvalues)
-
 str2replace_tilemode = config.names.managment.str2replace_tilemode
 newstr_tilemode = config.names.managment.newstr_tilemode
 str2replace2_tilemode = config.names.managment.str2replace2_tilemode

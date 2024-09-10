@@ -13,7 +13,7 @@
 
 # All parameters of string names
   names:
-    run_name: "pretest2"
+    run_name: "preprint1"
 
     permutation_idx:
 
@@ -36,9 +36,9 @@
 
         random_forest: False
 
-        xgboost: False    
+        xgboost: True   
 
-        light_gbm: True                
+        light_gbm: False                
 
       save_evaluations: True
 
@@ -134,16 +134,14 @@
       
       random_state: 0
 
-      n_estimators: 20
+      n_estimators: 40
       # number of boosting iterations, should be = number of trees in the forest
-      # for best split: 60
+      # for best split: 40
       # for best mean: 40
-      # for best mean, slides selected: 140
 
-      learning_rate:  1
-      # for best split: 1.2
-      # for best mean: 1
-      # for best mean, slides selected: 1
+      learning_rate:  0.1
+      # for best split: 0.1
+      # for best mean: 0.1
 
       objective: 'binary:logistic'
       # choice to take for binary classification
