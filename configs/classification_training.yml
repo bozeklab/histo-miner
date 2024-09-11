@@ -36,9 +36,9 @@
 
         random_forest: False
 
-        xgboost: True   
+        xgboost: False  
 
-        light_gbm: False                
+        light_gbm: True                
 
       save_evaluations: True
 
@@ -169,13 +169,13 @@
       
       random_state: 0
 
-      n_estimators: 20
+      n_estimators: 120
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
       # for best mean: 120
       # for best mean, slides selected: 60
 
-      learning_rate: 0.01
+      learning_rate: 0.1
       # for best split: 0.8
       # for best mean: 0.01
       # for best mean, slides selected:  0.1
@@ -183,7 +183,7 @@
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 2
+      num_leaves: 40
       # for best split: 10
       # for best mean: 20
       # for best mean, slides selected: 15

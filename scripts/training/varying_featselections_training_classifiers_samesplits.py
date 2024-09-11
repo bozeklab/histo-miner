@@ -102,12 +102,20 @@ xgboost = xgboost.XGBClassifier(random_state= xgboost_random_state,
 ##### LIGHT GBM setting
 # The use of light GBM classifier is not following the convention of the other one
 # Here we will save parameters needed for training, but there are no .fit method
-lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
-                                   n_estimators=lgbm_n_estimators,
-                                   learning_rate=lgbm_lr,
-                                   objective=lgbm_objective,
-                                   num_leaves=lgbm_numleaves,
-                                   verbosity=-1)
+# lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
+#                                    n_estimators=lgbm_n_estimators,
+#                                    learning_rate=lgbm_lr,
+#                                    objective=lgbm_objective,
+#                                    num_leaves=lgbm_numleaves,
+#                                    verbosity=-1)
+param_lightgbm = {
+                  "random_state": lgbm_random_state,
+                  "n_estimators": lgbm_n_estimators,
+                  "learning_rate": lgbm_lr,
+                  "objective":lgbm_objective,
+                  "num_leaves":lgbm_numleaves,
+                  "verbosity":-1
+                  }
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
@@ -453,7 +461,10 @@ elif run_lgbm and not run_xgboost:
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
                 #Training
-                lightgbm_training_allfeat = lightgbm.fit(X_train, y_train)
+                train_data = lightgbm.Dataset(X_train, label=y_train)
+                lightgbm_training_allfeat = lightgbm.train(
+                    param_lightgbm,
+                    train_data)
 
                 # Predictions on the test split
                 y_pred_allfeat = lightgbm_training_allfeat.predict(X_test)
@@ -478,13 +489,11 @@ elif run_lgbm and not run_xgboost:
                 featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
 
                 #Training
-                # needs to be re initialized each time!!!! Very important
-                lightgbm_mannwhitneyu_training = lightgbm
-                # actual training
-                lightgbm_mannwhitneyu_training_inst = lightgbm_mannwhitneyu_training.fit(
-                                                                       featarray_mannwhitneyu, 
-                                                                       y_train
-                                                                       )
+                train_data = lightgbm.Dataset(featarray_mannwhitneyu, label=y_train)
+                lightgbm_mannwhitneyu_training_inst = lightgbm.train(
+                    param_lightgbm,
+                    train_data,
+                    num_round=10)
 
                 # Predictions on the test split
                 y_pred_mannwhitneyu = lightgbm_mannwhitneyu_training_inst.predict(
@@ -508,11 +517,11 @@ elif run_lgbm and not run_xgboost:
                     featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
                     #Training
-                    # needs to be re initialized each time!!!! Very important
-                    lightgbm_mrmr_training = lightgbm
-                    # actual training
-                    lightgbm_mrmr_training_inst = lightgbm_mrmr_training.fit(featarray_mrmr, 
-                                                                             y_train)
+                    train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
+                    lightgbm_mrmr_training_inst = lightgbm.train(
+                        param_lightgbm,
+                        train_data,
+                        num_round=10)
 
                     # Predictions on the test split
                     y_pred_mrmr = lightgbm_mrmr_training_inst.predict(
@@ -532,12 +541,14 @@ elif run_lgbm and not run_xgboost:
         # sometimes boruta is not keeping any features, so need to check if there are some
         if np.size(featarray_boruta) == 0:      
             balanced_accuracy_boruta = None
-            # balanced_accuracy_boruta_2 = None
-            # balanced_accuracy_boruta_3 = None
+
         else:
-            lightgbm_boruta_training = lightgbm
-            lightgbm_boruta_training = lightgbm_boruta_training.fit(featarray_boruta, 
-                                                                  y_train)
+            train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
+            lightgbm_boruta_training = lightgbm.train(
+                    param_lightgbm,
+                    featarray_boruta,
+                    num_round=10)
+
             # Predictions on the test split
             y_pred_boruta = lightgbm_boruta_training.predict(
                 X_test[:, np.transpose(selfeat_boruta_index)]
