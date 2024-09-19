@@ -403,7 +403,6 @@ if pca:
 ## T-SNE plots (with seaborn)
 #############################################################
 
-
 # Will tryr to follow what was done just above 
 
 if tsne:
@@ -513,6 +512,395 @@ if tsne:
 
     print('T-SNE saved.')
 
+
+
+############################################################
+## PCA and scree plots for cohorts and samples vizualisation
+## CPI data usecase 
+#############################################################
+
+# See https://scikit-learn.org/ Comparison of LDA and PCA 2D projection of Iris dataset
+# For an example of use
+
+if pca: 
+    #### PCA 2D 
+    pca = PCA(n_components=2)
+    # Create vector for fit method
+    X = pd.DataFrame(featarray)
+    X = np.transpose(X)
+    # X = X.astype('float32')
+    # Standardize the dataset
+    # Create an instance of StandardScaler
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    # Create classification target vector for visu
+    # here I can just hard code the cohorts by checking the order of each sample inside feat array
+
+    # Also check if I can add an ID for the samples ato display as a name in addition to the color corresponding to the cohort
+
+    target = [
+        1,
+        1,
+        0,
+        1,
+        0,
+        3,
+        2,
+        2,
+        5,
+        5, 
+        4,
+        5,
+        4,
+        7, 
+        7,
+        7,
+        2, 
+        2,
+        2,
+        3,
+        2,
+        2,
+        2, 
+        2,
+        2,
+        2,
+        2,
+        4,
+        4,
+        4,
+        5,
+        5,
+        9,
+        9,
+        9,
+        8,
+        8,
+        8
+    ] # List of Class of cohorts from 0 to 9
+    # AS it is EXPLORATOY, the list will be hardcoded
+    target = np.asarray(target)
+
+    sample_names = [
+        'S03604_03',
+        'S03605_01',
+        'S03611_03',
+        'S03612_03',
+        'S03613_01',
+        'S03614_01', 
+        'S03615_01', 
+        'S03616_01',
+        'S03622_01', 
+        'S03623_01', 
+        'S03625_03', 
+        'S03627_02',
+        'S03628_03',
+        'S03631_01', 
+        'S03633_02', 
+        'S03634_02', 
+        'S03637_01', 
+        'S03638_02', 
+        'S03639_01',
+        'S03640_01', 
+        'S03641_01',
+        'S03642_03',
+        'S03643_01', 
+        'S03644_02', #23 
+        'S03645_01', 
+        'S03646_02', 
+        'S03647_02',
+        'S03651_03', 
+        'S03652_01', 
+        'S03654_01', 
+        'S03655_01', 
+        'S03656_02',
+        'S03785_01', 
+        'S03786_01', 
+        'S03789_01', #34 
+        'TUM16', 
+        'TUM17',
+        'TUM18'
+    ] # Name of samples to be displayed  
+    # AS it is EXPLORATOY, the list will be hardcoded
+
+
+    # Target names for visualization
+    target_names = [
+        'Salzburg-resp',    #0
+        'Salzburg-dis',   #1
+        'Dortmund-resp',    #2
+        'Dortmund-dis',  #3
+        'Cologne-resp',     #4
+        'Cologne-dis',   #5
+        'Oberhausen-resp',  #6
+        'Oberhausen-dis',#7
+        'Munich-resp',      #8
+        'Munich-dis'    #9
+        ]
+
+    # PCA fitting
+    pca_result = pca.fit(X_scaled).transform(X_scaled)
+
+    # 2D PCA plot
+    fig, ax = plt.subplots(figsize=(12, 8))  # Increase the figure size
+    # interesting colors = ["navy", "darkorange"]
+    colors = [
+        'navy', 
+        'skyblue', 
+        'darkgreen', 
+        'palegreen', 
+        'firebrick', 
+        'lightcoral', 
+        'indigo', 
+        'plum', 
+        'goldenrod', 
+        'yellow'
+        ]
+
+    lw = 2
+
+    # Set background color to black
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+
+    # Plot each cohort group and label points
+    for i in range(len(colors)):
+        mask = target == i
+        plt.scatter(
+            pca_result[mask, 0], 
+            pca_result[mask, 1], 
+            color=colors[i], 
+            alpha=0.8, 
+            lw=lw, 
+            label=target_names[i] if i < len(target_names) else f'Cohort {i}'
+        )
+
+    # # Add sample names as labels with white color
+    # for i, name in enumerate(sample_names):
+    #     plt.text(pca_result[i, 0], pca_result[i, 1], name, fontsize=8, ha='right', color='white')
+
+    # Set axis labels and title with white color
+    ax.set_xlabel('Principal Component 1', color='white')
+    ax.set_ylabel('Principal Component 2', color='white')
+    plt.title("PCA of SCC WSIs (all features kept)", color='white')
+
+    # Set axis ticks and lines to white
+    ax.tick_params(axis='both', colors='white')  # Ticks and labels
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white')  # Axis lines
+
+    # Set legend with white text
+    plt.legend(
+        loc="upper left", 
+        bbox_to_anchor=(1, 1), 
+        shadow=False, 
+        scatterpoints=1, 
+        fontsize=10, 
+        frameon=False, 
+        facecolor='black', 
+        edgecolor='black', 
+        labelcolor='white')
+    plt.title("PCA of SCC WSIs (all features kept)")
+
+    # Adjust the layout to prevent clipping of legend and title
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
+
+    #Create Name for saving
+    savename = 'PCA_SCC_WSIs_cohorts_coloring_2D_all_features.png'
+
+    #Saving
+    if not os.path.exists(pathtosavefolder + '/PCA/'):
+        os.makedirs(pathtosavefolder + '/PCA/')
+    savedpca_path = pathtosavefolder + '/PCA/' + savename
+    plt.savefig(savedpca_path)
+    plt.clf()
+
+    print('PCAs with cohorts coloring saved.')
+
+
+    #### PCA 2D 
+    pca = PCA(n_components=2)
+    # Create vector for fit method
+    X = pd.DataFrame(featarray)
+    X = np.transpose(X)
+    # X = X.astype('float32')
+    # Standardize the dataset
+    # Create an instance of StandardScaler
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    # Create classification target vector for visu
+    # here I can just hard code the cohorts by checking the order of each sample inside feat array
+
+    # Also check if I can add an ID for the samples ato display as a name in addition to the color corresponding to the cohort
+
+    target = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        2,
+        2, 
+        2,
+        2,
+        2,
+        3, 
+        3,
+        3,
+        1, 
+        1,
+        1,
+        1,
+        1,
+        1,
+        1, 
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+    ] # List of Class of cohorts from 0 to 9
+    # AS it is EXPLORATOY, the list will be hardcoded
+    target = np.asarray(target)
+
+    sample_names = [
+        'S03604_03',
+        'S03605_01',
+        'S03611_03',
+        'S03612_03',
+        'S03613_01',
+        'S03614_01', 
+        'S03615_01', 
+        'S03616_01',
+        'S03622_01', 
+        'S03623_01', 
+        'S03625_03', 
+        'S03627_02',
+        'S03628_03',
+        'S03631_01', 
+        'S03633_02', 
+        'S03634_02', 
+        'S03637_01', 
+        'S03638_02', 
+        'S03639_01',
+        'S03640_01', 
+        'S03641_01',
+        'S03642_03',
+        'S03643_01', 
+        'S03644_02', #23 
+        'S03645_01', 
+        'S03646_02', 
+        'S03647_02',
+        'S03651_03', 
+        'S03652_01', 
+        'S03654_01', 
+        'S03655_01', 
+        'S03656_02',
+        'S03785_01', 
+        'S03786_01', 
+        'S03789_01', #34 
+        'TUM16', 
+        'TUM17',
+        'TUM18'
+    ] # Name of samples to be displayed  
+    # AS it is EXPLORATOY, the list will be hardcoded
+
+
+    # Target names for visualization
+    target_names = [
+        'Salzburg',    #0
+        'Dortmund',    #2
+        'Cologne',     #4
+        'Oberhausen',  #6
+        'Munich',      #8
+        ]
+
+    # PCA fitting
+    pca_result = pca.fit(X_scaled).transform(X_scaled)
+
+    # 2D PCA plot
+    fig, ax = plt.subplots(figsize=(12, 8))  # Increase the figure size
+    # interesting colors = ["navy", "darkorange"]
+    colors = [
+        'skyblue', 
+        'palegreen', 
+        'lightcoral', 
+        'plum', 
+        'yellow'
+        ]
+
+    lw = 2
+
+    # Set background color to black
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+
+    # Plot each cohort group and label points
+    for i in range(len(colors)):
+        mask = target == i
+        plt.scatter(
+            pca_result[mask, 0], 
+            pca_result[mask, 1], 
+            color=colors[i], 
+            alpha=0.8, 
+            lw=lw, 
+            label=target_names[i] if i < len(target_names) else f'Cohort {i}'
+        )
+
+    # # Add sample names as labels with white color
+    # for i, name in enumerate(sample_names):
+    #     plt.text(pca_result[i, 0], pca_result[i, 1], name, fontsize=8, ha='right', color='white')
+
+    # Set axis labels and title with white color
+    ax.set_xlabel('Principal Component 1', color='white')
+    ax.set_ylabel('Principal Component 2', color='white')
+    plt.title("PCA of SCC WSIs (all features kept)", color='white')
+
+    # Set axis ticks and lines to white
+    ax.tick_params(axis='both', colors='white')  # Ticks and labels
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white')  # Axis lines
+
+    # Set legend with white text
+    plt.legend(
+        loc="upper left", 
+        bbox_to_anchor=(1, 1), 
+        shadow=False, 
+        scatterpoints=1, 
+        fontsize=10, 
+        frameon=False, 
+        facecolor='black', 
+        edgecolor='black', 
+        labelcolor='white')
+    plt.title("PCA of SCC WSIs (all features kept)")
+
+    # Adjust the layout to prevent clipping of legend and title
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
+
+    #Create Name for saving
+    savename = 'PCA_SCC_WSIs_cohorts_coloring2_2D_all_features.png'
+
+    #Saving
+    if not os.path.exists(pathtosavefolder + '/PCA/'):
+        os.makedirs(pathtosavefolder + '/PCA/')
+    savedpca_path = pathtosavefolder + '/PCA/' + savename
+    plt.savefig(savedpca_path)
+    plt.clf()
+
+    print('PCAs with cohorts coloring 2 saved.')
 
 
 

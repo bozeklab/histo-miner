@@ -35,17 +35,17 @@ path2vectors = pathtofolder + '/' + eval_folder_name + '/'
 ext = '.npy'
 
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_npretest1.npy')
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_npretest1.npy')
-xgbmean_aAcc_boruta = np.load(path2vectors + 'mean_xgboost_ba_boruta_5splits_npretest1.npy')
-if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1.npy'):
-     nbr_featkept_xgb_boruta = np.load(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1.npy')
+xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint1_noscaler.npy')
+xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_preprint1_noscaler.npy')
+xgbmean_aAcc_boruta = np.load(path2vectors + 'min_xgboost_ba_boruta_5splits_preprint1_noscaler.npy')
+if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy'):
+     nbr_featkept_xgb_boruta = np.load(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy')
 # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
 # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
 # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
 
 # Creating x coordinates for mrmr and mannwhtneyu
-x = np.linspace(1, 317,len(xgbmean_aAcc_mannwhitneyu))
+x = np.linspace(1, 317, len(xgbmean_aAcc_mrmr))
 
 
 # lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits_allCohorts' + ext)
@@ -75,9 +75,9 @@ plt.figure(figsize=(18, 8))
 plt.figure(figsize=(6, 4))
 
 # First figure with xgboost
-# plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
 # plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
-plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
+# plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
 # plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
 # plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
 

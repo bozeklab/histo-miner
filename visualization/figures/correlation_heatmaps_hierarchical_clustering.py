@@ -34,10 +34,9 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtomainfolder = config.paths.folders.main
 featselfolder = config.paths.folders.feature_selection_main
 pathtosavefolder = config.paths.folders.visualizations
-example_json = config.names.example_json
+example_json = config.paths.files.example_json
 
 
 
@@ -50,19 +49,9 @@ matrix_relative_path = '/correlation_matrix.npy'
 #load correlation matrix
 corrmat = np.load(featselfolder + matrix_relative_path)
 
-
-# We can create the list of feature name just by reading on jsonfile
-pathto_sortedfolder = pathtomainfolder + '/' + 'tissue_analyses_sorted/'
-path_exjson = pathto_sortedfolder + example_json
-with open(path_exjson, 'r') as filename:
-    analysisdata = filename.read()
-    analysisdata = json.loads(analysisdata)
-    # flatten the dict (with redundant keys in nested dict, see function)
-    # Convert flatten allow to have only the last snested key as name!
-    analysisdataflat = convert_flatten(analysisdata)
-
-featnames = list(analysisdataflat.keys())
-
+pathfeatnames = featselfolder + 'featnames' + '.npy'
+featnames = np.load(pathfeatnames)
+featnameslist = list(featnames)
 
 
 #############################################################
@@ -78,8 +67,9 @@ panda_corrmat = pd.DataFrame(corrmat, columns=featnames, index=featnames)
 
 ## Plot figure
 plt.figure(figsize=(35,30))
-sns.heatmap(round(panda_corrmat,2),  annot_kws={"size": 7}, cmap='RdBu', annot=True, vmin=-1, vmax=1);
-# plt = plt.gcf()
+sns.heatmap(panda_corrmat,  annot_kws={"size": 7}, cmap='RdBu', annot=False, vmin=-1, vmax=1);
+plt = plt.gcf()
+#round(panda_corrmat,2)
 
 
 ## Save figure 
@@ -126,7 +116,7 @@ for idx, i in enumerate(panda_corrmat.columns[labels_order]):
 ### Plot figure
 plt.figure(figsize=(35,30))
 correlations = clustered.corr()
-sns.heatmap(round(correlations,2), cmap='RdBu', annot=True, 
+sns.heatmap(round(correlations,2), cmap='RdBu', annot=False, 
             annot_kws={"size": 7}, vmin=-1, vmax=1);
 
 
