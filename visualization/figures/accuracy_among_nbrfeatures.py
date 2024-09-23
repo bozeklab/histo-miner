@@ -25,6 +25,13 @@ pathtofolder = config.paths.folders.classification_evaluation
 eval_folder_name = config.names.eval_folder
 pathtosavefolder = config.paths.folders.visualizations
 
+## Put conditions on which one to plot (no different codes, it is not necessary here)
+# We don't necessarely display everything at the same time but it is still a possiblity 
+#Boleans
+
+mrmr_viz = True 
+mannwhitneyu_viz = False
+boruta_viz = False 
 
 
 #############################################################
@@ -34,38 +41,24 @@ pathtosavefolder = config.paths.folders.visualizations
 path2vectors = pathtofolder + '/' + eval_folder_name + '/' 
 ext = '.npy'
 
+
+# For xgboost 
+
 # Load vectors from files
-xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint1_noscaler.npy')
-xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_preprint1_noscaler.npy')
-xgbmean_aAcc_boruta = np.load(path2vectors + 'min_xgboost_ba_boruta_5splits_preprint1_noscaler.npy')
-if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy'):
-     nbr_featkept_xgb_boruta = np.load(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy')
-# xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
-# xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
-# xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
-
-# Creating x coordinates for mrmr and mannwhtneyu
-x = np.linspace(1, 317, len(xgbmean_aAcc_mrmr))
-
-
-# lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits_allCohorts' + ext)
-# lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_10splits_allCohorts' + ext)
-# lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_10splits_allCohorts' + ext)
-# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohorts' + ext):
-#      nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohorts' + ext)
-# lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
-# lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
-# lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
-
-# # Creating x coordinates for mrmr and mannwhtneyu
-# x = np.linspace(56, 1, len(lgbmmean_aAcc_mrmr))
-
-
-
-# if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1' + ext):
-#     # need to duplicate the value for boruta 
-#     xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
-#     xgb_xboruta = nbr_featkept_xgb_boruta
+if mrmr_viz:
+    xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint1_noscaler.npy')
+    # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
+    # Creating x coordinates for mrmr (also works with mannwhtneyu running)
+    x = np.linspace(1, 317, len(xgbmean_aAcc_mrmr))
+if mannwhitneyu_viz:
+    xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_preprint1_noscaler.npy')
+    # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
+if boruta_viz:
+    xgbmean_aAcc_boruta = np.load(path2vectors + 'min_xgboost_ba_boruta_5splits_preprint1_noscaler.npy')
+    # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
+    if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy'):
+         nbr_featkept_xgb_boruta = np.load(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy')
+         xgb_xboruta = nbr_featkept_xgb_boruta
 
 
 
@@ -75,15 +68,20 @@ plt.figure(figsize=(18, 8))
 plt.figure(figsize=(6, 4))
 
 # First figure with xgboost
-plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
-# plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
-# plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
-# plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
-# plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+if mrmr_viz:
+    plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
+    # plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
+if mannwhitneyu_viz:
+    plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
+    # plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
+if boruta_viz:
+        if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy'):
+            plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
+            # plt.plot(xboruta, xgbbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
+        else:
+            print("Path with all boruta information not found ")
 
-
-# plt.plot(xboruta, xgbbestsplit_aAcc_boruta, label='bestsplit_boruta', color='wheat')
-plt.xlim(max(x), min(x))
+plt.xlim(min(x), max(x))
 
 # Plot random classification binary accuracy
 plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
@@ -92,15 +90,42 @@ plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy'
 plt.xlabel('Number of feature kept')
 plt.ylabel('Balanced Accuracy of Classification')
 plt.title('Effect of number of kept features on xgboost balanced accuracy')
-#plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 # Set the step on the y-axis
 plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
 plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'plot1.png')
+plt.savefig(pathtosavefolder + 'accuracy_among_figure_1.png')
 plt.clf()
+
+
+
+# For lgbm 
+
+# lgbmmean_aAcc_mrmr = np.load(path2vectors + 'mean_ba_mrmr_lgbm_10splits_allCohorts' + ext)
+# lgbmmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_ba_mannwhitneyu_lgbm_10splits_allCohorts' + ext)
+# lgbmmean_aAcc_boruta = np.load(path2vectors + 'mean_ba_boruta_lgbm_10splits_allCohorts' + ext)
+# if os.path.exists(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohorts' + ext):
+#      nbr_featkept_lgbm_boruta = np.load(path2vectors + 'nbr_feat_kept_boruta_lgbm_10splits_allCohorts' + ext)
+# lgbmbestsplit_aAcc_mrmr = np.load(path2vectors + 'lgbmbestsplit_aAcc_mrmr' + ext)
+# lgbmbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'lgbmbestsplit_aAcc_mannwhitneyu' + ext)
+# lgbmbestsplit_aAcc_boruta = np.load(path2vectors + 'lgbmbestsplit_aAcc_boruta' + ext)
+# # Creating x coordinates for mrmr and mannwhtneyu
+# x = np.linspace(56, 1, len(lgbmmean_aAcc_mrmr))
+
+
+# if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5npretest1' + ext):
+#     # need to duplicate the value for boruta 
+#     xgbmean_aAcc_boruta = [xgbmean_aAcc_boruta[0], xgbmean_aAcc_boruta[0]]
+#     
+
+
+
+
+
+
 
 
 
@@ -141,9 +166,6 @@ plt.clf()
 # # Save the plot on the root classification_evaluation directory
 # plt.savefig(pathtosavefolder + 'varfeat-classic-ranking-lgbm-logs-vici.png')
 # plt.clf()
-
-
-
 
 
 

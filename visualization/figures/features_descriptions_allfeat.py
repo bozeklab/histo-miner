@@ -526,13 +526,13 @@ if pca:
     #### PCA 2D 
     pca = PCA(n_components=2)
     # Create vector for fit method
-    X = pd.DataFrame(featarray)
-    X = np.transpose(X)
-    # X = X.astype('float32')
-    # Standardize the dataset
-    # Create an instance of StandardScaler
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    # X = pd.DataFrame(featarray)
+    # X = np.transpose(X)
+    # # X = X.astype('float32')
+    # # Standardize the dataset
+    # # Create an instance of StandardScaler
+    # scaler = StandardScaler()
+    # X_scaled = scaler.fit_transform(X)
     # Create classification target vector for visu
     # here I can just hard code the cohorts by checking the order of each sample inside feat array
 
@@ -638,6 +638,28 @@ if pca:
         'Munich-dis'    #9
         ]
 
+    # Keep given cohort information and remove the rest
+    new_target = [value for  value in target if value == 8 or value == 9]
+    new_target_idx = [index for index, value in enumerate(target) if value == 8 or value == 9]
+    new_sample_names = [sample_names[i] for i in new_target_idx]
+    new_target_names = [target_names[8], target_names[9]]
+ 
+    X = pd.DataFrame(featarray)
+
+    # select a givin cohort
+    X = X[new_target_idx]
+    
+    # here or after transpose we could select one cohort excusively, see with pudb
+    X = np.transpose(X)
+
+
+    # X = X.astype('float32')
+    # Standardize the dataset
+    # Create an instance of StandardScaler
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+
     # PCA fitting
     pca_result = pca.fit(X_scaled).transform(X_scaled)
 
@@ -663,21 +685,35 @@ if pca:
     fig.patch.set_facecolor('black')
     ax.set_facecolor('black')
 
-    # Plot each cohort group and label points
-    for i in range(len(colors)):
-        mask = target == i
+    #new colors
+    new_colors = [colors[8], colors[9]]
+
+    for color, target_value, target_name in zip(new_colors, [8, 9], new_target_names):
+        mask = np.array(new_target) == target_value
         plt.scatter(
-            pca_result[mask, 0], 
-            pca_result[mask, 1], 
-            color=colors[i], 
+            pca_result[mask == i, 0], 
+            pca_result[mask == i, 1], 
+            color=color, 
             alpha=0.8, 
             lw=lw, 
-            label=target_names[i] if i < len(target_names) else f'Cohort {i}'
+            label=target_name
         )
 
-    # # Add sample names as labels with white color
-    # for i, name in enumerate(sample_names):
-    #     plt.text(pca_result[i, 0], pca_result[i, 1], name, fontsize=8, ha='right', color='white')
+    # # Plot each cohort group and label points
+    # for i in range(len(new_colors)):
+    #     mask = target == i
+    #     plt.scatter(
+    #         pca_result[mask, 0], 
+    #         pca_result[mask, 1], 
+    #         color=colors[i], 
+    #         alpha=0.8, 
+    #         lw=lw, 
+    #         label=target_names[i] if i < len(target_names) else f'Cohort {i}'
+    #     )
+
+    # Add sample names as labels with white color
+    for i, name in enumerate(new_sample_names):
+        plt.text(pca_result[i, 0], pca_result[i, 1], name, fontsize=5, ha='right', color='white')
 
     # Set axis labels and title with white color
     ax.set_xlabel('Principal Component 1', color='white')
@@ -706,7 +742,7 @@ if pca:
     plt.tight_layout(rect=[0, 0, 0.85, 1])
 
     #Create Name for saving
-    savename = 'PCA_SCC_WSIs_cohorts_coloring_2D_all_features.png'
+    savename = 'PCA_SCC_WSIs_Munich _all_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
