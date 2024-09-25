@@ -5,7 +5,7 @@
 
 # All parameters of string names
   names:
-    run_name: "preprint_xgboost_hclutering"
+    run_name: "preprint_xgboost_onrec"
 
     permutation_idx:
 

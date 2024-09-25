@@ -86,6 +86,18 @@ featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
 
+# Load patient ids
+path_patientids_array = pathfeatselect + 'patientids' + ext
+patientids_load = np.load(path_patientids_array, allow_pickle=True)
+patientids_list = list(patientids_load)
+patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
+patientids = np.asarray(patientids_convert)
+
+#Calculate number of different patients:
+unique_elements_set = set(patientids_list)
+num_unique_elements = len(unique_elements_set)
+print('Number of patient is:', num_unique_elements)
+
 
 
 ##############################################################
@@ -132,23 +144,36 @@ print('Start Classifiers trainings...')
 
 train_featarray = np.transpose(train_featarray)
 
-
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
 # scaler.fit(train_featarray) 
 # train_featarray = scaler.transform(train_featarray) 
 
+# Create a mapping of unique elements to positive integers
+mapping = {}
+current_integer = 1
+patientids_ordered = []
+
+for num in patientids:
+    if num not in mapping:
+        mapping[num] = current_integer
+        current_integer += 1
+    patientids_ordered.append(mapping[num])
+
+patientids_ordered = np.asarray(patientids_ordered)
+
 
 ### Create Stratified Group to further split the dataset into n_splits 
-stratkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
+stratgroupkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
 
 
 # Create a list of splits with all features 
 splits_nested_list = list()
 # Create a list of patient IDs corresponding of the splits:
 splits_patientID_list = list()
-for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray, 
-                                                                 train_clarray 
+for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
+                                                                 train_clarray, 
+                                                                 groups=patientids_ordered
                                                                  )):
     # Generate training and test data from the indexes
     X_train = train_featarray[train_index]
@@ -157,6 +182,12 @@ for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray,
     y_test = train_clarray[test_index]
 
     splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+    # Generate the corresponding list for patient ids
+    X_train_patID = patientids_ordered[train_index]
+    X_test_patID = patientids_ordered[test_index]
+
+    splits_patientID_list.append([X_train_patID, X_test_patID])
 
 
 # Initialization of parameters
