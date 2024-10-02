@@ -178,6 +178,7 @@ if run_xgboost and not run_lgbm:
     selfeat_mrmr_names_allsplits = []
     selfeat_mrmr_id_allsplits = []
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -235,7 +236,7 @@ if run_xgboost and not run_lgbm:
                                                                     y_pred_allfeat)
 
                 # Update mrmr list with the all feature evaluation
-                balanced_accuracies_mrmr.append(balanced_accuracy_allfeat)
+                all_features_balanced_accuracy.append(balanced_accuracy_allfeat)
 
 
             # Then we decrease number of feature kept during training + evaluation
@@ -295,6 +296,7 @@ elif run_lgbm and not run_xgboost:
     selfeat_mrmr_names_allsplits = []
     selfeat_mrmr_id_allsplits = []
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -334,8 +336,6 @@ elif run_lgbm and not run_xgboost:
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
-        balanced_accuracies_mannwhitneyu = list()
-
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr and mannwhitneyu selected features
@@ -361,7 +361,7 @@ elif run_lgbm and not run_xgboost:
                                                                     y_pred_allfeat)
 
                 # Update mrmr and mannwhitney list with the all feature evaluation
-                balanced_accuracies_mrmr.append(balanced_accuracy_allfeat)
+                all_features_balanced_accuracy.append(balanced_accuracy_allfeat)
 
 
             # Then we decrease number of feature kept during training + evaluation
@@ -382,8 +382,7 @@ elif run_lgbm and not run_xgboost:
                     train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
                     lightgbm_mrmr_training_inst = lightgbm.train(
                         param_lightgbm,
-                        train_data,
-                        num_round=10)
+                        train_data)
 
                     # Predictions on the test split
                     y_pred_mrmr = lightgbm_mrmr_training_inst.predict(
@@ -418,7 +417,6 @@ else:
 ## Extract mean,min,max of balanced accuracy and kept feature names 
 ####################################################################
 
-
 ## calculate and write the saving of the mean balanced accuracies
 ## Do for mrmr
 # Calculate the mean accuracies 
@@ -430,8 +428,31 @@ std_balanced_accuracies_mrmr = list()
 
 best_mean_mrmr = 0
 
-# do the list of means 
-for index in range(0, nbr_feat):
+
+# we want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
+# but we keep the first element as it is with all features
+
+listoflengths = list()
+
+for i in range(nbr_of_splits):
+
+    currentsplit =  f"split_{i}"
+    listoflengths.append(length_selfeatmrmr[currentsplit])
+
+nbrkept_max_allsplits = min(listoflengths)
+print(nbrkept_max_allsplits)
+
+# remove firsts elements to be comparable in termes of number of feat kept
+for i in range(nbr_of_splits):
+
+    currentsplit =  f"split_{i}"
+    # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
+    balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+
+    selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+
+
+for index in range(0, nbrkept_max_allsplits):
     
     ba_featsel_mrmr = list()
 
@@ -439,30 +460,25 @@ for index in range(0, nbr_feat):
 
         currentsplit =  f"split_{i}"
 
-        # We check if with this index value we can process mrmr metrics (because the size of vect varies)
-        if (nbr_feat - index + 1) <= length_selfeatmrmr[currentsplit]:
+        balanced_accuracy_mrmr = np.asarray(
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
+            ) 
 
-            balanced_accuracy_mrmr = np.asarray(
-                balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][nbr_feat - index - 1]
-                ) 
-            ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+        ba_featsel_mrmr.append(balanced_accuracy_mrmr)
 
 
-     # We check if with this index value we can process mrmr metrics (because the size of vect varies)
-    if (nbr_feat - index + 1) <= length_selfeatmrmr[currentsplit]:
+    ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
 
-        ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
-
-        mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
-        min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
-        max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
-        std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
+    mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
+    min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
+    max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
+    std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
 
     ###### Find name of selected features that leads to the best prediction
-        if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
-            nbr_kept_features_mrmr = nbr_feat - index
-            kept_features_mrmr = [selfeat for selfeat in selfeat_mrmr_names_allsplits[0: index+1]]
-            best_mean_mrmr = np.mean(ba_featsel_mrmr)
+    if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
+        nbr_kept_features_mrmr = nbrkept_max_allsplits - index
+        kept_features_mrmr = [split[0: nbr_kept_features_mrmr + 1] for split in selfeat_mrmr_names_allsplits]
+        best_mean_mrmr = np.mean(ba_featsel_mrmr)
 
 
 mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
@@ -471,6 +487,10 @@ max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
 std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 
 
+# for all features
+
+all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
 
 
@@ -482,12 +502,14 @@ std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 # If there is a tie, we calculate their scores, if there are most 1s 
 # than we keep them
 
+# We keep it hardcoded for now
+nbr_kept_feat = 25
+
 
 # Create a score for feature selection
-featscores = [10000, 1000, 100, 10, 1] * nbr_of_splits
+prescores = [10**(index) for index in range(0,nbr_kept_feat)]
 
-# We keep it hardcoded for now
-nbr_kept_feat = 5
+featscores = prescores * nbr_of_splits
 
 
 ##### Best slected features by MRMR 
@@ -515,6 +537,18 @@ sorted_bestfeatindex_mrmr = sorted(
 
 # Retrieve names of best selected features
 mrmr_finalselfeat_names = list(featnames[sorted_bestfeatindex_mrmr[0:nbr_kept_feat]])
+
+
+# create a list with  featindex count and score 
+# Create a dictionary to store the best features with their count and score
+best_features_info = {
+    featnames[featindex]: {
+        'count': featindex_counts_mrmr[featindex],
+        'score': score_sums[featindex]
+    }
+    for featindex in sorted_bestfeatindex_mrmr[0:nbr_kept_feat]
+}
+
 
 
 
@@ -585,13 +619,15 @@ with open(save_text_path, 'w') as file:
 
     file.write('\n\n\n\n ** mrmr **')
     file.write('\n\nBest mean balanced accuracy is:' +  
-        str(best_mean_mrmr))  
+        str(best_mean_mrmr)) 
+    file.write('\n\nAll feat mean balanced accuracy is:' +  
+        str(mean_ba_allfeat))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
         str(nbr_kept_features_mrmr))  
-    file.write('\n\nThese features are:' +
-        str(kept_features_mrmr)) 
-    file.write('\n\nThe best 5 features overall are:' +  
-        str([mrmr_finalselfeat_names]))
+    # file.write('\n\nThese features are:' +
+    #     str(kept_features_mrmr)) 
+    file.write('\n\nThe best features overall are:' +  
+        str([best_features_info]))
     #file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 

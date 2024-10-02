@@ -29,8 +29,8 @@ pathtosavefolder = config.paths.folders.visualizations
 # We don't necessarely display everything at the same time but it is still a possiblity 
 #Boleans
 
-mrmr_viz = True 
-mannwhitneyu_viz = False
+mrmr_viz = False 
+mannwhitneyu_viz = True
 boruta_viz = False 
 
 
@@ -46,13 +46,30 @@ ext = '.npy'
 
 # Load vectors from files
 if mrmr_viz:
-    xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint1_noscaler.npy')
+    xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
+    xgbmax_aAcc_mrmr = np.load(path2vectors + 'max_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
+    xgbmin_aAcc_mrmr = np.load(path2vectors + 'min_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
+    xgbstd_aAcc_mrmr = np.load(path2vectors + 'std_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
     # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
     # Creating x coordinates for mrmr (also works with mannwhtneyu running)
-    x = np.linspace(1, 317, len(xgbmean_aAcc_mrmr))
+    # Generating the line fo std with elment wise addition
+    std_up = xgbmean_aAcc_mrmr + xgbstd_aAcc_mrmr
+    std_down = xgbmean_aAcc_mrmr  - xgbstd_aAcc_mrmr
+
+    x = np.linspace(280, 1, len(xgbmean_aAcc_mrmr))
+
 if mannwhitneyu_viz:
-    xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_preprint1_noscaler.npy')
+    xgbmean_aAcc_mannwhitneyu = np.load(path2vectors + 'mean_xgboost_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.npy')
+    xgbmax_aAcc_mannwhitneyu = np.load(path2vectors + 'max_xgboost_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.npy')
+    xgbmin_aAcc_mannwhitneyu = np.load(path2vectors + 'min_xgboost_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.npy')
+    xgbstd_aAcc_mannwhitneyu = np.load(path2vectors + 'std_xgboost_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.npy')
     # xgbbestsplit_aAcc_mannwhitneyu = np.load(path2vectors + 'xgbbestsplit_aAcc_mannwhitneyu' + ext)
+    # Generating the line fo std with elment wise addition
+    std_up = xgbmean_aAcc_mannwhitneyu + xgbstd_aAcc_mannwhitneyu
+    std_down = xgbmean_aAcc_mannwhitneyu  - xgbstd_aAcc_mannwhitneyu
+    
+    x = np.linspace(280, 1, len(xgbmean_aAcc_mannwhitneyu))
+
 if boruta_viz:
     xgbmean_aAcc_boruta = np.load(path2vectors + 'min_xgboost_ba_boruta_5splits_preprint1_noscaler.npy')
     # xgbbestsplit_aAcc_boruta = np.load(path2vectors + 'xgbbestsplit_aAcc_boruta' + ext)
@@ -64,16 +81,25 @@ if boruta_viz:
 
 # PLot figure for xgboost
 # Increase the figure width to make room for the legend
-plt.figure(figsize=(18, 8))
-plt.figure(figsize=(6, 4))
+plt.figure(figsize=(16, 10))
+# plt.figure(figsize=(6, 4))
 
 # First figure with xgboost
 if mrmr_viz:
     plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
-    # plt.plot(x, xgbbestsplit_aAcc_mrmr, label='bestsplit_mrmr', color='lightskyblue')
+    # plt.plot(x, std_up, color='lightskyblue')
+    # plt.plot(x, std_down, label='standard deviation', color='lightskyblue')
+    plt.plot(x, xgbmax_aAcc_mrmr, color='lightskyblue')
+    plt.plot(x, xgbmin_aAcc_mrmr, label='best and worst split', color='lightskyblue')
+
+
 if mannwhitneyu_viz:
     plt.plot(x, xgbmean_aAcc_mannwhitneyu, label='cvmean_mannwhitney', color='darkgreen')
-    # plt.plot(x, xgbbestsplit_aAcc_mannwhitneyu, label='bestsplit_mannwhitney', color='lightgreen')
+    plt.plot(x, std_up, color='lightgreen')
+    plt.plot(x, std_down, label='standard deviation', color='lightgreen')
+    # plt.plot(x, xgbmax_aAcc_mannwhitneyu, color='lightgreen')
+    # plt.plot(x, xgbmin_aAcc_mannwhitneyu, label='best and worst split', color='lightgreen')
+
 if boruta_viz:
         if os.path.exists(path2vectors + 'xgboostnbr_feat_kept_boruta_5preprint1_noscaler.npy'):
             plt.plot(xgb_xboruta, xgbmean_aAcc_boruta, label='cvmean_boruta', color='darkorange')
@@ -81,7 +107,7 @@ if boruta_viz:
         else:
             print("Path with all boruta information not found ")
 
-plt.xlim(min(x), max(x))
+plt.xlim(max(x), min(x))
 
 # Plot random classification binary accuracy
 plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy')
@@ -90,14 +116,14 @@ plt.axhline(y=0.5, color='black', linestyle='--', label='Random binary accuracy'
 plt.xlabel('Number of feature kept')
 plt.ylabel('Balanced Accuracy of Classification')
 plt.title('Effect of number of kept features on xgboost balanced accuracy')
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.legend(loc='lower center', bbox_to_anchor=(0.5, 0.85), ncol=1)
 
 # Set the step on the y-axis
-plt.yticks(np.arange(0.45, 0.95, 0.05))  # Adjust the values as needed
-plt.ylim(bottom=0.45, top=0.92)  # Weirdly we also need this line to have the 2 spots matching
+plt.yticks(np.arange(0.1, 1.01, 0.1))  # Adjust the values as needed
+plt.ylim(bottom=0.00, top=1.01)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'accuracy_among_figure_1.png')
+plt.savefig(pathtosavefolder + 'std_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.png')
 plt.clf()
 
 

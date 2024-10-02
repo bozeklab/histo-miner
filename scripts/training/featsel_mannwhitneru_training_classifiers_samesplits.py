@@ -415,15 +415,15 @@ best_mean_mannwhitneyu = 0
 for index in range(0, nbr_feat):
     
     ba_featsel_mannwhitneyu = list()
-    ba_featsel_mrmr = list()
 
     for i in range(nbr_of_splits):
 
         currentsplit =  f"split_{i}"
 
-        balanced_accuracy_mannwhitneyu = float(
-            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][nbr_feat - index - 1]
+        balanced_accuracy_mannwhitneyu = np.asarray(
+            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index ]
             ) 
+
         ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
     
     ba_featsel_mannwhitneyu = np.asarray(ba_featsel_mannwhitneyu)
@@ -439,7 +439,7 @@ for index in range(0, nbr_feat):
    
     if np.mean(ba_featsel_mannwhitneyu) > best_mean_mannwhitneyu:
         nbr_kept_features_mannwhitneyu = nbr_feat - index
-        kept_features_mannwhitneyu = [selfeat for selfeat in selfeat_mannwhitneyu_names_allsplits[0: index+1]]
+        kept_features_mannwhitneyu = [split[0: nbr_kept_features_mannwhitneyu+1] for split in selfeat_mannwhitneyu_names_allsplits]
         best_mean_mannwhitneyu = np.mean(ba_featsel_mannwhitneyu)
 
 

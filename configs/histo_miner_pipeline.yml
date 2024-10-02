@@ -12,26 +12,32 @@
       # tissue_analyser_main:  "/data/shared/scc/histo-miner/data_analysis/recurrence/Munich2/"
 
 
-      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
-      tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      tissue_analyses_2_johannesfiltered/"
+      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # tissue_analyses_2_johannesfiltered/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # tissue_analyses_2/cohorts/Cologne/"
 
 
-      # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/feature_selection_allpreprint/"
-      feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      featsel_ta2_johfilt/" 
+      feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/feature_selection_allpreprint/"
+      # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # featsel_ta2_johfilt/" 
+      # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # featsel_ta2_Cologne/" 
 
 
       feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_pretest/"
 
 
-      # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
-      classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      classification_evaluation_ta2_johfilt/"
+      classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
+      # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # classification_evaluation_ta2_johfilt/"
+      # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # classification_evaluation_ta2_Cologne/"
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -39,8 +45,10 @@
         
 
     files:
-      patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/PatientIDs.csv"
+      patientid_csv: "/data/shared/scc/histo-miner/data_analysis/crea_patient_ID_lst/\
+      AllCohorts_PatientIDs.csv"
+      # patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/PatientIDs.csv"
       #it is including extension of the file as well (.csv)
 
       example_json: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -50,7 +58,7 @@
 # All parameters of string names
   names:
       hovernet_mode: wsi
-      eval_folder: results/allpreprint/ 
+      eval_folder: results 
 
       managment:
         # >- is needed because if not we will have an issue with the quotes inside the string

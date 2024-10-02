@@ -121,18 +121,19 @@ for jsonfile in jsonfiles:
         path_to_parentfolder, nameoffile = os.path.split(pathwoext)
 
         # If applicable, create a list of patient ID with same order of feature array and clarray
+        # be careful, vicinity was removed from file name!
         if patientid_avail:
             if 'recurrence' in nameoffile:
                 if calculate_vicinity:
                     if 'no_recurrence' in nameoffile:
-                        namesimplified = nameoffile.replace('_vicinity_no_recurrence _analysed','')
+                        namesimplified = nameoffile.replace('_no_recurrence_analysed','')
                     else:
-                        namesimplified = nameoffile.replace('_vicinity_recurrence _analysed','')
+                        namesimplified = nameoffile.replace('_recurrence_analysed','')
                 else:
                     if 'no_recurrence' in nameoffile:
-                        namesimplified = nameoffile.replace('_no_recurrence _analysed','')
+                        namesimplified = nameoffile.replace('_no_recurrence_analysed','')
                     else:
-                        namesimplified = nameoffile.replace('_recurrence _analysed','')
+                        namesimplified = nameoffile.replace('_recurrence_analysed','')
             patientid_list.append(patientid_dict.get(namesimplified))
 
         # extract information of the JSON as a string

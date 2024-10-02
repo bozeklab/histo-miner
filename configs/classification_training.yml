@@ -5,7 +5,7 @@
 
 # All parameters of string names
   names:
-    run_name: "preprint_xgboost_onrec"
+    run_name: "preprint_xgboost_CPI_80_0-1_v3"
 
     permutation_idx:
 
@@ -28,9 +28,9 @@
 
         random_forest: False
 
-        xgboost: True  
+        xgboost: True   
 
-        light_gbm: False                
+        light_gbm: False                 
 
       save_evaluations: True
 
@@ -126,7 +126,7 @@
       
       random_state: 0
 
-      n_estimators: 40
+      n_estimators: 80
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 40
       # for best mean: 40
