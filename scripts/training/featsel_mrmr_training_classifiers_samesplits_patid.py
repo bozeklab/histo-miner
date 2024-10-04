@@ -5,6 +5,7 @@ import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
 import random
 
+import math
 from tqdm import tqdm
 import random
 import numpy as np
@@ -417,9 +418,10 @@ elif run_lgbm and not run_xgboost:
                         num_round=10)
 
                     # Predictions on the test split
-                    y_pred_mrmr = lightgbm_mrmr_training_inst.predict(
-                        X_test[:, selfeat_mrmr_index_reduced]
+                    y_pred_mrmr_prob = lightgbm_mrmr_training_inst.predict(
+                        X_test[:, selfeat_mrmr_index_reduced],
                         )
+                    y_pred_mrmr  = (y_pred_mrmr_prob > 0.5).astype(int)
 
                     # Calculate balanced accuracy for the current split
                     balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
@@ -512,7 +514,7 @@ for index in range(0, nbrkept_max_allsplits):
     ###### Find name of selected features that leads to the best prediction
     if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
         nbr_kept_features_mrmr = nbrkept_max_allsplits - index
-        kept_features_mrmr = [split[0: nbr_kept_features_mrmr + 1] for split in selfeat_mrmr_names_allsplits]
+        kept_features_mrmr = [split[0: nbr_kept_features_mrmr] for split in selfeat_mrmr_names_allsplits]
         best_mean_mrmr = np.mean(ba_featsel_mrmr)  
 
 
@@ -538,11 +540,14 @@ mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 # than we keep them
 
 
-# Create a score for feature selection
-featscores = [10000, 1000, 100, 10, 1] * nbr_of_splits
+# We set the number of features kept for each splits again
+nbr_kept_feat = nbr_kept_features_mrmr
 
-# We keep it hardcoded for now
-nbr_kept_feat = 5
+
+# Create a score for feature selection
+prescores = [10**(index) for index in range(nbr_kept_feat,0,-1)]
+
+featscores = prescores * nbr_of_splits
 
 
 ##### Best slected features by MRMR 
@@ -562,6 +567,9 @@ score_sums = defaultdict(int)
 for idx, featindex in enumerate(bestsel_mrmr_index):
     score_sums[featindex] += featscores[idx]
 
+# Take log10 for all values
+score_sums = {key: math.log10(value) for key, value in score_sums.items()}
+
 # Sort featindex by occurrence count and then by  scores
 sorted_bestfeatindex_mrmr = sorted(
         featindex_counts_mrmr.keys(), 
@@ -569,7 +577,21 @@ sorted_bestfeatindex_mrmr = sorted(
         )
 
 # Retrieve names of best selected features
-mrmr_finalselfeat_names = list(featnames[sorted_bestfeatindex_mrmr[0:nbr_kept_feat]])
+mrmr_finalselfeat_names = list(featnames[sorted_bestfeatindex_mrmr[0:len(bestsel_mrmr_index)]])
+
+
+# create a list with  featindex count and score 
+# Create a dictionary to store the best features with their count and score
+best_features_info = {
+    featnames[featindex]: {
+        'count': featindex_counts_mrmr[featindex],
+        'score': score_sums[featindex]
+    }
+    for featindex in sorted_bestfeatindex_mrmr[0:len(bestsel_mrmr_index)]
+}
+
+
+
 
 
 
@@ -640,17 +662,18 @@ with open(save_text_path, 'w') as file:
 
     file.write('\n\n\n\n ** mrmr **')
     file.write('\n\nBest mean balanced accuracy is:' +  
-        str(best_mean_mrmr))  
+        str(best_mean_mrmr)) 
     file.write('\n\nAll feat mean balanced accuracy is:' +  
         str(mean_ba_allfeat))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
         str(nbr_kept_features_mrmr))  
-    file.write('\n\nThese features are:' +
-        str(kept_features_mrmr)) 
-    file.write('\n\nThe best 5 features overall are:' +  
-        str([mrmr_finalselfeat_names]))
+    # file.write('\n\nThese features are:' +
+    #     str(kept_features_mrmr)) 
+    file.write('\n\nThe best features overall are:' +  
+        str([best_features_info]))
     #file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
+
 
 print('Text file saved.')
 

@@ -90,6 +90,18 @@ featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
 
+# Load patient ids
+path_patientids_array = pathfeatselect + 'patientids' + ext
+patientids_load = np.load(path_patientids_array, allow_pickle=True)
+patientids_list = list(patientids_load)
+patientids_convert = utils_misc.convert_names_to_integers(patientids_list)
+patientids = np.asarray(patientids_convert)
+
+#Calculate number of different patients:
+unique_elements_set = set(patientids_list)
+num_unique_elements = len(unique_elements_set)
+print('Number of patient is:', num_unique_elements)
+
 
 
 ##############################################################
@@ -142,17 +154,31 @@ train_featarray = np.transpose(train_featarray)
 # scaler.fit(train_featarray) 
 # train_featarray = scaler.transform(train_featarray) 
 
+# Create a mapping of unique elements to positive integers
+mapping = {}
+current_integer = 1
+patientids_ordered = []
+
+for num in patientids:
+    if num not in mapping:
+        mapping[num] = current_integer
+        current_integer += 1
+    patientids_ordered.append(mapping[num])
+
+patientids_ordered = np.asarray(patientids_ordered)
+
 
 ### Create Stratified Group to further split the dataset into n_splits 
-stratkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
+stratgroupkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
 
 
 # Create a list of splits with all features 
 splits_nested_list = list()
 # Create a list of patient IDs corresponding of the splits:
 splits_patientID_list = list()
-for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray, 
-                                                                 train_clarray 
+for i, (train_index, test_index) in enumerate(stratgroupkf.split(train_featarray, 
+                                                                 train_clarray, 
+                                                                 groups=patientids_ordered
                                                                  )):
     # Generate training and test data from the indexes
     X_train = train_featarray[train_index]
@@ -161,6 +187,12 @@ for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray,
     y_test = train_clarray[test_index]
 
     splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+    # Generate the corresponding list for patient ids
+    X_train_patID = patientids_ordered[train_index]
+    X_test_patID = patientids_ordered[test_index]
+
+    splits_patientID_list.append([X_train_patID, X_test_patID])
 
 
 # Initialization of parameters
@@ -461,17 +493,17 @@ boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
 #####
 
 
-# nbr_kept_feat = number_feat_kept_boruta
+nbr_kept_feat = number_feat_kept_boruta
 
 
-# # If nbr_kept_feat = number_feat_kept_boruta this variable is useless but kept for dev purposes 
-# sorted_bestfeatindex_boruta = utils_misc.find_closest_sublist(
-#     selfeat_boruta_id_allsplits, 
-#     nbr_kept_feat
-#     )
+# If nbr_kept_feat = number_feat_kept_boruta this variable is useless but kept for dev purposes 
+sorted_bestfeatindex_boruta = utils_misc.find_closest_sublist(
+    selfeat_boruta_id_allsplits, 
+    nbr_kept_feat
+    )
 
-# # Retrieve names of best selected features
-# boruta_finalselfeat_names = featnames[sorted_bestfeatindex_boruta]
+# Retrieve names of best selected features
+boruta_finalselfeat_names = featnames[sorted_bestfeatindex_boruta]
 
 
 
@@ -508,8 +540,8 @@ np.save(save_results_path + 'min_' + classifier_name + name_boruta_output + save
     max_ba_boruta_npy)
 np.save(save_results_path + 'std_' + classifier_name + name_boruta_output + save_ext, 
     std_ba_boruta_npy)
-# np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_boruta_output + save_ext, 
-#     sorted_bestfeatindex_boruta)
+np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_boruta_output + save_ext, 
+    sorted_bestfeatindex_boruta)
 
 np.save(
     save_results_path + classifier_name  + 'nbr_feat_kept_boruta_'  + 
@@ -551,7 +583,6 @@ with open(save_text_path, 'w') as file:
         str(number_feat_kept_boruta))  
     # file.write('\n\nThe best group of selected feature close of having 5 features is:' +  
     #     str([]))
-    file.write('\n\nIn the case of Boruta we do not rank features but consider groups')
     file.write('\n\nThese features are:' + 
         str(selfeat_boruta_names_allsplits)) 
     

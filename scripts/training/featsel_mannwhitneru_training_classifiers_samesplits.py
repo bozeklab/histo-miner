@@ -5,6 +5,7 @@ import sys
 sys.path.append('../../')  # Only for Remote use on Clusters
 import random
 
+import math
 from tqdm import tqdm
 import random
 import numpy as np
@@ -371,9 +372,11 @@ elif run_lgbm and not run_xgboost:
                     num_round=10)
 
                 # Predictions on the test split
-                y_pred_mannwhitneyu = lightgbm_mannwhitneyu_training_inst.predict(
+                y_pred_mannwhitneyu_prob = lightgbm_mannwhitneyu_training_inst.predict(
                     X_test[:, selfeat_mannwhitneyu_index_reduced]
                     )
+                y_pred_mannwhitneyu = (y_pred_mannwhitneyu_prob > 0.5).astype(int)
+
                 # Calculate balanced accuracy for the current split
                 balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
                                                                          y_pred_mannwhitneyu)
@@ -421,7 +424,7 @@ for index in range(0, nbr_feat):
         currentsplit =  f"split_{i}"
 
         balanced_accuracy_mannwhitneyu = np.asarray(
-            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index ]
+            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index]
             ) 
 
         ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
@@ -439,7 +442,7 @@ for index in range(0, nbr_feat):
    
     if np.mean(ba_featsel_mannwhitneyu) > best_mean_mannwhitneyu:
         nbr_kept_features_mannwhitneyu = nbr_feat - index
-        kept_features_mannwhitneyu = [split[0: nbr_kept_features_mannwhitneyu+1] for split in selfeat_mannwhitneyu_names_allsplits]
+        kept_features_mannwhitneyu = [split[0: nbr_kept_features_mannwhitneyu] for split in selfeat_mannwhitneyu_names_allsplits]
         best_mean_mannwhitneyu = np.mean(ba_featsel_mannwhitneyu)
 
 
@@ -461,11 +464,14 @@ std_ba_mannwhitneyu_npy = np.asarray(std_balanced_accuracies_mannwhitneyu)
 # than we keep them
 
 
-# Create a score for feature selection
-featscores = [10000, 1000, 100, 10, 1] * nbr_of_splits
+# We set the number of features kept for each splits again
+nbr_kept_feat = nbr_kept_features_mannwhitneyu
 
-# We keep it hardcoded for now
-nbr_kept_feat = 5
+
+# Create a score for feature selection
+prescores = [10**(index) for index in range(nbr_kept_feat,0,-1)]
+
+featscores = prescores * nbr_of_splits
 
 
 ##### Best slected features by Mannwhitney U 
@@ -485,6 +491,9 @@ score_sums = defaultdict(int)
 for idx, featindex in enumerate(bestsel_mannwhitneyu_index):
     score_sums[featindex] += featscores[idx]
 
+# Take log10 for all values
+score_sums = {key: math.log10(value) for key, value in score_sums.items()}
+
 # Sort featindex by occurrence count and then by  scores
 sorted_bestfeatindex_mannwhitneyu = sorted(
         featindex_counts_mannwhitneyu.keys(), 
@@ -495,6 +504,15 @@ sorted_bestfeatindex_mannwhitneyu = sorted(
 mannwhitneyu_finalselfeat_names = list(featnames[sorted_bestfeatindex_mannwhitneyu[0:nbr_kept_feat]])
 
 
+# create a list with  featindex count and score 
+# Create a dictionary to store the best features with their count and score
+best_features_info = {
+    featnames[featindex]: {
+        'count': featindex_counts_mannwhitneyu[featindex],
+        'score': score_sums[featindex]
+    }
+    for featindex in sorted_bestfeatindex_mannwhitneyu[0:len(bestsel_mannwhitneyu_index)]
+}
 
 
 
@@ -566,10 +584,10 @@ with open(save_text_path, 'w') as file:
         str(best_mean_mannwhitneyu))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
         str(nbr_kept_features_mannwhitneyu))  
-    file.write('\n\nThese features are:' +  
-        str(kept_features_mannwhitneyu)) 
+    # file.write('\n\nThese features are:' +  
+    #     str(kept_features_mannwhitneyu)) 
     file.write('\n\nThe best 5 features overall are:' +  
-        str([mannwhitneyu_finalselfeat_names]))
+        str([best_features_info]))
     # file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu]))
 

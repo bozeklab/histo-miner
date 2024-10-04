@@ -5,13 +5,13 @@
 
 # All parameters of string names
   names:
-    run_name: "preprint_xgboost_CPI_80_0-1_v3"
+    run_name: "preprint_CPI_20_0-1_v1"
 
-    permutation_idx:
+    # permutation_idx:
 
-      perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
+    #   perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
 
-      perm_cvmean: "bestperm/random_permutation_index_11_28_xgboost_bestmean"
+    #   perm_cvmean: "bestperm/random_permutation_index_11_28_xgboost_bestmean"
 
 
 
@@ -30,7 +30,7 @@
 
         xgboost: True   
 
-        light_gbm: False                 
+        light_gbm: False                  
 
       save_evaluations: True
 
@@ -126,7 +126,7 @@
       
       random_state: 0
 
-      n_estimators: 80
+      n_estimators: 20
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 40
       # for best mean: 40
@@ -161,13 +161,13 @@
       
       random_state: 42
 
-      n_estimators: 1000
+      n_estimators: 200
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 100
       # for best mean: 120
       # for best mean, slides selected: 60
 
-      learning_rate: 0.05
+      learning_rate: 0.01
       # for best split: 0.8
       # for best mean: 0.01
       # for best mean, slides selected:  0.1
@@ -175,7 +175,7 @@
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 5
+      num_leaves: 2
       # for best split: 10
       # for best mean: 20
       # for best mean, slides selected: 15
