@@ -5,7 +5,7 @@
 
 # All parameters of string names
   names:
-    run_name: "preprint_CPI_20_0-1_v1"
+    run_name: "preprint_CPI_180_0-1_v1"
 
     # permutation_idx:
 
@@ -126,7 +126,7 @@
       
       random_state: 0
 
-      n_estimators: 20
+      n_estimators: 180
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 40
       # for best mean: 40
@@ -139,15 +139,15 @@
       # choice to take for binary classification
 
       grid_dict:
-          random_state: [0, 42, 84]
+          random_state: [0, 42]
           # random_state: [0, 42, 84]
           # for dev: [0]
 
-          n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+          n_estimators: [20, 40, 60, 80, 100, 120, 160, 200]
           # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
           # for dev: [20, 100]
          
-          learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]
+          learning_rate: [0.001, 0.01, 0.1, 0.8, 1]
           # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]  
           # for dev: [0.1, 1.2]
 

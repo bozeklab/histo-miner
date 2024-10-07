@@ -12,32 +12,32 @@
       # tissue_analyser_main:  "/data/shared/scc/histo-miner/data_analysis/recurrence/Munich2/"
 
 
-      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
+      tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      tissue_analyses_2_johannesfiltered/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # tissue_analyses_2_johannesfiltered/"
-      # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # tissue_analyses_2/cohorts/Cologne/"
+      # tissue_analyses_2/"
 
 
-      feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_allpreprint/"
+      # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/feature_selection_allpreprint/"
+      feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      featsel_ta2_johfilt/" 
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # featsel_ta2_johfilt/" 
-      # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # featsel_ta2_Cologne/" 
+      # featsel_ta2/" 
 
 
       feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_pretest/"
 
 
-      classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
+      # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
+      classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      classification_evaluation_ta2_johfilt/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # classification_evaluation_ta2_johfilt/"
-      # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # classification_evaluation_ta2_Cologne/"
+      # classification_evaluation_ta2/"
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -173,7 +173,7 @@
 
       calculate_distances: False  
 
-      patientid_avail: True   
+      patientid_avail: False clas   
       
       perpatient_feat: False
       # TO delete before publication

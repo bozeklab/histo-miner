@@ -226,6 +226,16 @@ if run_xgboost and not run_lgbm:
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
 
+        # The array is then transpose to feat FeatureSelector requirements
+        X_train_tr = np.transpose(X_train_tr)
+
+        #Boruta cannot take any NANs
+        nan_raws_indices = np.where(np.any(np.isnan(X_train_tr), axis=1))
+
+        # Remove those columns from y_train and X_train
+        X_train_tr = np.delete(X_train_tr, nan_raws_indices, axis=0)
+        y_train = np.delete(y_train, nan_raws_indices)
+
         ########### SELECTION OF FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
         if i == 0:
@@ -331,7 +341,15 @@ elif run_lgbm and not run_xgboost:
         y_test = splits_nested_list[i][3]
         
         # The array is then transpose to feat FeatureSelector requirements
-        X_train_tr = np.transpose(X_train)
+        X_train_tr = np.transpose(X_train_tr)
+
+        #Boruta cannot take any NANs
+        nan_cols = np.any(np.isnan(X_train_tr), axis=0)
+        nan_col_indices = np.where(nan_cols)[0]
+        # Remove those columns from y_train and X_train
+        X_train_tr = np.delete(X_train_tr, nan_col_indices, axis=1)
+        y_train = np.delete(y_train, nan_col_indices, axis=1)
+
 
         ########### SELECTION OF FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
@@ -493,17 +511,17 @@ boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
 #####
 
 
-nbr_kept_feat = number_feat_kept_boruta
+# nbr_kept_feat = number_feat_kept_boruta
 
 
-# If nbr_kept_feat = number_feat_kept_boruta this variable is useless but kept for dev purposes 
-sorted_bestfeatindex_boruta = utils_misc.find_closest_sublist(
-    selfeat_boruta_id_allsplits, 
-    nbr_kept_feat
-    )
+# # If nbr_kept_feat = number_feat_kept_boruta this variable is useless but kept for dev purposes 
+# sorted_bestfeatindex_boruta = utils_misc.find_closest_sublist(
+#     selfeat_boruta_id_allsplits, 
+#     nbr_kept_feat
+#     )
 
-# Retrieve names of best selected features
-boruta_finalselfeat_names = featnames[sorted_bestfeatindex_boruta]
+# # Retrieve names of best selected features
+# boruta_finalselfeat_names = featnames[sorted_bestfeatindex_boruta]
 
 
 
@@ -566,7 +584,12 @@ txtfilename = (
 )
 
 save_txt_ext = '.txt'
-save_text_path = save_results_path + txtfilename + save_txt_ext
+save_text_folder = save_results_path + '/infofiles/' 
+
+if not os.path.exists(save_text_folder):
+    os.mkdir(save_text_folder)
+
+save_text_path = save_text_folder + txtfilename + save_txt_ext
 
 
 ## ADD NAME OF CLASSIFER THAT WAS RUNNING

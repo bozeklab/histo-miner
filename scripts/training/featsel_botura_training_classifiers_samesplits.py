@@ -534,7 +534,12 @@ txtfilename = (
 )
 
 save_txt_ext = '.txt'
-save_text_path = save_results_path + txtfilename + save_txt_ext
+save_text_folder = save_results_path + '/infofiles/' 
+
+if not os.path.exists(save_text_folder):
+    os.mkdir(save_text_folder)
+
+save_text_path = save_text_folder + txtfilename + save_txt_ext
 
 
 ## ADD NAME OF CLASSIFER THAT WAS RUNNING
