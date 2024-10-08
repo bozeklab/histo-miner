@@ -48,18 +48,9 @@ with open("./../../configs/classification_training.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
-
-xgboost_random_state = config.classifierparam.xgboost.random_state
-xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
-xgboost_lr = config.classifierparam.xgboost.learning_rate
-xgboost_objective = config.classifierparam.xgboost.objective
-lgbm_random_state = config.classifierparam.light_gbm.random_state
-lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
-lgbm_lr = config.classifierparam.light_gbm.learning_rate
-lgbm_objective = config.classifierparam.light_gbm.objective
-lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
+nbr_of_splits = config.parameters.int.nbr_of_splits
+nbr_of_inner_splits = config.parameters.int.nestedcross_inner_splits
 
 # Could be simplified maybe if only one classifier is kept later 
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
@@ -69,6 +60,17 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 # elif run_lgbm and not run_xgboost:
 # else: RAISE error
 
+# For the nested corss validation with HP search 
+xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
+xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
+xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
+xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
+
+lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
+lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
+lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
+lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
+lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
               
 
 ################################################################
@@ -105,33 +107,35 @@ print('Number of patient is:', num_unique_elements)
 ##############################################################
 
 
+# Define the classifiers
 ##### XGBOOST
-xgboost = xgboost.XGBClassifier(random_state= xgboost_random_state,
-                                n_estimators=xgboost_n_estimators, 
-                                learning_rate=xgboost_lr, 
-                                objective=xgboost_objective,
-                                verbosity=0)
+xgboost = xgboost.XGBClassifier(verbosity=0)
+
 ##### LIGHT GBM setting
-# The use of light GBM classifier is not following the convention of the other one
-# Here we will save parameters needed for training, but there are no .fit method
-# lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
-#                                    n_estimators=lgbm_n_estimators,
-#                                    learning_rate=lgbm_lr,
-#                                    objective=lgbm_objective,
-#                                    num_leaves=lgbm_numleaves,
-#                                    verbosity=-1)
-param_lightgbm = {
-                  "random_state": lgbm_random_state,
-                  "n_estimators": lgbm_n_estimators,
-                  "learning_rate": lgbm_lr,
-                  "objective":lgbm_objective,
-                  "num_leaves":lgbm_numleaves,
-                  "verbosity":-1
-                  }
+lightgbm = lightgbm.LGBMClassifier(verbosity=-1)
+
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
 # See parameters documentation to learn about the other verbosity available. 
+
+
+###### Load all paramters into a dictionnary for Grid Search
+xgboost_param_grid = {
+                      'random_state': xgboost_param_grid_random_state,
+                      'n_estimators': xgboost_param_grid_n_estimators,
+                      'learning_rate': xgboost_param_grid_learning_rate,
+                      'objective': xgboost_param_grid_objective
+}
+lgbm_param_grid = {
+                    'random_state': lgbm_param_grid_random_state,
+                    'n_estimators': lgbm_param_grid_n_estimators,
+                    'learning_rate': lgbm_param_grid_learning_rate,
+                    'objective': lgbm_param_grid_objective,
+                    'num_leaves': lgbm_param_grid_num_leaves
+}
+
+
 
 
 ##############################################################
@@ -216,6 +220,8 @@ if run_xgboost and not run_lgbm:
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
+
+        X_train_patID_split = splits_patientID_list[i][0]
         
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
@@ -251,50 +257,117 @@ if run_xgboost and not run_lgbm:
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
-            # First we train with all features 
+
             if nbr_keptfeat_idx == nbr_feat:
-                #Training
-                xgboost_training_allfeat = xgboost.fit(X_train, y_train)
 
-                # Predictions on the test split
-                y_pred_allfeat = xgboost_training_allfeat.predict(X_test)
+                # ENTER NESTED GRID SEARCH HERE 
+                best_inner_balanced_accuracy = 0
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
-                                                                    y_pred_allfeat)
+                print('\n\nNested gridsearch of split {} starting...'.format(i))
 
-                # Update  mannwhitney list with the all feature evaluation
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_allfeat)
+                for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+
+                    # set the parameter set choosen in the grid
+                    xgboost.set_params(**paramset)
+
+                    # Create Stratified Group to further split the dataset into n_splits 
+                    innerstratgroupkf = StratifiedKFold(n_splits=nbr_of_inner_splits, shuffle=False)
+
+                    # create empty lists for initialization
+                    inner_splits_nested_list = list()
+                    inner_splits_patientID_list = list()
+
+                    inner_balanced_accuracy = list()
+
+                    for k, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
+                                                                             y_train, 
+                                                                             groups=X_train_patID_split
+                                                                             )):
+                        # Generate training and test data from the indexes
+                        inner_X_train = X_train[inner_train_index]
+                        inner_X_val = X_train[inner_val_index]
+                        inner_y_train = train_clarray[inner_train_index]
+                        inner_y_val = train_clarray[inner_val_index]
+
+                        inner_splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+                        # Generate the corresponding list for patient ids
+                        inner_X_train_patID = patientids_ordered[inner_train_index]
+                        inner_X_test_patID = patientids_ordered[inner_val_index]
+
+                        inner_splits_patientID_list.append([inner_X_train_patID, inner_X_test_patID])
 
 
-            # Then we decrease number of feature kept during training + evaluation
-            else:
+                    for l in range(nbr_of_inner_splits):  
 
-                # Kept the selected features
-                selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
-                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
+                        inner_X_train = splits_nested_list[l][0]
+                        inner_y_train = splits_nested_list[l][1]
+                        inner_X_val = splits_nested_list[l][2]
+                        inner_y_val = splits_nested_list[l][3]
 
-                # Generate matrix of features
-                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
+                        #Training
+                        xgboost_inner_training_allfeat = xgboost.fit(inner_X_train, inner_y_train)
 
-                #Training
-                # needs to be re initialized each time!!!! Very important
-                xgboost_mannwhitneyu_training = xgboost 
-                # actual training
-                xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
-                                                                       featarray_mannwhitneyu, 
-                                                                       y_train
-                                                                       )
+                        # Predictions on the test split
+                        y_inner_pred_allfeat = xgboost_inner_training_allfeat.predict(inner_X_val)
 
-                # Predictions on the test split
-                y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
-                    X_test[:, selfeat_mannwhitneyu_index_reduced]
-                    )
+                        # Calculate balanced accuracy for the current split
+                        inner_balanced_accuracy_allfeat = balanced_accuracy_score(inner_y_val, 
+                                                                                  y_inner_pred_allfeat)
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
-                                                                         y_pred_mannwhitneyu)
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+                        # Update mannwhitney list with the all feature evaluation
+                        inner_balanced_accuracy.append(inner_balanced_accuracy_allfeat)
+
+
+                    inner_balanced_accuracy_npy = np.asarray(inner_balanced_accuracy)
+                    mean_inner_balanced_accuracy = np.mean(inner_balanced_accuracy_npy)
+
+                    if mean_inner_balanced_accuracy > best_inner_balanced_accuracy:
+                        # we exchange the parameters and store the ba
+                        best_inner_balanced_accuracy = mean_inner_balanced_accuracy
+                        best_paramset = paramset
+
+
+
+                print('\nNested gridsearch of split {} finised'.format(i))
+
+                print('Calculate balanced_accuracies for decreasing number of features kept')
+
+           
+       # Then we decrease number of feature kept during training + evaluation
+
+        else:
+
+            # Kept the selected features
+            selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+            selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
+
+            # Generate matrix of features
+            featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
+
+            #Training
+            # needs to be re initialized each time!!!! Very important
+            xgboost_mannwhitneyu_training = xgboost 
+
+            # we keep the same found parameters (we are on the same outer split ! just different nbr of feat) 
+            # it is then not fully optimized but at least with no biaises
+            xgboost_mannwhitneyu_training.set_params(**best_paramset)
+
+            # actual training
+            xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
+                                                                   featarray_mannwhitneyu, 
+                                                                   y_train
+                                                                   )
+
+            # Predictions on the test split
+            y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
+                X_test[:, selfeat_mannwhitneyu_index_reduced]
+                )
+
+            # Calculate balanced accuracy for the current split
+            balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
+                                                                     y_pred_mannwhitneyu)
+            balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
 
 
         ### Store results 
@@ -358,12 +431,22 @@ elif run_lgbm and not run_xgboost:
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mannwhitneyu = list()
 
-        print('Calculate balanced_accuracies for decreasing number of features kept')
+
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
+
+
+                # ENTER NESTED GRID SEARCH HERE 
+                best_inner_balanced_accuracy = 0
+
+                print('\n\nNested gridsearch of split {} starting...'.format(i))
+
+                for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+
+
                 #Training
                 train_data = lightgbm.Dataset(X_train, label=y_train)
                 lightgbm_training_allfeat = lightgbm.train(
@@ -401,7 +484,7 @@ elif run_lgbm and not run_xgboost:
                     param_lightgbm,
                     train_data
                     )
-                
+
                 # Predictions on the test split
                 y_pred_mannwhitneyu_prob = lightgbm_mannwhitneyu_training_inst.predict(
                     X_test[:, selfeat_mannwhitneyu_index_reduced]

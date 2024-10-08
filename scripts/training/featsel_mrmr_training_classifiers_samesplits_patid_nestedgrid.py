@@ -48,8 +48,9 @@ with open("./../../configs/classification_training.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
+nbr_of_splits = config.parameters.int.nbr_of_splits
+nbr_of_inner_splits = config.parameters.int.nestedcross_inner_splits
 
 # Could be simplified maybe if only one classifier is kept later 
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
@@ -70,10 +71,8 @@ lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n
 lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
 lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
 lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
-
-
-nbr_of_inner_splits = 5
               
+
 
 ################################################################
 ## Load feat array, class arrays and IDs arrays (if applicable)
@@ -113,9 +112,6 @@ print('Number of patient is:', num_unique_elements)
 # Define the classifiers
 ##### XGBOOST
 xgboost = xgboost.XGBClassifier(verbosity=0)
-
-##### LIGHT GBM setting
-lightgbm = lightgbm.LGBMClassifier(verbosity=-1)
 
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
@@ -257,18 +253,17 @@ if run_xgboost and not run_lgbm:
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
 
-
-        print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
+            
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
 
                 # ENTER NESTED GRID SEARCH HERE 
                 best_inner_balanced_accuracy = 0
 
-                print('Nested gridsearch of split {} starting...'.format(i))
+                print('\n\nNested gridsearch of split {} starting...'.format(i))
 
                 for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
 
@@ -284,7 +279,7 @@ if run_xgboost and not run_lgbm:
 
                     inner_balanced_accuracy = list()
 
-                    for i, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
+                    for k, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
                                                                              y_train, 
                                                                              groups=X_train_patID_split
                                                                              )):
@@ -303,12 +298,12 @@ if run_xgboost and not run_lgbm:
                         inner_splits_patientID_list.append([inner_X_train_patID, inner_X_test_patID])
 
 
-                    for i in range(nbr_of_inner_splits):  
+                    for l in range(nbr_of_inner_splits):  
 
-                        inner_X_train = splits_nested_list[i][0]
-                        inner_X_val = splits_nested_list[i][1]
-                        inner_y_train = splits_nested_list[i][2]
-                        inner_y_val = splits_nested_list[i][3]
+                        inner_X_train = splits_nested_list[l][0]
+                        inner_y_train = splits_nested_list[l][1]
+                        inner_X_val = splits_nested_list[l][2]
+                        inner_y_val = splits_nested_list[l][3]
 
                         #Training
                         xgboost_inner_training_allfeat = xgboost.fit(inner_X_train, inner_y_train)
@@ -337,7 +332,10 @@ if run_xgboost and not run_lgbm:
                 all_features_balanced_accuracy.append(best_inner_balanced_accuracy)
 
 
-                print('Nested gridsearch of split {} finised'.format(i))
+                print('\nNested gridsearch of split {} finised'.format(i))
+
+                print('Calculate balanced_accuracies for decreasing number of features kept')
+
 
             # Then we decrease number of feature kept during training + evaluation
 
@@ -410,6 +408,8 @@ elif run_lgbm and not run_xgboost:
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
+
+        X_train_patID_split = splits_patientID_list[i][0]
         
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
@@ -443,31 +443,97 @@ elif run_lgbm and not run_xgboost:
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
 
-        print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
+            # ENTER NESTED GRID SEARCH HERE 
+            best_inner_balanced_accuracy = 0
+
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
-                #Training
-                train_data = lightgbm.Dataset(X_train, label=y_train)
-                lightgbm_training_allfeat = lightgbm.train(
-                    param_lightgbm,
-                    train_data
-                    )
 
-                # Predictions on the test split
-                y_pred_allfeat_prob = lightgbm_training_allfeat.predict(
-                    X_test,
-                    num_iteration=lightgbm_training_allfeat.best_iteration)
-                y_pred_allfeat = (y_pred_allfeat_prob > 0.5).astype(int)
+                # ENTER NESTED GRID SEARCH HERE 
+                best_inner_balanced_accuracy = 0
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
-                                                                    y_pred_allfeat)
+                print('\n\nNested gridsearch of split {} starting...'.format(i))
 
-                # Update mrmr and mannwhitney list with the all feature evaluation
-                all_features_balanced_accuracy.append(balanced_accuracy_allfeat)
+                for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+
+                    # set the parameter set choosen in the grid
+                    # lightgbm.set_params(**paramset)
+
+                    # Create Stratified Group to further split the dataset into n_splits 
+                    innerstratgroupkf = StratifiedKFold(n_splits=nbr_of_inner_splits, shuffle=False)
+
+                    # create empty lists for initialization
+                    inner_splits_nested_list = list()
+                    inner_splits_patientID_list = list()
+
+                    inner_balanced_accuracy = list()
+
+                    for k, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
+                                                                             y_train, 
+                                                                             groups=X_train_patID_split
+                                                                             )):
+                       
+                        # Generate training and test data from the indexes
+                        inner_X_train = X_train[inner_train_index]
+                        inner_X_val = X_train[inner_val_index]
+                        inner_y_train = train_clarray[inner_train_index]
+                        inner_y_val = train_clarray[inner_val_index]
+
+                        inner_splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+                        # Generate the corresponding list for patient ids
+                        inner_X_train_patID = patientids_ordered[inner_train_index]
+                        inner_X_test_patID = patientids_ordered[inner_val_index]
+
+                        inner_splits_patientID_list.append([inner_X_train_patID, inner_X_test_patID])
+
+                    for l in range(nbr_of_inner_splits):  
+
+                        inner_X_train = splits_nested_list[l][0]
+                        inner_y_train = splits_nested_list[l][1]
+                        inner_X_val = splits_nested_list[l][2]
+                        inner_y_val = splits_nested_list[l][3]
+
+                        #Training
+                        train_data = lightgbm.Dataset(inner_X_train, label=inner_y_train)
+                        lightgbm_training_allfeat = lightgbm.train(
+                            paramset,
+                            train_data
+                        )
+
+                        # Predictions on the test split
+                        y_inner_pred_allfeat_prob = lightgbm_training_allfeat.predict(
+                                                     inner_X_val,
+                                                     num_iteration=lightgbm_training_allfeat.best_iteration)
+                        y_inner_pred_allfeat = (y_inner_pred_allfeat_prob > 0.5).astype(int)
+
+                        # Calculate balanced accuracy for the current split
+                        inner_balanced_accuracy_allfeat = balanced_accuracy_score(inner_y_val, 
+                                                                                  y_inner_pred_allfeat)
+
+                         # Update mrmr list with the all feature evaluation
+                        inner_balanced_accuracy.append(inner_balanced_accuracy_allfeat)
+
+
+                    inner_balanced_accuracy_npy = np.asarray(inner_balanced_accuracy)
+                    mean_inner_balanced_accuracy = np.mean(inner_balanced_accuracy_npy)
+
+                    if mean_inner_balanced_accuracy > best_inner_balanced_accuracy:
+                        # we exchange the parameters and store the ba
+                        best_inner_balanced_accuracy = mean_inner_balanced_accuracy
+                        best_paramset = paramset
+
+
+                # Update mrmr list with the all feature evaluation
+                all_features_balanced_accuracy.append(best_inner_balanced_accuracy)
+
+
+                print('\nNested gridsearch of split {} finised'.format(i))
+
+                print('Calculate balanced_accuracies for decreasing number of features kept')
 
 
             # Then we decrease number of feature kept during training + evaluation
@@ -487,9 +553,9 @@ elif run_lgbm and not run_xgboost:
                     #Training
                     train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
                     lightgbm_mrmr_training_inst = lightgbm.train(
-                        param_lightgbm,
+                        best_paramset,
                         train_data,
-                        num_round=10)
+                        )
 
                     # Predictions on the test split
                     y_pred_mrmr_prob = lightgbm_mrmr_training_inst.predict(

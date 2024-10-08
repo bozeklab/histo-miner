@@ -419,8 +419,8 @@ elif run_lgbm and not run_xgboost:
             train_data = lightgbm.Dataset(featarray_boruta, label=y_train)
             lightgbm_boruta_training = lightgbm.train(
                     param_lightgbm,
-                    featarray_boruta,
-                    num_round=10)
+                    featarray_boruta
+                    )
 
             # Predictions on the test split
             y_pred_boruta_prob = lightgbm_boruta_training.predict(

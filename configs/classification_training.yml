@@ -5,7 +5,8 @@
 
 # All parameters of string names
   names:
-    run_name: "preprint_CPI_180_0-1_v1"
+    run_name: "nestedcross_rec_v1"
+    # run_name: "preprint_CPI_checking"
 
     # permutation_idx:
 
@@ -28,9 +29,9 @@
 
         random_forest: False
 
-        xgboost: True   
+        xgboost: False     
 
-        light_gbm: False                  
+        light_gbm: True                    
 
       save_evaluations: True
 
@@ -39,6 +40,8 @@
 
     int:
       nbr_of_splits: 5
+
+      nestedcross_inner_splits: 5
 
 
 # Classifiers parameters

@@ -414,8 +414,8 @@ elif run_lgbm and not run_xgboost:
                     train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
                     lightgbm_mrmr_training_inst = lightgbm.train(
                         param_lightgbm,
-                        train_data,
-                        num_round=10)
+                        train_data
+                        )
 
                     # Predictions on the test split
                     y_pred_mrmr_prob = lightgbm_mrmr_training_inst.predict(

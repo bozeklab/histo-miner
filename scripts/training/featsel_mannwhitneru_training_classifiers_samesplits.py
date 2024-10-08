@@ -368,8 +368,8 @@ elif run_lgbm and not run_xgboost:
                 train_data = lightgbm.Dataset(featarray_mannwhitneyu, label=y_train)
                 lightgbm_mannwhitneyu_training_inst = lightgbm.train(
                     param_lightgbm,
-                    train_data,
-                    num_round=10)
+                    train_data
+                    )
 
                 # Predictions on the test split
                 y_pred_mannwhitneyu_prob = lightgbm_mannwhitneyu_training_inst.predict(
