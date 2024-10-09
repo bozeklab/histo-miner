@@ -3,13 +3,12 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-      inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
+      inferences_postproc_main: "/data/shared/scc/histo-miner/toanalyse_again/"
 
 
-      tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
-      # tissue_analyser_main:  "/data/shared/scc/histo-miner/data_analysis/recurrence/Munich2/"
+      # tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
+      tissue_analyser_main:  "/data/shared/scc/histo-miner/toanalyse_again_2/"
 
 
       # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -17,7 +16,7 @@
       tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       tissue_analyses_2_withcohorts/cohorts/Cologne/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # tissue_analyses_2/"
+      # "
 
 
       # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -41,7 +40,7 @@
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_ta2_Cologne/visualization/"
+      Analyses_cSCC_CPI/classification_evaluation_ta2_Regensburg/visualization/"
         
 
     files:
@@ -171,9 +170,9 @@
       #Used to calculate number of cells (in pourcentage) of a given type
       #in the vicinity 
 
-      calculate_distances: False  
+      calculate_distances: True   
 
-      patientid_avail: False clas   
+      patientid_avail: True     
       
       perpatient_feat: False
       # TO delete before publication
