@@ -141,6 +141,19 @@ lgbm_param_grid = {
 ##############################################################
 
 
+
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
+
+
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mrmr'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
+print('Folder analysed is {}'.format(pathfeatselect))
+
+
 print('Start Classifiers trainings...')
 
 
@@ -749,12 +762,9 @@ if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
 
-if run_xgboost and not run_lgbm:
-    classifier_name = 'xgboost'
-if run_lgbm and not run_xgboost:
-    classifier_name = 'lgbm'
-
-
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mrmr'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
 print('Start saving numpy in folder: ', save_results_path)
 
 
@@ -784,6 +794,7 @@ txtfilename = (
     classifier_name +  '_' +
     'mrmr' +  '_' +
     str(nbr_of_splits) + 'splits_' +
+    str(nbr_of_inner_splits) + 'innersplits_' +
     run_name + '_info'
 )
 
@@ -805,7 +816,7 @@ with open(save_text_path, 'w') as file:
 
     file.write('\n\n\n\n ** mrmr **')
     file.write('\n\nBest mean balanced accuracy is:' +  
-        str(best_mean_mrmr)) 
+        str(max(best_mean_mrmr, mean_ba_allfeat))) 
     file.write('\n\nAll feat mean balanced accuracy is:' +  
         str(mean_ba_allfeat))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
@@ -818,6 +829,7 @@ with open(save_text_path, 'w') as file:
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 
 
+print('Text file name:',txtfilename )
 print('Text file saved.')
 
 

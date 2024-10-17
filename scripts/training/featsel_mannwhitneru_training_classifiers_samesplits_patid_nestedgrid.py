@@ -102,6 +102,7 @@ num_unique_elements = len(unique_elements_set)
 print('Number of patient is:', num_unique_elements)
 
 
+
 ##############################################################
 ## Load Classifiers
 ##############################################################
@@ -110,9 +111,6 @@ print('Number of patient is:', num_unique_elements)
 # Define the classifiers
 ##### XGBOOST
 xgboost = xgboost.XGBClassifier(verbosity=0)
-
-##### LIGHT GBM setting
-lightgbm = lightgbm.LGBMClassifier(verbosity=-1)
 
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
@@ -143,11 +141,23 @@ lgbm_param_grid = {
 ##############################################################
 
 
+
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
+
+
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mrmr'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
+print('Folder analysed is {}'.format(pathfeatselect))
+
+
 print('Start Classifiers trainings...')
 
 
 train_featarray = np.transpose(train_featarray)
-
 
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
@@ -213,6 +223,7 @@ if run_xgboost and not run_lgbm:
     selfeat_mannwhitneyu_names_allsplits = [] 
     selfeat_mannwhitneyu_id_allsplits = [] 
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -257,6 +268,8 @@ if run_xgboost and not run_lgbm:
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
+            # ENTER NESTED GRID SEARCH HERE 
+            best_inner_balanced_accuracy = 0
 
             if nbr_keptfeat_idx == nbr_feat:
 
@@ -327,6 +340,8 @@ if run_xgboost and not run_lgbm:
                         best_inner_balanced_accuracy = mean_inner_balanced_accuracy
                         best_paramset = paramset
 
+                # Update mrmr list with the all feature evaluation
+                all_features_balanced_accuracy.append(best_inner_balanced_accuracy)
 
 
                 print('\nNested gridsearch of split {} finised'.format(i))
@@ -334,40 +349,40 @@ if run_xgboost and not run_lgbm:
                 print('Calculate balanced_accuracies for decreasing number of features kept')
 
            
-       # Then we decrease number of feature kept during training + evaluation
+           # Then we decrease number of feature kept during training + evaluation
 
-        else:
+            else:
 
-            # Kept the selected features
-            selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
-            selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
+                # Kept the selected features
+                selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
 
-            # Generate matrix of features
-            featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
+                # Generate matrix of features
+                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
 
-            #Training
-            # needs to be re initialized each time!!!! Very important
-            xgboost_mannwhitneyu_training = xgboost 
+                #Training
+                # needs to be re initialized each time!!!! Very important
+                xgboost_mannwhitneyu_training = xgboost 
 
-            # we keep the same found parameters (we are on the same outer split ! just different nbr of feat) 
-            # it is then not fully optimized but at least with no biaises
-            xgboost_mannwhitneyu_training.set_params(**best_paramset)
+                # we keep the same found parameters (we are on the same outer split ! just different nbr of feat) 
+                # it is then not fully optimized but at least with no biaises
+                xgboost_mannwhitneyu_training.set_params(**best_paramset)
 
-            # actual training
-            xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
-                                                                   featarray_mannwhitneyu, 
-                                                                   y_train
-                                                                   )
+                # actual training
+                xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
+                                                                       featarray_mannwhitneyu, 
+                                                                       y_train
+                                                                       )
 
-            # Predictions on the test split
-            y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
-                X_test[:, selfeat_mannwhitneyu_index_reduced]
-                )
+                # Predictions on the test split
+                y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
+                    X_test[:, selfeat_mannwhitneyu_index_reduced]
+                    )
 
-            # Calculate balanced accuracy for the current split
-            balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
-                                                                     y_pred_mannwhitneyu)
-            balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+                # Calculate balanced accuracy for the current split
+                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
+                                                                         y_pred_mannwhitneyu)
+                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
 
 
         ### Store results 
@@ -393,6 +408,7 @@ elif run_lgbm and not run_xgboost:
     selfeat_mannwhitneyu_names_allsplits = [] 
     selfeat_mannwhitneyu_id_allsplits = [] 
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -400,6 +416,8 @@ elif run_lgbm and not run_xgboost:
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
+        
+        X_train_patID_split = splits_patientID_list[i][0]
         
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
@@ -431,48 +449,105 @@ elif run_lgbm and not run_xgboost:
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mannwhitneyu = list()
 
-
         ### With mrmr and mannwhitneyu selected features
         for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
 
+            # ENTER NESTED GRID SEARCH HERE 
+            best_inner_balanced_accuracy = 0
+
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
-
 
                 # ENTER NESTED GRID SEARCH HERE 
                 best_inner_balanced_accuracy = 0
 
                 print('\n\nNested gridsearch of split {} starting...'.format(i))
 
-                for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+                for paramset in tqdm(ParameterGrid(lgbm_param_grid)):
+
+                    # set the parameter set choosen in the grid
+                    # lightgbm.set_params(**paramset)
+
+                    # Create Stratified Group to further split the dataset into n_splits 
+                    innerstratgroupkf = StratifiedKFold(n_splits=nbr_of_inner_splits, shuffle=False)
+
+                    # create empty lists for initialization
+                    inner_splits_nested_list = list()
+                    inner_splits_patientID_list = list()
+
+                    inner_balanced_accuracy = list()
+
+                    for k, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
+                                                                             y_train, 
+                                                                             groups=X_train_patID_split
+                                                                             )):
+                       
+                        # Generate training and test data from the indexes
+                        inner_X_train = X_train[inner_train_index]
+                        inner_X_val = X_train[inner_val_index]
+                        inner_y_train = train_clarray[inner_train_index]
+                        inner_y_val = train_clarray[inner_val_index]
+
+                        inner_splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+                        # Generate the corresponding list for patient ids
+                        inner_X_train_patID = patientids_ordered[inner_train_index]
+                        inner_X_test_patID = patientids_ordered[inner_val_index]
+
+                        inner_splits_patientID_list.append([inner_X_train_patID, inner_X_test_patID])
+
+                    for l in range(nbr_of_inner_splits):  
+
+                        inner_X_train = splits_nested_list[l][0]
+                        inner_y_train = splits_nested_list[l][1]
+                        inner_X_val = splits_nested_list[l][2]
+                        inner_y_val = splits_nested_list[l][3]
+
+                        #Training
+                        train_data = lightgbm.Dataset(inner_X_train, label=inner_y_train)
+                        lightgbm_training_allfeat = lightgbm.train(
+                            paramset,
+                            train_data
+                        )
+
+                        # Predictions on the test split
+                        y_inner_pred_allfeat_prob = lightgbm_training_allfeat.predict(
+                                                     inner_X_val,
+                                                     num_iteration=lightgbm_training_allfeat.best_iteration)
+                        y_inner_pred_allfeat = (y_inner_pred_allfeat_prob > 0.5).astype(int)
+
+                        # Calculate balanced accuracy for the current split
+                        inner_balanced_accuracy_allfeat = balanced_accuracy_score(inner_y_val, 
+                                                                                  y_inner_pred_allfeat)
+
+                         # Update mrmr list with the all feature evaluation
+                        inner_balanced_accuracy.append(inner_balanced_accuracy_allfeat)
 
 
-                #Training
-                train_data = lightgbm.Dataset(X_train, label=y_train)
-                lightgbm_training_allfeat = lightgbm.train(
-                    param_lightgbm,
-                    train_data
-                    )
+                    inner_balanced_accuracy_npy = np.asarray(inner_balanced_accuracy)
+                    mean_inner_balanced_accuracy = np.mean(inner_balanced_accuracy_npy)
 
-                # Predictions on the test split
-                y_pred_allfeat_prob = lightgbm_training_allfeat.predict(
-                    X_test,
-                    num_iteration=lightgbm_training_allfeat.best_iteration)
-                y_pred_allfeat = (y_pred_allfeat_prob > 0.5).astype(int)
+                    if mean_inner_balanced_accuracy > best_inner_balanced_accuracy:
+                        # we exchange the parameters and store the ba
+                        best_inner_balanced_accuracy = mean_inner_balanced_accuracy
+                        best_paramset = paramset
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
-                                                                    y_pred_allfeat)
 
-                # Update mrmr and mannwhitney list with the all feature evaluation
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_allfeat)
+                # Update mrmr list with the all feature evaluation
+                all_features_balanced_accuracy.append(best_inner_balanced_accuracy)
+
+
+                print('\nNested gridsearch of split {} finised'.format(i))
+
+                print('Calculate balanced_accuracies for decreasing number of features kept')
 
 
             # Then we decrease number of feature kept during training + evaluation
             else:
 
+
                 # Kept the selected features
-                selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
+                selfeat_mannwhitneyu_index_reduced =  selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
                 selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
 
                 # Generate matrix of features
@@ -481,21 +556,20 @@ elif run_lgbm and not run_xgboost:
                 #Training
                 train_data = lightgbm.Dataset(featarray_mannwhitneyu, label=y_train)
                 lightgbm_mannwhitneyu_training_inst = lightgbm.train(
-                    param_lightgbm,
-                    train_data
+                    best_paramset,
+                    train_data,
                     )
 
                 # Predictions on the test split
                 y_pred_mannwhitneyu_prob = lightgbm_mannwhitneyu_training_inst.predict(
-                    X_test[:, selfeat_mannwhitneyu_index_reduced]
+                    X_test[:, selfeat_mannwhitneyu_index_reduced],
                     )
-                y_pred_mannwhitneyu = (y_pred_mannwhitneyu_prob > 0.5).astype(int)
+                y_pred_mannwhitneyu  = (y_pred_mannwhitneyu_prob > 0.5).astype(int)
 
                 # Calculate balanced accuracy for the current split
                 balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
                                                                          y_pred_mannwhitneyu)
                 balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
-
 
         ### Store results 
         # store all resutls in the main dict knowing it will be repeated 10times
@@ -529,7 +603,7 @@ std_balanced_accuracies_mannwhitneyu = list()
 best_mean_mannwhitneyu = 0
 
 # do the list of means for mannwhitneyu and mrmr
-for index in range(0, nbr_feat):
+for index in range(0, nbr_feat-1):
     
     ba_featsel_mannwhitneyu = list()
 
@@ -566,6 +640,10 @@ max_ba_mannwhitneyu_npy = np.asarray(max_balanced_accuracies_mannwhitneyu)
 std_ba_mannwhitneyu_npy = np.asarray(std_balanced_accuracies_mannwhitneyu)
 
 
+# for all features
+
+all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
 
 ####################################################################
@@ -646,13 +724,11 @@ if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
 
-if run_xgboost and not run_lgbm:
-    classifier_name = 'xgboost'
-if run_lgbm and not run_xgboost:
-    classifier_name = 'lgbm'
-
-
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mannwhitneyu'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
 print('Start saving numpy in folder: ', save_results_path)
+
 
 name_mannwhitneyu_output = '_ba_mannwhitneyut_' + str(nbr_of_splits) + 'splits_' + run_name
 np.save(save_results_path + 'mean_' + classifier_name + name_mannwhitneyu_output + save_ext, 
@@ -680,6 +756,7 @@ txtfilename = (
     classifier_name +  '_' +
     'mannwhitneyu' +  '_' +
     str(nbr_of_splits) + 'splits_' +
+    str(nbr_of_inner_splits) + 'innersplits_' +
     run_name + '_info'
 )
 
@@ -702,6 +779,8 @@ with open(save_text_path, 'w') as file:
     file.write('\n\n\n\n ** mannwhitneyu **')
     file.write('\n\nBest mean balanced accuracy is:' + 
         str(best_mean_mannwhitneyu))  
+    file.write('\n\nAll feat mean balanced accuracy is:' +  
+        str(mean_ba_allfeat))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
         str(nbr_kept_features_mannwhitneyu))  
     # file.write('\n\nThese features are:' +  
@@ -711,7 +790,8 @@ with open(save_text_path, 'w') as file:
     # file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu]))
 
-print('Text files saved.')
+print('Text file name:',txtfilename )
+print('Text file saved.')
 
 
 #### Save all splits balanced accuracies values 

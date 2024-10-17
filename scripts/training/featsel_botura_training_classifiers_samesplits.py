@@ -194,6 +194,15 @@ if run_xgboost and not run_lgbm:
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
 
+        # #Boruta cannot take any NANs
+        # nan_cols = np.any(np.isnan(X_train_tr), axis=0)
+        # nan_col_indices = np.where(nan_cols)[0]
+        
+        # # Remove those columns from y_train and X_train
+        # X_train_tr = np.delete(X_train_tr, nan_col_indices, axis=1)
+        # y_train = np.delete(y_train, nan_col_indices, axis=1)
+
+
         ########### SELECTION OF FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
         if i == 0:

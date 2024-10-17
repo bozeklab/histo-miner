@@ -45,7 +45,6 @@ boruta_max_depth = confighm.parameters.int.boruta_max_depth
 boruta_random_state = confighm.parameters.int.boruta_random_state
 
 
-
 with open("./../../configs/classification_training.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
@@ -53,16 +52,8 @@ config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
-
-xgboost_random_state = config.classifierparam.xgboost.random_state
-xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
-xgboost_lr = config.classifierparam.xgboost.learning_rate
-xgboost_objective = config.classifierparam.xgboost.objective
-lgbm_random_state = config.classifierparam.light_gbm.random_state
-lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
-lgbm_lr = config.classifierparam.light_gbm.learning_rate
-lgbm_objective = config.classifierparam.light_gbm.objective
-lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
+nbr_of_splits = config.parameters.int.nbr_of_splits
+nbr_of_inner_splits = config.parameters.int.nestedcross_inner_splits
 
 # Could be simplified maybe if only one classifier is kept later 
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
@@ -72,7 +63,18 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 # elif run_lgbm and not run_xgboost:
 # else: RAISE error
 
-              
+# For the nested corss validation with HP search 
+xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
+xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
+xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
+xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
+
+lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
+lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
+lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
+lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
+lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
+
 
 ################################################################
 ## Load feat array, class arrays and IDs arrays (if applicable)
@@ -109,33 +111,32 @@ print('Number of patient is:', num_unique_elements)
 ##############################################################
 
 
+# Define the classifiers
 ##### XGBOOST
-xgboost = xgboost.XGBClassifier(random_state= xgboost_random_state,
-                                n_estimators=xgboost_n_estimators, 
-                                learning_rate=xgboost_lr, 
-                                objective=xgboost_objective,
-                                verbosity=0)
-##### LIGHT GBM setting
-# The use of light GBM classifier is not following the convention of the other one
-# Here we will save parameters needed for training, but there are no .fit method
-# lightgbm = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
-#                                    n_estimators=lgbm_n_estimators,
-#                                    learning_rate=lgbm_lr,
-#                                    objective=lgbm_objective,
-#                                    num_leaves=lgbm_numleaves,
-#                                    verbosity=-1)
-param_lightgbm = {
-                  "random_state": lgbm_random_state,
-                  "n_estimators": lgbm_n_estimators,
-                  "learning_rate": lgbm_lr,
-                  "objective":lgbm_objective,
-                  "num_leaves":lgbm_numleaves,
-                  "verbosity":-1
-                  }
+xgboost = xgboost.XGBClassifier(verbosity=0)
+
 
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
 # See parameters documentation to learn about the other verbosity available. 
+
+
+###### Load all paramters into a dictionnary for Grid Search
+xgboost_param_grid = {
+                      'random_state': xgboost_param_grid_random_state,
+                      'n_estimators': xgboost_param_grid_n_estimators,
+                      'learning_rate': xgboost_param_grid_learning_rate,
+                      'objective': xgboost_param_grid_objective
+}
+lgbm_param_grid = {
+                    'random_state': lgbm_param_grid_random_state,
+                    'n_estimators': lgbm_param_grid_n_estimators,
+                    'learning_rate': lgbm_param_grid_learning_rate,
+                    'objective': lgbm_param_grid_objective,
+                    'num_leaves': lgbm_param_grid_num_leaves
+}
+
+
 
 
 ##############################################################
@@ -143,11 +144,22 @@ param_lightgbm = {
 ##############################################################
 
 
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
+
+
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mrmr'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
+print('Folder analysed is {}'.format(pathfeatselect))
+
+
 print('Start Classifiers trainings...')
 
 
 train_featarray = np.transpose(train_featarray)
-
 
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
@@ -222,6 +234,8 @@ if run_xgboost and not run_lgbm:
         y_train = splits_nested_list[i][1]
         X_test = splits_nested_list[i][2]
         y_test = splits_nested_list[i][3]
+
+        X_train_patID_split = splits_patientID_list[i][0]
         
         # The array is then transpose to feat FeatureSelector requirements
         X_train_tr = np.transpose(X_train)
@@ -291,18 +305,95 @@ if run_xgboost and not run_lgbm:
             balanced_accuracy_boruta = None
 
         else:
-            xgboost_boruta_training = xgboost
-            xgboost_boruta_training = xgboost_boruta_training.fit(featarray_boruta, 
-                                                                  y_train)
-            # Predictions on the test split
-            y_pred_boruta = xgboost_boruta_training.predict(
-                X_test[:, np.transpose(selfeat_boruta_index)]
-                )
 
-            # Calculate balanced accuracy for the current split
-            balanced_accuracy_boruta = balanced_accuracy_score(y_test,
-                                                               y_pred_boruta)
+            # we keep the best features to do the nested cross validation and not all feat
+            X_train = X_train[:, np.transpose(selfeat_boruta_index)]
 
+            # ENTER NESTED GRID SEARCH HERE 
+            best_inner_balanced_accuracy = 0
+
+            print('\n\nNested gridsearch of split {} starting...'.format(i))
+
+            for paramset in tqdm(ParameterGrid(xgboost_param_grid)):
+
+                # set the parameter set choosen in the grid
+                xgboost.set_params(**paramset)
+
+                # Create Stratified Group to further split the dataset into n_splits 
+                innerstratgroupkf = StratifiedKFold(n_splits=nbr_of_inner_splits, shuffle=False)
+
+                # create empty lists for initialization
+                inner_splits_nested_list = list()
+                inner_splits_patientID_list = list()
+
+                inner_balanced_accuracy = list()
+
+
+
+
+
+                for k, (inner_train_index, inner_val_index) in enumerate(innerstratgroupkf.split(X_train, 
+                                                                         y_train, 
+                                                                         groups=X_train_patID_split
+                                                                         )):
+                    # Generate training and test data from the indexes
+                    inner_X_train = X_train[inner_train_index]
+                    inner_X_val = X_train[inner_val_index]
+                    inner_y_train = train_clarray[inner_train_index]
+                    inner_y_val = train_clarray[inner_val_index]
+
+                    inner_splits_nested_list.append([X_train, y_train, X_test, y_test])
+
+                    # Generate the corresponding list for patient ids
+                    inner_X_train_patID = patientids_ordered[inner_train_index]
+                    inner_X_test_patID = patientids_ordered[inner_val_index]
+
+                    inner_splits_patientID_list.append([inner_X_train_patID, inner_X_test_patID])
+
+
+                for l in range(nbr_of_inner_splits):  
+
+                    # we also do with slected features 
+                    inner_X_train = splits_nested_list[l][0]
+                    inner_y_train = splits_nested_list[l][1]
+                    inner_X_val = splits_nested_list[l][2]
+                    inner_y_val = splits_nested_list[l][3]
+
+                    #Training
+                    xgboost_boruta_training = xgboost.fit(inner_X_train, inner_y_train)
+
+                    # Predictions on the test split
+                    y_inner_pred_allfeat = xgboost_boruta_training.predict(inner_X_val)
+
+                    # Calculate balanced accuracy for the current split
+                    inner_balanced_accuracy_allfeat = balanced_accuracy_score(inner_y_val, 
+                                                                              y_inner_pred_allfeat)
+
+                    # Update mannwhitney list with the all feature evaluation
+                    inner_balanced_accuracy.append(inner_balanced_accuracy_allfeat)
+
+
+                inner_balanced_accuracy_npy = np.asarray(inner_balanced_accuracy)
+                mean_inner_balanced_accuracy = np.mean(inner_balanced_accuracy_npy)
+
+                if mean_inner_balanced_accuracy > best_inner_balanced_accuracy:
+                    # we exchange the parameters and store the ba
+                    best_inner_balanced_accuracy = mean_inner_balanced_accuracy
+                    best_paramset = paramset
+
+            #     # Update mrmr list with the all feature evaluation
+
+            # xgboost_boruta_training = xgboost
+            # xgboost_boruta_training = xgboost_boruta_training.fit(featarray_boruta, 
+            #                                                       y_train)
+            # # Predictions on the test split
+            # y_pred_boruta = xgboost_boruta_training.predict(
+            #     X_test[:, np.transpose(selfeat_boruta_index)]
+            #     )
+
+            # # Calculate balanced accuracy for the current split
+            # balanced_accuracy_boruta = balanced_accuracy_score(y_test,
+            #                                                    y_pred_boruta)
 
         ### Store results 
         # store all resutls in the main dict knowing it will be repeated 10times
@@ -310,7 +401,7 @@ if run_xgboost and not run_lgbm:
         currentsplit =  f"split_{i}"
 
         # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
-        balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = balanced_accuracy_boruta
+        balanced_accuracies['balanced_accuracies_boruta'][currentsplit] = best_inner_balanced_accuracy
 
 
 
@@ -492,6 +583,10 @@ else:
 boruta_visu_xcoord_npy = np.asarray(boruta_visu_xcoord)
  
 
+# for all features
+
+all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
 
 ####################################################################
@@ -538,12 +633,9 @@ if not os.path.exists(save_results_path):
     os.mkdir(save_results_path)
 
 
-if run_xgboost and not run_lgbm:
-    classifier_name = 'xgboost'
-if run_lgbm and not run_xgboost:
-    classifier_name = 'lgbm'
-
-
+# Need print summary (before and after) if the config was not saved before running!
+print('Classfier {} used, feature selection {} used.'.format(classifier_name, 'mannwhitneyu'))
+print('Outer splits: {} , Inner splits: {}.'.format(nbr_of_splits, nbr_of_inner_splits))
 print('Start saving numpy in folder: ', save_results_path)
 
 
@@ -578,6 +670,7 @@ txtfilename = (
     classifier_name +  '_' +
     'boruta' +  '_' +
     str(nbr_of_splits) + 'splits_' +
+    str(nbr_of_inner_splits) + 'innersplits_' +
     run_name + '_info'
 )
 
@@ -600,6 +693,8 @@ with open(save_text_path, 'w') as file:
     file.write('\n\n\n\n ** boruta **')
     file.write('\n\nMean balanced accuracy is:' +  
         str(mean_ba_boruta_npy)) 
+    file.write('\n\nAll feat mean balanced accuracy is:' +  
+        str(mean_ba_allfeat)) 
     file.write('\n\nhe numbers of kept features are:' + 
         str(number_feat_kept_boruta))  
     # file.write('\n\nThe best group of selected feature close of having 5 features is:' +  
