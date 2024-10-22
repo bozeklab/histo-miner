@@ -43,11 +43,12 @@ use_permutations = confighm.parameters.bool.permutation
 eval_folder_name = confighm.names.eval_folder
 
 
-with open("./../../configs/classification_training.yml", "r") as f:
+with open("./../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
+test_lesssamples = config.parameters.bool.test_lesssamples
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 
@@ -132,6 +133,14 @@ print('Start Classifiers trainings...')
 
 
 train_featarray = np.transpose(train_featarray)
+
+# Test with CPI data if to see how the cross validation perform with less sample
+if test_lesssamples:
+    # random generate numbers between 0 and 37 to remove them form the list 
+    idx_rmv_raws = np.random.randint(0,37,16)# Removing the specified rows
+    train_featarray = np.delete(train_featarray, idx_rmv_raws, axis=0)
+    train_clarray = np.delete(train_clarray, idx_rmv_raws, axis=0)
+
 
 
 # Initialize a StandardScaler 
@@ -506,37 +515,41 @@ mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 # than we keep them
 
 
-# Create a save to debug 
-nbr_kept_features_mrmr_save = np.asarray(nbr_kept_features_mrmr)
-nbr_of_splits_save = np.asarray(nbr_of_splits)
-featnames_save = np.asarray(featnames)
+#### Create a save to debug (OPTIONNAL)
+debug5splits = False
 
-selfeat_mrmr_id_allsplits_save_0 = np.asarray(selfeat_mrmr_id_allsplits[0])
-selfeat_mrmr_id_allsplits_save_1 = np.asarray(selfeat_mrmr_id_allsplits[1])
-selfeat_mrmr_id_allsplits_save_2 = np.asarray(selfeat_mrmr_id_allsplits[2])
-selfeat_mrmr_id_allsplits_save_3 = np.asarray(selfeat_mrmr_id_allsplits[3])
-selfeat_mrmr_id_allsplits_save_4 = np.asarray(selfeat_mrmr_id_allsplits[4])
+if debug5splits:
+
+    nbr_kept_features_mrmr_save = np.asarray(nbr_kept_features_mrmr)
+    nbr_of_splits_save = np.asarray(nbr_of_splits)
+    featnames_save = np.asarray(featnames)
+
+    selfeat_mrmr_id_allsplits_save_0 = np.asarray(selfeat_mrmr_id_allsplits[0])
+    selfeat_mrmr_id_allsplits_save_1 = np.asarray(selfeat_mrmr_id_allsplits[1])
+    selfeat_mrmr_id_allsplits_save_2 = np.asarray(selfeat_mrmr_id_allsplits[2])
+    selfeat_mrmr_id_allsplits_save_3 = np.asarray(selfeat_mrmr_id_allsplits[3])
+    selfeat_mrmr_id_allsplits_save_4 = np.asarray(selfeat_mrmr_id_allsplits[4])
 
 
-# save the mean balanced accuracies for visualization
-save_results_path = classification_eval_folder  + '/'
-np.save(save_results_path + 'nbr_kept_features_mrmr_save.npy', 
-    nbr_of_splits_save)
-np.save(save_results_path + 'nbr_of_splits_save.npy', 
-    nbr_of_splits_save)
-np.save(save_results_path + 'featnames_save.npy', 
-    featnames_save)
+    # save the mean balanced accuracies for visualization
+    save_results_path = classification_eval_folder  + '/'
+    np.save(save_results_path + 'nbr_kept_features_mrmr_save.npy', 
+        nbr_of_splits_save)
+    np.save(save_results_path + 'nbr_of_splits_save.npy', 
+        nbr_of_splits_save)
+    np.save(save_results_path + 'featnames_save.npy', 
+        featnames_save)
 
-np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_0.npy', 
-    selfeat_mrmr_id_allsplits_save_0)
-np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_1.npy', 
-    selfeat_mrmr_id_allsplits_save_1)
-np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_2.npy', 
-    selfeat_mrmr_id_allsplits_save_2)
-np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_3.npy', 
-    selfeat_mrmr_id_allsplits_save_3)
-np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_4.npy', 
-    selfeat_mrmr_id_allsplits_save_4)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_0.npy', 
+        selfeat_mrmr_id_allsplits_save_0)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_1.npy', 
+        selfeat_mrmr_id_allsplits_save_1)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_2.npy', 
+        selfeat_mrmr_id_allsplits_save_2)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_3.npy', 
+        selfeat_mrmr_id_allsplits_save_3)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_4.npy', 
+        selfeat_mrmr_id_allsplits_save_4)
 
 
 # We set the number of features kept for each splits again
@@ -620,9 +633,9 @@ print('Start saving numpy in folder: ', save_results_path)
 name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
 np.save(save_results_path + 'mean_' + classifier_name + name_mrmr_output + save_ext, 
     mean_ba_mrmr_npy)
-np.save(save_results_path + 'max_' + classifier_name + name_mrmr_output + save_ext, 
-    min_ba_mrmr_npy)
 np.save(save_results_path + 'min_' + classifier_name + name_mrmr_output + save_ext, 
+    min_ba_mrmr_npy)
+np.save(save_results_path + 'max_' + classifier_name + name_mrmr_output + save_ext, 
     max_ba_mrmr_npy)
 np.save(save_results_path + 'std_' + classifier_name + name_mrmr_output + save_ext, 
     std_ba_mrmr_npy)
@@ -673,6 +686,8 @@ with open(save_text_path, 'w') as file:
     #     str(kept_features_mrmr)) 
     file.write('\n\nThe best features overall are:' +  
         str([best_features_info]))
+    file.write('\n\nRemoved index:' +  
+        str([idx_rmv_raws]))
     #file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 

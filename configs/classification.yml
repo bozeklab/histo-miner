@@ -5,8 +5,8 @@
 
 # All parameters of string names
   names:
-    run_name: "nestedcross_rec_directmunich"
-    # run_name: "preprint_CPI_checking"
+    # run_name: "nestedcross_rec_directmunich"
+    run_name: "preprint_CPI_80_0-1_v4check"
 
     # permutation_idx:
 
@@ -37,9 +37,11 @@
 
       search_bestsplit: False
 
+      test_lesssamples: False    
+
 
     int:
-      nbr_of_splits: 3
+      nbr_of_splits: 5
 
       nestedcross_inner_splits: 3
 
@@ -129,7 +131,7 @@
       
       random_state: 0
 
-      n_estimators: 180
+      n_estimators: 80
       # number of boosting iterations, should be = number of trees in the forest
       # for best split: 40
       # for best mean: 40

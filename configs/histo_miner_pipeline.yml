@@ -11,18 +11,18 @@
       tissue_analyser_main:  "/data/shared/scc/histo-miner/toanalyse_again_2/"
 
 
-      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/tissue_analyser_output_allpreprint/"
-      tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      tissue_analyses_2_Munich/"
+      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_rndfilter/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # tissue_analyses_2_Munich/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # "
 
 
-      # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/feature_selection_allpreprint/"
-      feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      featsel_ta2_Munich/" 
+      feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/feature_selection_allpreprint_rndfilte/"
+      # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # featsel_ta2_Munich/" 
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # featsel_ta2/" 
 
@@ -31,16 +31,16 @@
       Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_pretest/"
 
 
-      # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
-      classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      classification_evaluation_ta2_Munich/"
+      classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint_rndfilte/"
+      # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
+      # classification_evaluation_ta2_Munich/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # classification_evaluation_ta2/"
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_ta2_Munich/visualization/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint/visualization/"
         
 
     files:

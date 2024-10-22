@@ -43,7 +43,7 @@ use_permutations = confighm.parameters.bool.permutation
 eval_folder_name = confighm.names.eval_folder
 
 
-with open("./../../configs/classification_training.yml", "r") as f:
+with open("./../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
