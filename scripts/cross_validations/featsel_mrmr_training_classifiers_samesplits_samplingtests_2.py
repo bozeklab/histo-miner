@@ -692,7 +692,7 @@ for idx_rmv in range(20, 38):
         file.write('\n\nThe best features overall are:' +  
             str([best_features_info]))
         file.write('\n\nRemoved index:' +  
-            str([idx_rmv_raws]))
+            str([name_sample_rmw]))
 
 
     print('Text file saved.')

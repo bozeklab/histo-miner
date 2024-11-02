@@ -691,8 +691,8 @@ for idx_rmv in range(0, 20):
             str(nbr_kept_features_mrmr))  
         file.write('\n\nThe best features overall are:' +  
             str([best_features_info]))
-        file.write('\n\nRemoved index:' +  
-            str([idx_rmv_raws]))
+        file.write('\n\nRemoved slide:' +  
+            str([name_sample_rmw]))
 
 
     print('Text file saved.')
