@@ -20,7 +20,7 @@
 
 
       feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_allpreprint_rndfilte/"
+      Analyses_cSCC_CPI/feature_selection_allpreprint/"
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # featsel_ta2_Munich/" 
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
@@ -32,7 +32,7 @@
 
 
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint_rndfilte/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # classification_evaluation_ta2_Munich/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
@@ -181,13 +181,13 @@
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 
-        boxplots: True
+        boxplots: False 
 
-        distributions: True 
+        distributions: False
 
-        pca: False 
+        pca: False  
 
-        tsne: False
+        tsne: True  
 
         delete_outliers: False 
 

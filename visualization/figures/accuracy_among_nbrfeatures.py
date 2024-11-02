@@ -29,9 +29,12 @@ pathtosavefolder = config.paths.folders.visualizations
 # We don't necessarely display everything at the same time but it is still a possiblity 
 #Boleans
 
-mrmr_viz = False 
-mannwhitneyu_viz = True
+mrmr_viz = True 
+mannwhitneyu_viz = False
 boruta_viz = False 
+
+if not os.path.exists(pathtosavefolder):
+    os.mkdir(pathtosavefolder)
 
 
 #############################################################
@@ -46,10 +49,10 @@ ext = '.npy'
 
 # Load vectors from files
 if mrmr_viz:
-    xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
-    xgbmax_aAcc_mrmr = np.load(path2vectors + 'max_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
-    xgbmin_aAcc_mrmr = np.load(path2vectors + 'min_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
-    xgbstd_aAcc_mrmr = np.load(path2vectors + 'std_xgboost_ba_mrmr_5splits_preprint_xgboost_onrec_80_0-1_version2.npy')
+    xgbmean_aAcc_mrmr = np.load(path2vectors + 'mean_xgboost_ba_mrmr_5splits_preprint_CPI_80_0-1_v4check.npy')
+    xgbmax_aAcc_mrmr = np.load(path2vectors + 'min_xgboost_ba_mrmr_5splits_preprint_CPI_80_0-1_v4check.npy')
+    xgbmin_aAcc_mrmr = np.load(path2vectors + 'max_xgboost_ba_mrmr_5splits_preprint_CPI_80_0-1_v4check.npy')
+    xgbstd_aAcc_mrmr = np.load(path2vectors + 'std_xgboost_ba_mrmr_5splits_preprint_CPI_80_0-1_v4check.npy')
     # xgbbestsplit_aAcc_mrmr = np.load(path2vectors + 'xgbbestsplit_aAcc_mrmr' + ext)
     # Creating x coordinates for mrmr (also works with mannwhtneyu running)
     # Generating the line fo std with elment wise addition
@@ -87,10 +90,10 @@ plt.figure(figsize=(16, 10))
 # First figure with xgboost
 if mrmr_viz:
     plt.plot(x, xgbmean_aAcc_mrmr, label='cvmean_mrmr', color='darkblue')
-    # plt.plot(x, std_up, color='lightskyblue')
-    # plt.plot(x, std_down, label='standard deviation', color='lightskyblue')
-    plt.plot(x, xgbmax_aAcc_mrmr, color='lightskyblue')
-    plt.plot(x, xgbmin_aAcc_mrmr, label='best and worst split', color='lightskyblue')
+    plt.plot(x, std_up, color='lightskyblue')
+    plt.plot(x, std_down, label='standard deviation', color='lightskyblue')
+    # plt.plot(x, xgbmax_aAcc_mrmr, color='lightskyblue')
+    # plt.plot(x, xgbmin_aAcc_mrmr, label='best and worst split', color='lightskyblue')
 
 
 if mannwhitneyu_viz:
@@ -123,7 +126,7 @@ plt.yticks(np.arange(0.1, 1.01, 0.1))  # Adjust the values as needed
 plt.ylim(bottom=0.00, top=1.01)  # Weirdly we also need this line to have the 2 spots matching
 
 # Save the plot on the root classification_evaluation directory
-plt.savefig(pathtosavefolder + 'std_ba_mannwhitneyut_5splits_preprint_xgboost_CPI_80_0-1_v1.png')
+plt.savefig(pathtosavefolder + 'std_xgboost_ba_mrmr_5splits_preprint_CPI_80_0-1_v1.png')
 plt.clf()
 
 

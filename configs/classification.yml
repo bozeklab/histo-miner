@@ -6,7 +6,7 @@
 # All parameters of string names
   names:
     # run_name: "nestedcross_rec_directmunich"
-    run_name: "preprint_CPI_80_0-1_v4check"
+    run_name: "preprint_CPI_80_0-1_samplecheck"
 
     # permutation_idx:
 
@@ -29,9 +29,9 @@
 
         random_forest: False
 
-        xgboost: True    
+        xgboost: True   
 
-        light_gbm: False                                 
+        light_gbm: False                                     
 
       save_evaluations: True
 

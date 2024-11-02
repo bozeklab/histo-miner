@@ -142,7 +142,6 @@ if test_lesssamples:
     train_clarray = np.delete(train_clarray, idx_rmv_raws, axis=0)
 
 
-
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
 # scaler.fit(train_featarray) 
@@ -686,8 +685,8 @@ with open(save_text_path, 'w') as file:
     #     str(kept_features_mrmr)) 
     file.write('\n\nThe best features overall are:' +  
         str([best_features_info]))
-    file.write('\n\nRemoved index:' +  
-        str([idx_rmv_raws]))
+    # file.write('\n\nRemoved index:' +  
+    #     str([idx_rmv_raws]))
     #file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 
