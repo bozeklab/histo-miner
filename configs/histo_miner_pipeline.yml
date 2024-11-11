@@ -12,7 +12,7 @@
 
 
       tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_rndfilter/"
+      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_35s/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # tissue_analyses_2_Munich/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
@@ -20,7 +20,7 @@
 
 
       feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_allpreprint/"
+      Analyses_cSCC_CPI/feature_selection_allpreprint_35s/"
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # featsel_ta2_Munich/" 
       # feature_selection_main: "/data/lsancere/Data_General/Predictions/scc_lucas/\
@@ -32,7 +32,7 @@
 
 
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # classification_evaluation_ta2_Munich/"
       # classification_evaluation: "/data/lsancere/Data_General/Predictions/scc_lucas/\
@@ -40,7 +40,7 @@
 
 
       visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint/visualization/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s/visualization/"
         
 
     files:
@@ -172,7 +172,7 @@
 
       calculate_distances: True   
 
-      patientid_avail: True     
+      patientid_avail: False      
       
       perpatient_feat: False
       # TO delete before publication
@@ -181,15 +181,15 @@
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 
-        boxplots: False 
+        boxplots: True 
 
-        distributions: False
+        distributions: True
 
         pca: False  
 
-        tsne: True  
+        tsne: False  
 
-        delete_outliers: False 
+        delete_outliers: True  
 
       display_classification_predictions: False
 

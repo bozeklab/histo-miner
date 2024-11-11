@@ -83,7 +83,7 @@ classarray_name = 'perwsi_clarray'
 pathfeatnames = pathfeatselect + 'featnames' + ext
 
 train_featarray = np.load(pathfeatselect + featarray_name + ext)
-train_clarray = np.load(pathfeatselect + classarray_name + ext)
+train_clarray_base = np.load(pathfeatselect + classarray_name + ext)
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
@@ -132,14 +132,28 @@ param_lightgbm = {
 print('Start Classifiers trainings...')
 
 
-train_featarray = np.transpose(train_featarray)
+train_featarray_base = np.transpose(train_featarray)
 
 # Test with CPI data if to see how the cross validation perform with less sample
-if test_lesssamples:
-    # random generate numbers between 0 and 37 to remove them form the list 
-    idx_rmv_raws = np.random.randint(0,37,16)# Removing the specified rows
-    train_featarray = np.delete(train_featarray, idx_rmv_raws, axis=0)
-    train_clarray = np.delete(train_clarray, idx_rmv_raws, axis=0)
+# for i in range(0,4):
+#     # random generate numbers between 0 and 37 to remove them form the list 
+#     all_idx = [
+#         [15, 20, 34],
+#         [15, 34, 32],
+#         [15, 20, 32],
+#         [20, 34, 32]
+#         ]
+#     idx_rmv_raws = all_idx[i]
+#     train_featarray = np.delete(train_featarray_base, idx_rmv_raws, axis=0)
+#     train_clarray = np.delete(train_clarray_base, idx_rmv_raws, axis=0)
+
+
+
+# random generate numbers between 0 and 37 to remove them form the list 
+all_idx = [15, 20, 34]
+idx_rmv_raws = all_idx
+train_featarray = np.delete(train_featarray_base, idx_rmv_raws, axis=0)
+train_clarray = np.delete(train_clarray_base, idx_rmv_raws, axis=0)
 
 
 # Initialize a StandardScaler 
@@ -183,16 +197,11 @@ if run_xgboost and not run_lgbm:
 
     balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
 
-    #to calculate AUC
-    all_y_pred = dict()
-    all_y_test = dict()
-
     length_selfeatmrmr = dict()
     selfeat_mrmr_names_allsplits = []
     selfeat_mrmr_id_allsplits = []
 
     all_features_balanced_accuracy = list()
-
 
     for i in range(nbr_of_splits):  
 
@@ -231,8 +240,7 @@ if run_xgboost and not run_lgbm:
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
-        all_pred = list()
-        all_test = list()
+
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr selected features
@@ -306,10 +314,6 @@ if run_xgboost and not run_lgbm:
 elif run_lgbm and not run_xgboost:
 
     balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
-
-    #to calculate AUC
-    all_y_pred = dict()
-    all_y_test = dict()
 
     length_selfeatmrmr = dict()
     selfeat_mrmr_names_allsplits = []
@@ -436,7 +440,6 @@ else:
 
 ####################################################################
 ## Extract mean,min,max of balanced accuracy and kept feature names 
-## Calculate ROC and AUC metrics 
 ####################################################################
 
 ## calculate and write the saving of the mean balanced accuracies
@@ -477,8 +480,6 @@ for i in range(nbr_of_splits):
 for index in range(0, nbrkept_max_allsplits):
     
     ba_featsel_mrmr = list()
-    y_pred_mrmr = list()
-    y_test_mrmr = list()
 
     for i in range(nbr_of_splits):
 
@@ -489,11 +490,6 @@ for index in range(0, nbrkept_max_allsplits):
             ) 
 
         ba_featsel_mrmr.append(balanced_accuracy_mrmr)
-
-        y_pred_mrmr = y_pred_mrmr + all_y_pred['pred_test_vectors'][currentsplit][index]
-        y_test_mrmr = y_test_mrmr + all_y_test['gt_test_vectors'][currentsplit][index]
-
-
 
 
     ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
@@ -671,7 +667,8 @@ print('Numpy saved.')
 
 txtfilename = (
     classifier_name +  '_' +
-    'mrmr' +  '_' +
+    'mrmr' +  '_' + 
+    str(idx_rmv_raws) + '_' + # temporary line
     str(nbr_of_splits) + 'splits_' +
     run_name + '_info'
 )
@@ -703,8 +700,8 @@ with open(save_text_path, 'w') as file:
     #     str(kept_features_mrmr)) 
     file.write('\n\nThe best features overall are:' +  
         str([best_features_info]))
-    # file.write('\n\nRemoved index:' +  
-    #     str([idx_rmv_raws]))
+    file.write('\n\nRemoved index:' +  
+        str([idx_rmv_raws]))
     #file.write('\n\nThe best 5 features are:' +  
     # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 

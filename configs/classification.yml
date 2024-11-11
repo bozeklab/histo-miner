@@ -6,7 +6,7 @@
 # All parameters of string names
   names:
     # run_name: "nestedcross_rec_directmunich"
-    run_name: "preprint_CPI_80_0-1_samplecheck"
+    run_name: "preprint_CPI_80_0-1"
 
     # permutation_idx:
 
@@ -37,7 +37,7 @@
 
       search_bestsplit: False
 
-      test_lesssamples: False    
+      test_lesssamples: False      
 
 
     int:

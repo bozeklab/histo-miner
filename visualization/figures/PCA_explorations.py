@@ -945,71 +945,70 @@ if pca:
 
 # Assuming sample_names, featarray, and other parameters are defined as in the PCA code
 
-# NOT FIXED
-# if tsne:
-#     #### Initialize TSNE 2D
-#     tsne = TSNE(n_components=2, verbose=0, random_state=42)
-#     # Create vector for fit method
-#     X = pd.DataFrame(featarray)
-#     X = np.transpose(X)
-#     X = X.astype('float32')
-#     # Standardize the dataset
-#     # Create an instance of StandardScaler
-#     scaler = StandardScaler()
-#     X_scaled = scaler.fit_transform(X)
-#     # Create classification target vector for visualization
-#     target = np.asarray(clarray).astype(int)
+if tsne:
+    #### Initialize TSNE 2D
+    tsne = TSNE(n_components=2, verbose=0, random_state=42)
+    # Create vector for fit method
+    X = pd.DataFrame(featarray)
+    X = np.transpose(X)
+    X = X.astype('float32')
+    # Standardize the dataset
+    # Create an instance of StandardScaler
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    # Create classification target vector for visualization
+    target = np.asarray(clarray).astype(int)
 
-#     # Define sample names as in PCA example
-#     sample_names = [
-#         'S03604_03', 'S03605_01', 'S03611_03', 'S03612_03', 'S03613_01', 'S03614_01', 'S03615_01',
-#         'S03616_01', 'S03622_01', 'S03623_01', 'S03625_03', 'S03627_02', 'S03628_03', 'S03631_01', 
-#         'S03633_02', 'S03634_02', 'S03637_01', 'S03638_02', 'S03639_01', 'S03640_01', 'S03641_01', 
-#         'S03642_03', 'S03643_01', 'S03644_02', 'S03645_01', 'S03646_02', 'S03647_02', 'S03651_03', 
-#         'S03652_01', 'S03654_01', 'S03655_01', 'S03656_02', 'S03785_01', 'S03786_01', 'S03789_01', 
-#         'TUM16', 'TUM17', 'TUM18'
-#     ]
+    # Define sample names as in PCA example
+    sample_names = [
+        'S03604_03', 'S03605_01', 'S03611_03', 'S03612_03', 'S03613_01', 'S03614_01', 'S03615_01',
+        'S03616_01', 'S03622_01', 'S03623_01', 'S03625_03', 'S03627_02', 'S03628_03', 'S03631_01', 
+        'S03633_02', 'S03634_02', 'S03637_01', 'S03638_02', 'S03639_01', 'S03640_01', 'S03641_01', 
+        'S03642_03', 'S03643_01', 'S03644_02', 'S03645_01', 'S03646_02', 'S03647_02', 'S03651_03', 
+        'S03652_01', 'S03654_01', 'S03655_01', 'S03656_02', 'S03785_01', 'S03786_01', 'S03789_01', 
+        'TUM16', 'TUM17', 'TUM18'
+    ]
 
-#     # TSNE fitting
-#     z = tsne.fit_transform(X_scaled)
+    # TSNE fitting
+    z = tsne.fit_transform(X_scaled)
 
-#     # Colors for each target group
-#     colors = ["royalblue", "orangered"]
+    # Colors for each target group
+    colors = ["royalblue", "orangered"]
 
-#     # T-SNE 2D plot
-#     fig, ax = plt.subplots(figsize=(12, 8))
-#     for i, color in enumerate(colors):
-#         mask = target == i
-#         ax.scatter(z[mask, 0], z[mask, 1], color=color, alpha=0.8, label=target_names[i] if i < len(target_names) else f'Group {i}')
+    # T-SNE 2D plot
+    fig, ax = plt.subplots(figsize=(12, 8))
+    for i, color in enumerate(colors):
+        mask = target == i
+        ax.scatter(z[mask, 0], z[mask, 1], color=color, alpha=0.8, label=target_names[i] if i < len(target_names) else f'Group {i}')
     
-#     # Add sample names as labels
-#     for i, name in enumerate(sample_names):
-#         ax.text(z[i, 0], z[i, 1], name, fontsize=8, ha='right', color='white')
+    # Add sample names as labels
+    for i, name in enumerate(sample_names):
+        ax.text(z[i, 0], z[i, 1], name, fontsize=8, ha='right', color='white')
 
-#     # Set axis labels, title, and other plot aesthetics
-#     ax.set_xlabel('t-SNE Component 1', color='white')
-#     ax.set_ylabel('t-SNE Component 2', color='white')
-#     plt.title("T-SNE of SCC WSIs (all features kept)", color='white')
-#     ax.tick_params(axis='both', colors='white')
-#     fig.patch.set_facecolor('black')
-#     ax.set_facecolor('black')
-#     for spine in ax.spines.values():
-#         spine.set_edgecolor('white')
+    # Set axis labels, title, and other plot aesthetics
+    ax.set_xlabel('t-SNE Component 1', color='white')
+    ax.set_ylabel('t-SNE Component 2', color='white')
+    plt.title("T-SNE of SCC WSIs (all features kept)", color='white')
+    ax.tick_params(axis='both', colors='white')
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white')
 
-#     # Legend setup
-#     plt.legend(loc="upper left", bbox_to_anchor=(1, 1), frameon=False, fontsize=10, facecolor='black', labelcolor='white')
+    # Legend setup
+    plt.legend(loc="upper left", bbox_to_anchor=(1, 1), frameon=False, fontsize=10, facecolor='black', labelcolor='white')
 
-#     # Adjust layout to prevent clipping
-#     plt.tight_layout(rect=[0, 0, 0.85, 1])
+    # Adjust layout to prevent clipping
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-#     # Save the plot
-#     savename = 'T-SNE_SCC_WSIs_2D_all_features_with_names.png'
-#     if not os.path.exists(pathtosavefolder + '/TSNE/'):
-#         os.makedirs(pathtosavefolder + '/TSNE/')
-#     savedtsne_path = os.path.join(pathtosavefolder, 'TSNE', savename)
-#     plt.savefig(savedtsne_path)
-#     plt.clf()
+    # Save the plot
+    savename = 'T-SNE_SCC_WSIs_2D_all_features_with_names.png'
+    if not os.path.exists(pathtosavefolder + '/TSNE/'):
+        os.makedirs(pathtosavefolder + '/TSNE/')
+    savedtsne_path = os.path.join(pathtosavefolder, 'TSNE', savename)
+    plt.savefig(savedtsne_path)
+    plt.clf()
 
-#     print('T-SNE with sample names saved.')
+    print('T-SNE with sample names saved.')
 
 

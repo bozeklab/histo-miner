@@ -134,13 +134,20 @@ print('Start Classifiers trainings...')
 
 train_featarray_base = np.transpose(train_featarray)
 
-
-# Do the test wwhere we remove a specific sample all the time:
-for idx_rmv in range(20, 38): 
-    train_featarray = np.delete(train_featarray_base, idx_rmv, axis=0)
-    train_clarray = np.delete(train_clarray_base, idx_rmv, axis=0)
-    name_sample_rmw = featnameslist[idx_rmv]
-    
+# Test with CPI data if to see how the cross validation perform with less sample
+for i in range(0,6):
+    # random generate numbers between 0 and 37 to remove them form the list 
+    all_idx = [
+        [15, 20],
+        [15, 32],
+        [15, 34],
+        [20, 32],
+        [20, 34],
+        [32, 34]
+        ]
+    idx_rmv_raws = all_idx[i]
+    train_featarray = np.delete(train_featarray_base, idx_rmv_raws, axis=0)
+    train_clarray = np.delete(train_clarray_base, idx_rmv_raws, axis=0)
 
 
 
@@ -631,13 +638,7 @@ for idx_rmv in range(20, 38):
     print('Start saving numpy in folder: ', save_results_path)
 
 
-    name_mrmr_output = (
-        '_ba_mrmr_' + 
-        str(nbr_of_splits) + 'splits_' + 
-        'sample_removed_' + str(name_sample_rmw) + 
-        run_name 
-    )
-
+    name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
     np.save(save_results_path + 'mean_' + classifier_name + name_mrmr_output + save_ext, 
         mean_ba_mrmr_npy)
     np.save(save_results_path + 'min_' + classifier_name + name_mrmr_output + save_ext, 
@@ -661,9 +662,9 @@ for idx_rmv in range(20, 38):
 
     txtfilename = (
         classifier_name +  '_' +
-        'mrmr' +  '_' +
+        'mrmr' +  '_' + 
+        str(idx_rmv_raws) + '_' + # temporary line
         str(nbr_of_splits) + 'splits_' +
-        'sample_removed_' + str(name_sample_rmw) +
         run_name + '_info'
     )
 
@@ -690,18 +691,21 @@ for idx_rmv in range(20, 38):
             str(mean_ba_allfeat))  
         file.write('\n\nThe number of kept features in the best scenario is:' + 
             str(nbr_kept_features_mrmr))  
+        # file.write('\n\nThese features are:' +
+        #     str(kept_features_mrmr)) 
         file.write('\n\nThe best features overall are:' +  
             str([best_features_info]))
         file.write('\n\nRemoved index:' +  
             str([idx_rmv_raws]))
-
+        #file.write('\n\nThe best 5 features are:' +  
+        # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 
     print('Text file saved.')
 
 
     #### Save all splits balanced accuracies values 
 
-    #### Save roc curve information 
+#### Save roc curve information 
 
 
 

@@ -83,7 +83,7 @@ classarray_name = 'perwsi_clarray'
 pathfeatnames = pathfeatselect + 'featnames' + ext
 
 train_featarray = np.load(pathfeatselect + featarray_name + ext)
-train_clarray = np.load(pathfeatselect + classarray_name + ext)
+train_clarray_base = np.load(pathfeatselect + classarray_name + ext)
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
@@ -132,13 +132,13 @@ param_lightgbm = {
 print('Start Classifiers trainings...')
 
 
-train_featarray = np.transpose(train_featarray)
+train_featarray_base = np.transpose(train_featarray)
 
 
 # Do the test wwhere we remove a specific sample all the time:
 for idx_rmv in range(0, 20): 
-    train_featarray = np.delete(train_featarray, idx_rmv, axis=0)
-    train_clarray = np.delete(train_clarray, idx_rmv, axis=0)
+    train_featarray = np.delete(train_featarray_base, idx_rmv, axis=0)
+    train_clarray = np.delete(train_clarray_base, idx_rmv, axis=0)
     name_sample_rmw = featnameslist[idx_rmv]
 
 
@@ -691,7 +691,7 @@ for idx_rmv in range(0, 20):
             str(nbr_kept_features_mrmr))  
         file.write('\n\nThe best features overall are:' +  
             str([best_features_info]))
-        file.write('\n\nRemoved slide:' +  
+        file.write('\n\nRemoved indexes:' +  
             str([name_sample_rmw]))
 
 
