@@ -150,7 +150,7 @@ print('nbr_feat is:',nbr_feat)
 tprs = []
 aucs = []
 mean_fpr = np.linspace(0, 1, 100)
-fig, ax = plt.subplots(figsize=(6, 6))
+fig, ax = plt.subplots(figsize=(8, 8))
 
 
 balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
@@ -247,7 +247,7 @@ for i in range(nbr_of_splits):
     )
 
     # Update the label to include the AUC with three decimal places
-    viz.line_.set_label(f"ROC fold {fold} (AUC = {viz.roc_auc:.3f})")
+    viz.line_.set_label(f"ROC fold {currentsplit} (AUC = {viz.roc_auc:.3f})")
 
     # Interpolate the TPR for mean ROC curve calculation
     interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
@@ -398,7 +398,7 @@ ax.legend(loc="lower right")
 
 ## Save figure 
 #Create Name for saving
-savename = 'auc_crossval_2.png'
+savename = 'auc_crossval_3.png'
 
 #Saving
 # if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):
