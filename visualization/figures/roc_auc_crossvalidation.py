@@ -58,7 +58,16 @@ xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
 xgboost_lr = config.classifierparam.xgboost.learning_rate
 xgboost_objective = config.classifierparam.xgboost.objective
 
-              
+
+
+#############################################################
+## Set global parameters outside config
+#############################################################
+
+
+display_splits = False
+
+
 
 ################################################################
 ## Load feat array, class arrays and IDs arrays (if applicable)
@@ -143,7 +152,7 @@ print('nbr_feat is:',nbr_feat)
 
 
 ##############################################################
-##  AUC with XGBoost 
+##  AUC with XGBoost initialization
 ##############################################################
 
 
@@ -166,247 +175,460 @@ selfeat_mrmr_id_allsplits = []
 all_features_balanced_accuracy = list()
 
 
-for i in range(nbr_of_splits):  
+##############################################################
+##  Plot with split curves 
+##############################################################
 
-    currentsplit =  f"split_{i}"
+if display_splits: 
 
-    X_train = splits_nested_list[i][0]
-    y_train = splits_nested_list[i][1]
-    X_test = splits_nested_list[i][2]
-    y_test = splits_nested_list[i][3]
-    
-    # The array is then transpose to feat FeatureSelector requirements
-    X_train_tr = np.transpose(X_train)
+    for i in range(nbr_of_splits):  
 
-    ########### SELECTION OF FEATURES
-    # If the class was not initalized, do it. If not, reset attributes if the class instance
-    if i == 0:
-        feature_selector = FeatureSelector(X_train_tr, y_train)
-    else: 
-        feature_selector.reset_attributes(X_train_tr, y_train)
+        currentsplit =  f"split_{i}"
 
-    ## mr.MR calculations
-    print('Selection of features with mrmr method...')
-    selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
-    selfeat_mrmr_index = selfeat_mrmr[0]
-    # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
-    selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
-    selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
-    selfeat_mrmr_id_allsplits.append(selfeat_mrmr_index)
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
+        
+        # The array is then transpose to feat FeatureSelector requirements
+        X_train_tr = np.transpose(X_train)
+
+        ########### SELECTION OF FEATURES
+        # If the class was not initalized, do it. If not, reset attributes if the class instance
+        if i == 0:
+            feature_selector = FeatureSelector(X_train_tr, y_train)
+        else: 
+            feature_selector.reset_attributes(X_train_tr, y_train)
+
+        ## mr.MR calculations
+        print('Selection of features with mrmr method...')
+        selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = selfeat_mrmr[0]
+        # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+        selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
+        selfeat_mrmr_id_allsplits.append(selfeat_mrmr_index)
 
 
-    ########## GENERATION OF MATRIX OF SELECTED FEATURES
-    # If the class was not initalized, do it. If not, reset attributes if the class instance
-    # if i == 0:
-    #     selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
-    # else:
-    #     selected_features_matrix.reset_attributes(X_train_tr)
-    feature_array = X_train
+        ########## GENERATION OF MATRIX OF SELECTED FEATURES
+        # If the class was not initalized, do it. If not, reset attributes if the class instance
+        # if i == 0:
+        #     selected_features_matrix = SelectedFeaturesMatrix(X_train_tr)
+        # else:
+        #     selected_features_matrix.reset_attributes(X_train_tr)
+        feature_array = X_train
 
-    ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-    balanced_accuracies_mrmr = list()
-    all_pred = list()
-    all_test = list()
+        ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
+        balanced_accuracies_mrmr = list()
+        all_pred = list()
+        all_test = list()
 
-    print('Calculate balanced_accuracies for decreasing number of features kept')
-    ### With mrmr selected features
-    nbr_keptfeat_idx = 10
+        print('Calculate balanced_accuracies for decreasing number of features kept')
+        ### With mrmr selected features
+        nbr_keptfeat_idx = 10
 
-    # Kept the selected features
-    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
-    selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
+        # Kept the selected features
+        selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+        selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
-    # Generate matrix of features
-    featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
+        # Generate matrix of features
+        featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
-    #Training
-    # needs to be re initialized each time!!!! Very important
-    xgboost_mrmr_training = xgboost
-    # actual training
-    xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
-                                                           y_train)
+        #Training
+        # needs to be re initialized each time!!!! Very important
+        xgboost_mrmr_training = xgboost
+        # actual training
+        xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
+                                                               y_train)
 
-    # Predictions on the test split
-    y_pred_mrmr = xgboost_mrmr_training_inst.predict(
-        X_test[:, selfeat_mrmr_index_reduced]
+        # Predictions on the test split
+        y_pred_mrmr = xgboost_mrmr_training_inst.predict(
+            X_test[:, selfeat_mrmr_index_reduced]
+            )
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                         y_pred_mrmr)
+        balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
+
+        # Plot ROC curve and capture the RocCurveDisplay object
+        viz = RocCurveDisplay.from_estimator(
+            xgboost_mrmr_training_inst,
+            X_test[:, selfeat_mrmr_index_reduced],
+            y_test,
+            name=f"ROC fold {currentsplit}",
+            alpha=0.3,
+            lw=1,
+            ax=ax
         )
-    # Calculate balanced accuracy for the current split
-    balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
-                                                     y_pred_mrmr)
-    balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
 
-    # Plot ROC curve and capture the RocCurveDisplay object
-    viz = RocCurveDisplay.from_estimator(
-        xgboost_mrmr_training_inst,
-        X_test[:, selfeat_mrmr_index_reduced],
-        y_test,
-        name=f"ROC fold {currentsplit}",
-        alpha=0.3,
-        lw=1,
-        ax=ax
+        # Interpolate the TPR for mean ROC curve calculation
+        interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
+        interp_tpr[0] = 0.0
+        tprs.append(interp_tpr)
+        aucs.append(viz.roc_auc)
+
+        # Update the label to include the AUC with three decimal places
+        viz.line_.set_label(f"ROC fold {currentsplit} (AUC = {viz.roc_auc:.3f})")
+
+
+        # update changing size of kept feature for mrmr
+        length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
+
+        # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+
+
+        ### Store results 
+        # store all resutls in the main dict knowing it will be repeated 10times
+        # # maybe create a nested dict, split1, split2 and so on!!
+        # currentsplit =  f"split_{i}"
+
+        # # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
+        # balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+
+        # # Fill the dictionnary AUC cacluaiton 
+        # all_y_pred['pred_test_vectors'][currentsplit] = all_pred
+        # all_y_test['gt_test_vectors'][currentsplit] = all_test
+
+        # # update changing size of kept feature for mrmr
+        # length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
+
+
+
+    ####################################################################
+    ## Temporary check if best ba accuracy
+    ####################################################################
+
+    ## calculate and write the saving of the mean balanced accuracies
+    ## Do for mrmr
+    # Calculate the mean accuracies 
+
+    mean_balanced_accuracies_mrmr = list()
+    min_balanced_accuracies_mrmr = list()
+    max_balanced_accuracies_mrmr = list()
+    std_balanced_accuracies_mrmr = list()
+
+    best_mean_mrmr = 0
+
+
+    # we want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
+    # but we keep the first element as it is with all features
+
+    listoflengths = list()
+
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+        listoflengths.append(length_selfeatmrmr[currentsplit])
+
+    nbrkept_max_allsplits = min(listoflengths)
+    print(nbrkept_max_allsplits)
+
+    # remove firsts elements to be comparable in termes of number of feat kept
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+        # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+
+        selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+
+
+    # for index in range(0, nbrkept_max_allsplits):
+
+    ba_featsel_mrmr = list()
+
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+
+        balanced_accuracy_mrmr = np.asarray(
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][0]
+            ) 
+
+        ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+
+
+    ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
+
+    mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
+    min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
+    max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
+    std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
+
+    ###### Find name of selected features that leads to the best prediction
+    kept_features_mrmr = [split[0: nbr_keptfeat_idx] for split in selfeat_mrmr_names_allsplits]
+    best_mean_mrmr = np.mean(ba_featsel_mrmr)
+
+
+    mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
+    min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
+    max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
+    std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
+
+
+    # for all features
+
+    all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+    mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
+
+    debug = True 
+
+    ##############################################################
+    ##  Visualization of AUC  
+    ##############################################################
+
+
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
+    ax.plot(
+        mean_fpr,
+        mean_tpr,
+        color="b",
+        label=fr"Mean ROC (AUC = {mean_auc:.3f} $\pm$ {std_auc:.3f})",
+        lw=2,
+        alpha=0.8,
     )
 
-    # Update the label to include the AUC with three decimal places
-    viz.line_.set_label(f"ROC fold {currentsplit} (AUC = {viz.roc_auc:.3f})")
+    std_tpr = np.std(tprs, axis=0)
+    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+    ax.fill_between(
+        mean_fpr,
+        tprs_lower,
+        tprs_upper,
+        color="grey",
+        alpha=0.2,
+        label=r"$\pm$ 1 std. dev.",
+    )
 
-    # Interpolate the TPR for mean ROC curve calculation
-    interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
-    interp_tpr[0] = 0.0
-    tprs.append(interp_tpr)
-    aucs.append(viz.roc_auc)
-
-    # update changing size of kept feature for mrmr
-    length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
-
-    # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
-    balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
-
-
-    ### Store results 
-    # store all resutls in the main dict knowing it will be repeated 10times
-    # # maybe create a nested dict, split1, split2 and so on!!
-    # currentsplit =  f"split_{i}"
-
-    # # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
-    # balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
-
-    # # Fill the dictionnary AUC cacluaiton 
-    # all_y_pred['pred_test_vectors'][currentsplit] = all_pred
-    # all_y_test['gt_test_vectors'][currentsplit] = all_test
-
-    # # update changing size of kept feature for mrmr
-    # length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
+    ax.set(
+        xlabel="False Positive Rate",
+        ylabel="True Positive Rate",
+        title=f"Mean ROC curve with variability\n(Positive label 'response')",
+    )
+    ax.legend(loc="lower right")
 
 
+    ## Save figure 
+    #Create Name for saving
+    savename = 'auc_crossval_withsplit_curve.png'
 
-####################################################################
-## Temporary check if best ba accuracy
-####################################################################
+    #Saving
+    # if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):
+    #     os.makedirs(pathtosavefolder + '/CorrMatrix/')
 
-## calculate and write the saving of the mean balanced accuracies
-## Do for mrmr
-# Calculate the mean accuracies 
-
-mean_balanced_accuracies_mrmr = list()
-min_balanced_accuracies_mrmr = list()
-max_balanced_accuracies_mrmr = list()
-std_balanced_accuracies_mrmr = list()
-
-best_mean_mrmr = 0
+    savedfig_path = pathtosavefolder + savename
+    plt.savefig(savedfig_path)
+    plt.clf()
 
 
-# we want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
-# but we keep the first element as it is with all features
 
-listoflengths = list()
+##############################################################
+##  Plot without split curves 
+##############################################################
 
-for i in range(nbr_of_splits):
+else:
 
-    currentsplit =  f"split_{i}"
-    listoflengths.append(length_selfeatmrmr[currentsplit])
+    for i in range(nbr_of_splits):  
 
-nbrkept_max_allsplits = min(listoflengths)
-print(nbrkept_max_allsplits)
+        currentsplit = f"split_{i}"
 
-# remove firsts elements to be comparable in termes of number of feat kept
-for i in range(nbr_of_splits):
+        X_train = splits_nested_list[i][0]
+        y_train = splits_nested_list[i][1]
+        X_test = splits_nested_list[i][2]
+        y_test = splits_nested_list[i][3]
+        
+        # The array is then transposed to fit FeatureSelector requirements
+        X_train_tr = np.transpose(X_train)
 
-    currentsplit =  f"split_{i}"
-    # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
-    balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+        ########### SELECTION OF FEATURES
+        # If the class was not initialized, do it. If not, reset attributes of the class instance
+        if i == 0:
+            feature_selector = FeatureSelector(X_train_tr, y_train)
+        else: 
+            feature_selector.reset_attributes(X_train_tr, y_train)
 
-    selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+        ## mr.MR calculations
+        print('Selection of features with mrmr method...')
+        selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = selfeat_mrmr[0]
+        # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+        selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
+        selfeat_mrmr_id_allsplits.append(selfeat_mrmr_index)
 
+        ########## GENERATION OF MATRIX OF SELECTED FEATURES
+        feature_array = X_train
 
-# for index in range(0, nbrkept_max_allsplits):
+        ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
+        balanced_accuracies_mrmr = list()
+        all_pred = list()
+        all_test = list()
 
-ba_featsel_mrmr = list()
+        print('Calculate balanced_accuracies for decreasing number of features kept')
+        ### With mrmr selected features
+        nbr_keptfeat_idx = 10
 
-for i in range(nbr_of_splits):
+        # Keep the selected features
+        selfeat_mrmr_index_reduced = selfeat_mrmr_index[0:nbr_keptfeat_idx]
+        selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
-    currentsplit =  f"split_{i}"
+        # Generate matrix of features
+        featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
-    balanced_accuracy_mrmr = np.asarray(
-        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][0]
+        # Training
+        xgboost_mrmr_training = xgboost
+        # Actual training
+        xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, y_train)
+
+        # Predictions on the test split
+        y_pred_mrmr = xgboost_mrmr_training_inst.predict(X_test[:, selfeat_mrmr_index_reduced])
+        # Calculate balanced accuracy for the current split
+        balanced_accuracy_mrmr = balanced_accuracy_score(y_test, y_pred_mrmr)
+        balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
+
+        # Compute ROC curve without plotting
+        y_score = xgboost_mrmr_training_inst.predict_proba(X_test[:, selfeat_mrmr_index_reduced])[:, 1]
+        fpr, tpr, thresholds = roc_curve(y_test, y_score)
+        interp_tpr = np.interp(mean_fpr, fpr, tpr)
+        interp_tpr[0] = 0.0
+        tprs.append(interp_tpr)
+        roc_auc = auc(fpr, tpr)
+        aucs.append(roc_auc)
+
+        # Update changing size of kept feature for mrmr
+        length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
+
+        # Fill the dictionary with nested key-value pairs for the different balanced accuracies
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+
+    ####################################################################
+    ## Temporary check if best balanced accuracy
+    ####################################################################
+
+    ## Calculate and write the saving of the mean balanced accuracies
+    ## Do for mrmr
+    # Calculate the mean accuracies 
+
+    mean_balanced_accuracies_mrmr = list()
+    min_balanced_accuracies_mrmr = list()
+    max_balanced_accuracies_mrmr = list()
+    std_balanced_accuracies_mrmr = list()
+
+    best_mean_mrmr = 0
+
+    # We want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
+    # But we keep the first element as it is with all features
+
+    listoflengths = list()
+
+    for i in range(nbr_of_splits):
+
+        currentsplit = f"split_{i}"
+        listoflengths.append(length_selfeatmrmr[currentsplit])
+
+    nbrkept_max_allsplits = min(listoflengths)
+    print(nbrkept_max_allsplits)
+
+    # Remove first elements to be comparable in terms of number of features kept
+    for i in range(nbr_of_splits):
+
+        currentsplit = f"split_{i}"
+        # We use slicing to keep the last nbrkept_max_allsplits elements of the list 
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+
+        selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+
+    ba_featsel_mrmr = list()
+
+    for i in range(nbr_of_splits):
+
+        currentsplit = f"split_{i}"
+
+        balanced_accuracy_mrmr = np.asarray(
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][0]
         ) 
 
-    ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+        ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+
+    ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
+
+    mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
+    min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
+    max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
+    std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
+
+    ###### Find names of selected features that lead to the best prediction
+    kept_features_mrmr = [split[0:nbr_keptfeat_idx] for split in selfeat_mrmr_names_allsplits]
+    best_mean_mrmr = np.mean(ba_featsel_mrmr)
+
+    mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
+    min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
+    max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
+    std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
+
+    # For all features
+    all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+    mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
+
+    debug = True 
+
+    ##############################################################
+    ##  Visualization of AUC  
+    ##############################################################
+
+    # Now we create the plot of the mean ROC curve only
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.plot(
+        mean_fpr,
+        mean_tpr,
+        color="b",
+        label=f"Mean ROC: AUC = {mean_auc:.3f} $\pm$ {std_auc:.3f}\n(5 folds cross-validation)",
+        lw=2,
+        alpha=0.8,
+    )
+
+    # we can either calculate standard deviation or standard error 
+    number_of_sample = 35
+    std_tpr = np.std(tprs, axis=0) / math.sqrt(number_of_sample)
+    # std_tpr = np.std(tprs, axis=0) 
+    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+    ax.fill_between(
+        mean_fpr,
+        tprs_lower,
+        tprs_upper,
+        color="grey",
+        alpha=0.2,
+        label=f"$\pm$ standard error",
+    )
+
+    ax.set(
+        xlabel="False Positive Rate",
+        ylabel="True Positive Rate",
+        title=f"Mean ROC curve with variability\n(Positive label 'response')",
+    )
+    ax.legend(loc="lower right")
+
+    ## Save figure 
+    # Create name for saving
+    savename = 'auc_crossval_standard_error_2.png'
+
+    # Saving
+    savedfig_path = pathtosavefolder + savename
+    plt.savefig(savedfig_path)
+    plt.clf()
 
 
-ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
 
-mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
-min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
-max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
-std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
-
-###### Find name of selected features that leads to the best prediction
-kept_features_mrmr = [split[0: nbr_keptfeat_idx] for split in selfeat_mrmr_names_allsplits]
-best_mean_mrmr = np.mean(ba_featsel_mrmr)
-
-
-mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
-min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
-max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
-std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
-
-
-# for all features
-
-all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
-mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
-
-debug = True 
-
-##############################################################
-##  Visualization of AUC  
-##############################################################
-
-
-mean_tpr = np.mean(tprs, axis=0)
-mean_tpr[-1] = 1.0
-mean_auc = auc(mean_fpr, mean_tpr)
-std_auc = np.std(aucs)
-ax.plot(
-    mean_fpr,
-    mean_tpr,
-    color="b",
-    label=fr"Mean ROC (AUC = {mean_auc:.3f} $\pm$ {std_auc:.3f})",
-    lw=2,
-    alpha=0.8,
-)
-
-std_tpr = np.std(tprs, axis=0)
-tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-ax.fill_between(
-    mean_fpr,
-    tprs_lower,
-    tprs_upper,
-    color="grey",
-    alpha=0.2,
-    label=r"$\pm$ 1 std. dev.",
-)
-
-ax.set(
-    xlabel="False Positive Rate",
-    ylabel="True Positive Rate",
-    title=f"Mean ROC curve with variability\n(Positive label 'response')",
-)
-ax.legend(loc="lower right")
-
-
-## Save figure 
-#Create Name for saving
-savename = 'auc_crossval_3.png'
-
-#Saving
-# if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):
-#     os.makedirs(pathtosavefolder + '/CorrMatrix/')
-
-savedfig_path = pathtosavefolder + savename
-plt.savefig(savedfig_path)
-plt.clf()
 
 
 

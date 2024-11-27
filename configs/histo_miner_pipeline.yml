@@ -6,15 +6,15 @@
       inferences_postproc_main: "/data/shared/scc/histo-miner/toanalyse_again/"
 
 
-      # tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # /cSCC_CPI_extra_folders/cSCC_CPI_extra3_tissue_analysis/"
-      tissue_analyser_main:  "/data/shared/scc/histo-miner/toanalyse_again_2/"
+      tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      cSCC_CPI_extra_folders/cSCC_CPI_extra3_hvnoutput/"
+      # tissue_analyser_main:  "/data/shared/scc/histo-miner/toanalyse_again_2/"
 
 
       tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_35s/"
-      # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
-      # tissue_analyses_2_Munich/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # cSCC_CPI_extra_folders/cSCC_CPI_extra3_cellcount/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Predictions/scc_lucas/\
       # "
 
@@ -28,7 +28,7 @@
 
 
       feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_pretest/"
+      Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s/"
 
 
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -183,13 +183,13 @@
       plot: 
         boxplots: True 
 
-        distributions: True
+        distributions: False
 
         pca: False  
 
         tsne: False  
 
-        delete_outliers: True  
+        delete_outliers: False   
 
       display_classification_predictions: False
 
