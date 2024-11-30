@@ -8,6 +8,7 @@ import json
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.manifold import TSNE
@@ -20,12 +21,9 @@ from attrdictionary import AttrDict as attributedict
 from plotnine import ggplot, aes, geom_boxplot, xlab, ylab, labs, theme, \
                     element_text, geom_density, scale_color_manual, scale_fill_manual
 
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
- 
+from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, rename_with_ancestors
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 
-
-### FOR NOW ONLY BORUTA SELECTED ONES
 
 
 #############################################################
@@ -47,17 +45,18 @@ redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
 
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
+violinplots = config.parameters.bool.plot.violinplots
 pca = config.parameters.bool.plot.pca
 tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
-
-
 
 
 #############################################################
 ## Load feature matrix and classification array, feat names
 #############################################################
 
+
+conversion_rate = 0.053
 
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
@@ -83,112 +82,153 @@ with open(path_exjson, 'r') as filename:
 
 featnames = list(simplifieddata.keys())
 
-
-
-
-
-############################################################
-## Load the selected features only 
-############################################################
-
-
-# Do LOAD corresponding indexes 
-
-
-#### Parse the featarray to the class SelectedFeaturesMatrix 
-
-selection_idx_name = 'all_borutas/selfeat_boruta_idx_depth20'
-selfeat = np.load(pathtoworkfolder + selection_idx_name + ext)
-selfeat_idx_list = list(selfeat)
-
-# # Update feature matrix - SEE HOW TO CODE THIS LATER ON
-# SelectedFeaturesMatrix = SelectedFeaturesMatrix(featarray)
-# featarray = SelectedFeaturesMatrix.boruta_matr(selfeat)
-# featarray = np.transpose(featarray)
-
-# #Update classification array and classification array list - SEE HOW TO CODE THIS LATER ON
-# # clarray_list = [label for idx, label in enumerate(clarray_list) if idx in selfeat_idx_list ]
-# # clarray = np.asarray(clarray_list)
-# # clarray_names = ['no_recurrence' if value == 0 else 'recurrence' for value in clarray_list]
-
-# Update featnames
-featnames = [name for idx, name in enumerate(featnames) if idx in selfeat_idx_list]
-
+# find index of selected features for viso:
+visu_featnames = ['Morphology_insideTumor_Granulocyte_areas_mean']
+     
+visu_indexes = [featnames.index(feat) for feat in visu_featnames if feat in featnames]
 
 
 #############################################################
-## Plot boxplots for the selected features
+## Functions
 #############################################################
+
+
+# Function to add significance bars
+def add_stat_annotation(ax, x1, x2, y, p_value):
+    """Annotate the plot with p-value bars and stars."""
+    significance = ''
+    if p_value < 0.001:
+        significance = '***'
+    elif p_value < 0.01:
+        significance = '**'
+    elif p_value < 0.05:
+        significance = '*'
+    elif p_value >= 0.05:
+        significance = 'ns'
+    
+    ax.plot([x1, x2], [y, y], color="black", lw=1.5)  # Add horizontal bar
+    ax.text((x1 + x2) * 0.5, y, significance, ha='center', va='bottom', color="black")
+
+
+#############################################################
+## Plot boxplots for every features 
+#############################################################
+
 
 if boxplots:
+
+    # Define custom colors for each class
+    custom_palette = {
+        'response': '#FF5733',  # Vibrant Orange
+        'no_response': '#3498DB'  # Vibrant Sky Blue
+    }
+
+    # Map display names
+    display_labels = {'response': 'Responder', 'no_response': 'Non-responder'}
+
+    
     if delete_outliers:
-        # Filter extremes quartiles
-        for featindex in tqdm(range(0, len(featnames))):
-            pourcentagerem = 0.1
-            featvals = featarray[featindex,:]
-
-            # Get the indices of the values to keep
+        pourcentagerem = 0.1
+        for featindex in tqdm(visu_indexes):
+            featvals = featarray[featindex, :]
             indices_to_keep = np.where(
-                ((featvals > np.quantile(featvals, (pourcentagerem / 2)))
-                 & (featvals < np.quantile(featvals, (1 - pourcentagerem / 2))))
-                )[0]
-            # Remove outliers from features vectors
-            featvals_wooutliers =  featvals[indices_to_keep]
-            # Remove corresponding classifications
+                ((featvals > np.quantile(featvals, pourcentagerem / 2)) &
+                 (featvals < np.quantile(featvals, 1 - pourcentagerem / 2)))
+            )[0]
+
+            featvals_wooutliers = featvals[indices_to_keep]
             clarray_names_wooutliers = [clarray_names[i] for i in indices_to_keep]
-            
-            # Extract name of the feature
+
             featname = featnames[featindex]
-            #Create a pandas data frame from these vectors
-            df = pd.DataFrame( {'FeatureValues':featvals_wooutliers, 
-                                'WSIClassification':clarray_names_wooutliers})
-            #PLot the corresponding boxplot
-            boxplot = (ggplot(df, aes(x='WSIClassification', y='FeatureValues')) 
-                        + geom_boxplot()
-                        + xlab("Whole Slide Image Classification")
-                        + ylab("Feature Values (removed {}% outliers)".format(pourcentagerem*100))
-                        + labs(title= featname)
-                        + theme(plot_title=element_text(size=10))
-                        # plotnine.ggtitle(wrapper(featname, width = 20))
-                        )
-            #Create Name for saving
+            df = pd.DataFrame({
+                'FeatureValues': featvals_wooutliers,
+                'Classification': clarray_names_wooutliers,
+                'FeatureName': [featname] * len(featvals_wooutliers)
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.boxplot(x='FeatureName', y='FeatureValues', hue='Classification', 
+                             data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True,
+                             gap = 0.25)
+
+
+            # Update legend labels
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+            ax.set_title(f'{featname} (removed {pourcentagerem * 100}% outliers)', fontsize=12)
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Save the plot
             savename = featname + '_boxplot_filterquartile.png'
+            saveboxplot_path = os.path.join(pathtosavefolder, 'boxplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
 
-            #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/'):
-                os.makedirs(pathtosavefolder + '/boxplots/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
-            boxplot.save(saveboxplot_path, dpi=300)
-            # Filter outliers using Piercon Crriterion is also an option
     else:
-        for featindex in tqdm(range(0, len(featnames))):
-            featvals = featarray[featindex,:]
+        for featindex in tqdm(visu_indexes):
+            featvals = featarray[featindex, :]
             featname = featnames[featindex]
-            #Create a pandas data frame from these vectors
-            df = pd.DataFrame( {'FeatureValues':featvals, 'WSIClassification':clarray_names})
-            #PLot the corresponding boxplot
-            boxplot = (ggplot(df, aes(x='WSIClassification', y='FeatureValues')) 
-                        + geom_boxplot()
-                        + xlab("Whole Slide Image Classification")
-                        + ylab("Feature Values")
-                        + labs(title= featname)
-                        + theme(plot_title=element_text(size=10))
-                        # plotnine.ggtitle(wrapper(featname, width = 20))
-                        )
-            #Create Name for saving
+
+            df = pd.DataFrame({
+                'FeatureValues': featvals * conversion_rate, # here we can adjust if the value is in pixel squarre or in micro meter square
+                'Classification': clarray_names,
+                'FeatureName': ''
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.boxplot(x='FeatureName', 
+                             y='FeatureValues', 
+                             hue='Classification', 
+                             data=df, 
+                             palette=custom_palette, 
+                             hue_order=['response', 'no_response'], 
+                             dodge=True,
+                             gap = 0.25)
+
+            # Update legend labels
+            # handles, labels = ax.get_legend_handles_labels()
+            # ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+            
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Remove the x-axis label
+            # ax.set_xlabel(r'Mean area of granulocytes inside tumor regions ($\mu m^2$)', fontsize=12)
+            ax.set_title(r'Mean area of granulocytes inside tumor regions ($\mu m^2$)', fontsize=12)
+
+            # Save the plot
             savename = featname + '_boxplot.png'
-
-            #Saving
-            if not os.path.exists(pathtosavefolder + '/boxplots/'):
-                os.makedirs(pathtosavefolder + '/boxplots/')
-            saveboxplot_path = pathtosavefolder +  '/boxplots/' + savename
-            boxplot.save(saveboxplot_path, dpi=300)
-
+            saveboxplot_path = os.path.join(pathtosavefolder, 'boxplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
 
 
-#############################################################
-## Plot Kernel Density distribution for the selected features
-#############################################################
+
+########################################################################
+## Plot Kernel Density distribution for every features (with plotnine)
+########################################################################
 
 if distributions:
 
@@ -249,9 +289,9 @@ if distributions:
             savename = featname + '_distribution_filterquartile.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/'):
-                os.makedirs(pathtosavefolder + '/density/')
-            savedensplot_path = pathtosavefolder + '/density/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
+                os.makedirs(pathtosavefolder + '/density/allfeat/')
+            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
             density_plot.save(savedensplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
@@ -285,27 +325,136 @@ if distributions:
             savename = featname + '_distribution.png'
 
             #Saving
-            if not os.path.exists(pathtosavefolder + '/density/'):
-                os.makedirs(pathtosavefolder + '/density/')
-            savedensplot_path = pathtosavefolder + '/density/' + savename
+            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
+                os.makedirs(pathtosavefolder + '/density/allfeat/')
+            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
             density_plot.save(savedensplot_path, dpi=300)
 
 
 
 #############################################################
-## PCA and biplots
+## Plot Violin plots for every features (with plotnine)
+#############################################################
+
+
+if violinplots:
+
+    # Define custom colors for each class
+    custom_palette = {
+        'response': '#FF5733',  # Vibrant Orange
+        'no_response': '#3498DB'  # Vibrant Sky Blue
+    }
+
+    # Map display names
+    display_labels = {'response': 'Responder', 'no_response': 'Non-responder'}
+
+    if delete_outliers:
+        pourcentagerem = 0.1
+        for featindex in tqdm(range(0, len(featnames))):
+            featvals = featarray[featindex, :]
+            indices_to_keep = np.where(
+                ((featvals > np.quantile(featvals, pourcentagerem / 2)) &
+                 (featvals < np.quantile(featvals, 1 - pourcentagerem / 2)))
+            )[0]
+
+            featvals_wooutliers = featvals[indices_to_keep]
+            clarray_names_wooutliers = [clarray_names[i] for i in indices_to_keep]
+
+            featname = featnames[featindex]
+            df = pd.DataFrame({
+                'FeatureValues': featvals_wooutliers,
+                'Classification': clarray_names_wooutliers,
+                'FeatureName': [featname] * len(featvals_wooutliers)
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.violinplot(x='FeatureName', y='FeatureValues', hue='Classification', 
+                                data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True)
+
+            # Update legend labels
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                # Adjust x positions based on violin plot offsets
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+            ax.set_title(f'{featname} (removed {pourcentagerem * 100}% outliers)', fontsize=12)
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Save the plot
+            savename = featname + '_violinplot_filterquartile.png'
+            saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
+
+    else:
+        for featindex in tqdm(range(0, len(featnames))):
+            featvals = featarray[featindex, :]
+            featname = featnames[featindex]
+
+            df = pd.DataFrame({
+                'FeatureValues': featvals, 
+                'Classification': clarray_names,
+                'FeatureName': [featname] * len(featvals)
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.violinplot(x='FeatureName', 
+                                y='FeatureValues', 
+                                hue='Classification', 
+                                data=df, 
+                                palette=custom_palette, 
+                                hue_order=['response', 'no_response'], 
+                                dodge=True)
+
+            # Update legend labels
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                # Adjust x positions based on violin plot offsets
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+            ax.set_title(featname, fontsize=12)
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Save the plot
+            savename = featname + '_violinplot.png'
+            saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
+
+
+
+#############################################################
+## PCA and scree plots (with plt ax.scatter and plot)
 #############################################################
 
 # See https://scikit-learn.org/ Comparison of LDA and PCA 2D projection of Iris dataset
 # For an example of use
 
 if pca: 
-    #### Initialize PCA 2D
+    #### PCA 2D 
     pca = PCA(n_components=2)
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    X = X.astype('float32')
+    # X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -313,7 +462,7 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # PCA fitting
     pca_result = pca.fit(X_scaled).transform(X_scaled)
@@ -336,10 +485,10 @@ if pca:
     ax.set_xlabel('Principal Component 1')
     ax.set_ylabel('Principal Component 2')
     plt.legend(loc="best", shadow=False, scatterpoints=1)
-    plt.title("PCA of SCC WSIs (selected features)")
+    plt.title("PCA of SCC WSIs (all features kept)")
 
     #Create Name for saving
-    savename = 'PCA_SCC_WSIs_2D_selected_features.png'
+    savename = 'PCA_SCC_WSIs_2D_all_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -349,12 +498,12 @@ if pca:
     plt.clf()
 
 
-    #### Initialize PCA 3D
-    pca = PCA(n_components=3)
+    #### PCA 3D
+    pca3D = PCA(n_components=3)
     # Create vector for fit method
     X = pd.DataFrame(featarray)
     X = np.transpose(X)
-    X = X.astype('float32')
+    # X = X.astype('float32')
     # Standardize the dataset
     # Create an instance of StandardScaler
     scaler = StandardScaler()
@@ -362,10 +511,10 @@ if pca:
     # Create classification target vector for visu
     target = clarray
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # PCA fitting
-    pca_result = pca.fit(X_scaled).transform(X_scaled)
+    pca_result = pca3D.fit(X_scaled).transform(X_scaled)
 
     # 3D PCA plot
     fig = plt.figure(figsize=(8, 6))
@@ -388,10 +537,10 @@ if pca:
     ax.set_ylabel('Principal Component 2')
     ax.set_zlabel('Principal Component 3')
     ax.legend(loc="best", shadow=False, scatterpoints=1)
-    ax.set_title("3D PCA of SCC WSIs (selected features)")
+    ax.set_title("3D PCA of SCC WSIs (all features kept)")
 
     #Create Name for saving
-    savename = 'PCA_SCC_WSIs_3D_selected_features.png'
+    savename = 'PCA_SCC_WSIs_3D_all_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -403,9 +552,8 @@ if pca:
     print('PCAs saved.')
 
 
-    #### Initialize Scree Plot 2D
-    pca_scree = PCA(n_components=4)
-    # Here 4 because we cannot have more PCA components than feat
+    #### Scree Plot 2D
+    pca_scree = PCA(n_components=20)
     # We need to fit but not to fit + transform!
     # Plus we need more components then 2 or 3
     pca2_result = pca_scree.fit(X_scaled)
@@ -420,10 +568,10 @@ if pca:
         color='royalblue')
     plt.xlabel('Principal Component')
     plt.ylabel('Variance Explained')
-    plt.title("Scree Plot of SCC WSIs (selected features)")
+    plt.title("Scree Plot of SCC WSIs (all features kept)")
 
     #Create Name for saving
-    savename = 'ScreePlot_SCC_WSIs_selected_feature.png'
+    savename = 'ScreePlot_SCC_WSIs_all_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/PCA/'):
@@ -435,66 +583,9 @@ if pca:
     print('Scree Plot saved.')
 
 
-    ### Biplot 
-    # Used https://statisticsglobe.com/biplot-pca-python
-    # Explanation 1 TO FILL
-    # We re use the pca not to do it again for nothing (see above)
-    principalc1 = pca.fit_transform(X_scaled)[:,0]
-    principalc2 = pca.fit_transform(X_scaled)[:,1]
-    ldngs = pca.components_
-    
-    # Explanation 2 TO FILL
-    scale_principalc1 = 1.0/(principalc1.max() - principalc1.min())
-    scale_principalc2 = 1.0/(principalc2.max() - principalc2.min())
-    features = featnames
-    
-    # Define target groups
-    target_groups = np.digitize(clarray, 
-                             np.quantile(clarray, 
-                                         [1/3, 2/3]))
-
-    # Plot 
-    fig, ax = plt.subplots(figsize=(14, 9))
-     
-    for i, feature in enumerate(features):
-        ax.arrow(0, 0, ldngs[0, i], 
-                 ldngs[1, i], 
-                 head_width=0.01, 
-                 head_length=0.01)
-        ax.text(ldngs[0, i] * 1.15, 
-                ldngs[1, i] * 1.15, 
-                feature, fontsize = 11)
-     
-    scatter = ax.scatter(principalc1 * scale_principalc1, 
-                         principalc2 * scale_principalc2, 
-                         c=target_groups, 
-                         cmap='viridis')
-     
-    ax.set_xlabel('Principal Component 1', fontsize=20)
-    ax.set_ylabel('Principal Component 2', fontsize=20)
-    ax.set_title('Bitplot of SCC WSIs (selected features)', fontsize=20)
-     
-    ax.legend(*scatter.legend_elements(),
-                        loc="lower left", 
-                        title="Groups")
-
-    #Create Name for saving
-    savename = 'Biplot_SCC_WSIs_selected_feature.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/PCA/'):
-        os.makedirs(pathtosavefolder + '/PCA/')
-    savedpca_path = pathtosavefolder + '/PCA/' + savename
-    plt.savefig(savedpca_path)
-    plt.clf()
-
-    print('Biplot saved.')
-
-
 #############################################################
-## T-SNE plots
+## T-SNE plots (with seaborn)
 #############################################################
-
 
 # Will tryr to follow what was done just above 
 
@@ -513,7 +604,7 @@ if tsne:
     target = pd.Series(clarray)
     target = target.astype('int8')
     # Target names for visualization
-    target_names = ['no_recurrence', 'recurrence']
+    target_names = ['no_response', 'response']
 
     # TSNE fitting
     z = tsne.fit_transform(X_scaled)
@@ -534,11 +625,11 @@ if tsne:
         #palette=sns.color_palette("hls", 2),
         palette=colors,
         data=df
-        ).set(title="SCC data T-SNE projection (selected features)")
+        ).set(title="SCC data T-SNE projection (all features kept)")
     plt = plt.gcf()
 
     #Create Name for saving
-    savename = 'T-SNE_SCC_WSIs_2D_selected_features.png'
+    savename = 'T-SNE_SCC_WSIs_2D_all_features.png'
 
     #Saving
     if not os.path.exists(pathtosavefolder + '/TSNE/'):
@@ -604,3 +695,7 @@ if tsne:
     # plt.savefig(savedtsne_path)
 
     print('T-SNE saved.')
+
+
+
+#

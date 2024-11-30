@@ -45,6 +45,7 @@ redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
 
 boxplots = config.parameters.bool.plot.boxplots
 distributions = config.parameters.bool.plot.distributions
+violinplots = config.parameters.bool.plot.violinplots
 pca = config.parameters.bool.plot.pca
 tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
@@ -83,72 +84,8 @@ featnames = list(simplifieddata.keys())
 
 
 #############################################################
-## Plot boxplots for every features (with plotnine)
+## Functions
 #############################################################
-
-# if boxplots:
-#     if delete_outliers:
-#         # Filter extremes quartiles
-#         for featindex in tqdm(range(0, len(featnames))):
-#             pourcentagerem = 0.1
-#             featvals = featarray[featindex,:]
-
-#             # Get the indices of the values to keep
-#             indices_to_keep = np.where(
-#                 ((featvals > np.quantile(featvals, (pourcentagerem / 2)))
-#                  & (featvals < np.quantile(featvals, (1 - pourcentagerem / 2))))
-#                 )[0]
-#             # Remove outliers from features vectors
-#             featvals_wooutliers =  featvals[indices_to_keep]
-#             # Remove corresponding classifications
-#             clarray_names_wooutliers = [clarray_names[i] for i in indices_to_keep]
-            
-#             # Extract name of the feature
-#             featname = featnames[featindex]
-#             #Create a pandas data frame from these vectors
-#             df = pd.DataFrame( {'FeatureValues':featvals_wooutliers, 
-#                                 'WSIClassification':clarray_names_wooutliers})
-#             #PLot the corresponding boxplot
-#             boxplot = (ggplot(df, aes(x='WSIClassification', y='FeatureValues')) 
-#                         + geom_boxplot()
-#                         + xlab("Whole Slide Image Classification")
-#                         + ylab("Feature Values (removed {}% outliers)".format(pourcentagerem*100))
-#                         + labs(title= featname)
-#                         + theme(plot_title=element_text(size=10))
-#                         # plotnine.ggtitle(wrapper(featname, width = 20))
-#                         )
-#             #Create Name for saving
-#             savename = featname + '_boxplot_filterquartile.png'
-
-#             #Saving
-#             if not os.path.exists(pathtosavefolder + '/boxplots/allfeat/'):
-#                 os.makedirs(pathtosavefolder + '/boxplots/allfeat/')
-#             saveboxplot_path = pathtosavefolder +  '/boxplots/allfeat/' + savename
-#             boxplot.save(saveboxplot_path, dpi=300)
-#             # Filter outliers using Piercon Crriterion is also an option
-#     else:
-#         for featindex in tqdm(range(0, len(featnames))):
-#             featvals = featarray[featindex,:]
-#             featname = featnames[featindex]
-#             #Create a pandas data frame from these vectors
-#             df = pd.DataFrame( {'FeatureValues':featvals, 'WSIClassification':clarray_names})
-#             #PLot the corresponding boxplot
-#             boxplot = (ggplot(df, aes(x='WSIClassification', y='FeatureValues')) 
-#                         + geom_boxplot()
-#                         + xlab("Whole Slide Image Classification")
-#                         + ylab("Feature Values")
-#                         + labs(title= featname)
-#                         + theme(plot_title=element_text(size=10))
-#                         # plotnine.ggtitle(wrapper(featname, width = 20))
-#                         )
-#             #Create Name for saving
-#             savename = featname + '_boxplot.png'
-
-#             #Saving
-#             if not os.path.exists(pathtosavefolder + '/boxplots/allfeat/'):
-#                 os.makedirs(pathtosavefolder + '/boxplots/allfeat/')
-#             saveboxplot_path = pathtosavefolder +  '/boxplots/allfeat/' + savename
-#             boxplot.save(saveboxplot_path, dpi=300)
 
 
 # Function to add significance bars
@@ -166,6 +103,11 @@ def add_stat_annotation(ax, x1, x2, y, p_value):
     
     ax.plot([x1, x2], [y, y], color="black", lw=1.5)  # Add horizontal bar
     ax.text((x1 + x2) * 0.5, y, significance, ha='center', va='bottom', color="black")
+
+
+#############################################################
+## Plot boxplots for every features (with plotnine)
+#############################################################
 
 
 if boxplots:
@@ -202,7 +144,7 @@ if boxplots:
             plt.figure(figsize=(10, 6))
             ax = sns.boxplot(x='FeatureName', y='FeatureValues', hue='Classification', 
                              data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True,
-                             gap = 0.1)
+                             gap = 0.25)
 
 
             # Update legend labels
@@ -218,7 +160,6 @@ if boxplots:
                 add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
 
             ax.set_title(f'{featname} (removed {pourcentagerem * 100}% outliers)', fontsize=12)
-            ax.set_xlabel('Feature', fontsize=10)
             ax.set_ylabel('Feature Values', fontsize=10)
 
             # Save the plot
@@ -228,21 +169,27 @@ if boxplots:
             plt.tight_layout()
             plt.savefig(saveboxplot_path, dpi=300)
             plt.close()
+
     else:
         for featindex in tqdm(range(0, len(featnames))):
             featvals = featarray[featindex, :]
             featname = featnames[featindex]
 
             df = pd.DataFrame({
-                'FeatureValues': featvals,
+                'FeatureValues': featvals, 
                 'Classification': clarray_names,
                 'FeatureName': [featname] * len(featvals)
             })
 
             plt.figure(figsize=(10, 6))
-            ax = sns.boxplot(x='FeatureName', y='FeatureValues', hue='Classification', 
-                             data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True,
-                             gap = 0.1)
+            ax = sns.boxplot(x='FeatureName', 
+                             y='FeatureValues', 
+                             hue='Classification', 
+                             data=df, 
+                             palette=custom_palette, 
+                             hue_order=['response', 'no_response'], 
+                             dodge=True,
+                             gap = 0.25)
 
             # Update legend labels
             handles, labels = ax.get_legend_handles_labels()
@@ -257,7 +204,6 @@ if boxplots:
                 add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
 
             ax.set_title(featname, fontsize=12)
-            ax.set_xlabel('Feature', fontsize=10)
             ax.set_ylabel('Feature Values', fontsize=10)
 
             # Save the plot
@@ -373,6 +319,115 @@ if distributions:
                 os.makedirs(pathtosavefolder + '/density/allfeat/')
             savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
             density_plot.save(savedensplot_path, dpi=300)
+
+
+
+#############################################################
+## Plot Violin plots for every features (with plotnine)
+#############################################################
+
+
+if violinplots:
+
+    # Define custom colors for each class
+    custom_palette = {
+        'response': '#FF5733',  # Vibrant Orange
+        'no_response': '#3498DB'  # Vibrant Sky Blue
+    }
+
+    # Map display names
+    display_labels = {'response': 'Responder', 'no_response': 'Non-responder'}
+
+    if delete_outliers:
+        pourcentagerem = 0.1
+        for featindex in tqdm(range(0, len(featnames))):
+            featvals = featarray[featindex, :]
+            indices_to_keep = np.where(
+                ((featvals > np.quantile(featvals, pourcentagerem / 2)) &
+                 (featvals < np.quantile(featvals, 1 - pourcentagerem / 2)))
+            )[0]
+
+            featvals_wooutliers = featvals[indices_to_keep]
+            clarray_names_wooutliers = [clarray_names[i] for i in indices_to_keep]
+
+            featname = featnames[featindex]
+            df = pd.DataFrame({
+                'FeatureValues': featvals_wooutliers,
+                'Classification': clarray_names_wooutliers,
+                'FeatureName': [featname] * len(featvals_wooutliers)
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.violinplot(x='FeatureName', y='FeatureValues', hue='Classification', 
+                                data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True)
+
+            # Update legend labels
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                # Adjust x positions based on violin plot offsets
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+            ax.set_title(f'{featname} (removed {pourcentagerem * 100}% outliers)', fontsize=12)
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Save the plot
+            savename = featname + '_violinplot_filterquartile.png'
+            saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
+
+    else:
+        for featindex in tqdm(range(0, len(featnames))):
+            featvals = featarray[featindex, :]
+            featname = featnames[featindex]
+
+            df = pd.DataFrame({
+                'FeatureValues': featvals, 
+                'Classification': clarray_names,
+                'FeatureName': [featname] * len(featvals)
+            })
+
+            plt.figure(figsize=(10, 6))
+            ax = sns.violinplot(x='FeatureName', 
+                                y='FeatureValues', 
+                                hue='Classification', 
+                                data=df, 
+                                palette=custom_palette, 
+                                hue_order=['response', 'no_response'], 
+                                dodge=True)
+
+            # Update legend labels
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+
+            # Add statistical annotation
+            if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
+                non_responder_vals = df[df['Classification'] == 'no_response']['FeatureValues']
+                responder_vals = df[df['Classification'] == 'response']['FeatureValues']
+                p_value = ttest_ind(non_responder_vals, responder_vals).pvalue
+                y_max = df['FeatureValues'].max()
+                # Adjust x positions based on violin plot offsets
+                add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
+
+            ax.set_title(featname, fontsize=12)
+            ax.set_ylabel('Feature Values', fontsize=10)
+
+            # Save the plot
+            savename = featname + '_violinplot.png'
+            saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, dpi=300)
+            plt.close()
 
 
 

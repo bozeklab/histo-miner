@@ -181,15 +181,20 @@
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 
-        boxplots: True 
+        boxplots: False 
 
         distributions: False
+
+        violinplots: True
 
         pca: False  
 
         tsne: False  
 
         delete_outliers: False   
+        
+
+      filter_features: True 
 
       display_classification_predictions: False
 
