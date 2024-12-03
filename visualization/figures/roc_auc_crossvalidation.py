@@ -65,7 +65,7 @@ xgboost_objective = config.classifierparam.xgboost.objective
 #############################################################
 
 
-display_splits = False
+display_splits = False   
 
 
 
@@ -178,6 +178,14 @@ all_features_balanced_accuracy = list()
 ##############################################################
 ##  Plot with split curves 
 ##############################################################
+
+# set all texts size
+plt.rcParams["axes.titlesize"] = 22
+plt.rcParams["axes.labelsize"] = 18
+plt.rcParams["legend.fontsize"] = 12
+plt.rcParams["xtick.labelsize"] = 18
+plt.rcParams["ytick.labelsize"] = 18
+
 
 if display_splits: 
 
@@ -378,11 +386,16 @@ if display_splits:
     ##  Visualization of AUC  
     ##############################################################
 
-
+    # Now we create the plot of the mean ROC curve only
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
     mean_auc = auc(mean_fpr, mean_tpr)
     std_auc = np.std(aucs)
+
+
+
+    # fig, ax = plt.subplots(figsize=(8, 8))
+
     ax.plot(
         mean_fpr,
         mean_tpr,
@@ -401,27 +414,27 @@ if display_splits:
         tprs_upper,
         color="grey",
         alpha=0.2,
-        label=r"$\pm$ 1 std. dev.",
+        label=f"$\pm$ standard deviation",
     )
 
     ax.set(
         xlabel="False Positive Rate",
         ylabel="True Positive Rate",
-        title=f"Mean ROC curve with variability\n(Positive label 'response')",
+        title=f"Mean ROC curve with variability\n(Positive label 'responder')",
     )
     ax.legend(loc="lower right")
 
 
     ## Save figure 
     #Create Name for saving
-    savename = 'auc_crossval_withsplit_curve.png'
+    savename = 'auc_crossval_withsplit_curve_2.svg'
 
     #Saving
     # if not os.path.exists(pathtosavefolder + '/CorrMatrix/'):
     #     os.makedirs(pathtosavefolder + '/CorrMatrix/')
 
     savedfig_path = pathtosavefolder + savename
-    plt.savefig(savedfig_path)
+    plt.savefig(savedfig_path, format='svg', dpi=300)
     plt.clf()
 
 
@@ -586,7 +599,16 @@ else:
     mean_auc = auc(mean_fpr, mean_tpr)
     std_auc = np.std(aucs)
 
+
+    # set all texts size
+    plt.rcParams["axes.titlesize"] = 22
+    plt.rcParams["axes.labelsize"] = 18
+    plt.rcParams["legend.fontsize"] = 16
+    plt.rcParams["xtick.labelsize"] = 18
+    plt.rcParams["ytick.labelsize"] = 18
+
     fig, ax = plt.subplots(figsize=(8, 8))
+
     ax.plot(
         mean_fpr,
         mean_tpr,
@@ -614,17 +636,17 @@ else:
     ax.set(
         xlabel="False Positive Rate",
         ylabel="True Positive Rate",
-        title=f"Mean ROC curve with variability\n(Positive label 'response')",
+        title=f"Mean ROC curve with variability\n(Positive label 'responder')",
     )
     ax.legend(loc="lower right")
 
     ## Save figure 
     # Create name for saving
-    savename = 'auc_crossval_standard_error_2.png'
+    savename = 'auc_crossval_standard_error_2.svg'
 
     # Saving
     savedfig_path = pathtosavefolder + savename
-    plt.savefig(savedfig_path)
+    plt.savefig(savedfig_path, format='svg', dpi=300)
     plt.clf()
 
 
