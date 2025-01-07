@@ -3,6 +3,7 @@
 scripts/multi_launch
 scripts/archive
 scripts/training-tests
+scripts/cross_validation_patid
 src/archive 
 docs4paper
 .idea
@@ -12,3 +13,4 @@ docs4paper
 *.DS_Store
 *._.DS_Store
 *._
+scripts/usecase1bisrec_collect_features_consistently.py

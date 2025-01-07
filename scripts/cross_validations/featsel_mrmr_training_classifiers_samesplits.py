@@ -48,7 +48,6 @@ with open("./../../configs/classification.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-test_lesssamples = config.parameters.bool.test_lesssamples
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 
@@ -134,12 +133,6 @@ print('Start Classifiers trainings...')
 
 train_featarray = np.transpose(train_featarray)
 
-# Test with CPI data if to see how the cross validation perform with less sample
-if test_lesssamples:
-    # random generate numbers between 0 and 37 to remove them form the list 
-    idx_rmv_raws = np.random.randint(0,37,16)# Removing the specified rows
-    train_featarray = np.delete(train_featarray, idx_rmv_raws, axis=0)
-    train_clarray = np.delete(train_clarray, idx_rmv_raws, axis=0)
 
 
 # Initialize a StandardScaler 
@@ -182,10 +175,6 @@ print('nbr_feat is:',nbr_feat)
 if run_xgboost and not run_lgbm:
 
     balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
-
-    #to calculate AUC
-    all_y_pred = dict()
-    all_y_test = dict()
 
     length_selfeatmrmr = dict()
     selfeat_mrmr_names_allsplits = []
@@ -489,11 +478,6 @@ for index in range(0, nbrkept_max_allsplits):
             ) 
 
         ba_featsel_mrmr.append(balanced_accuracy_mrmr)
-
-        y_pred_mrmr = y_pred_mrmr + all_y_pred['pred_test_vectors'][currentsplit][index]
-        y_test_mrmr = y_test_mrmr + all_y_test['gt_test_vectors'][currentsplit][index]
-
-
 
 
     ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)

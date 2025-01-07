@@ -37,8 +37,6 @@
 
       search_bestsplit: False
 
-      test_lesssamples: False      
-
 
     int:
       nbr_of_splits: 5
