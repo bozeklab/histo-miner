@@ -182,7 +182,6 @@ if run_xgboost and not run_lgbm:
 
     all_features_balanced_accuracy = list()
 
-
     for i in range(nbr_of_splits):  
 
         X_train = splits_nested_list[i][0]
@@ -204,6 +203,7 @@ if run_xgboost and not run_lgbm:
         print('Selection of features with mrmr method...')
         selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
         selfeat_mrmr_index = selfeat_mrmr[0]
+
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
         selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
@@ -220,12 +220,11 @@ if run_xgboost and not run_lgbm:
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
-        all_pred = list()
-        all_test = list()
+
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr selected features
-        for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
+        for nbr_keptfeat_idx in tqdm(range(nbr_feat, -1, -1)):
 
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
@@ -251,7 +250,7 @@ if run_xgboost and not run_lgbm:
                 if nbr_keptfeat_idx <=  len(selfeat_mrmr_index):
 
                     # Kept the selected features
-                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx+1]
                     selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
                     # Generate matrix of features
@@ -296,10 +295,6 @@ elif run_lgbm and not run_xgboost:
 
     balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
 
-    #to calculate AUC
-    all_y_pred = dict()
-    all_y_test = dict()
-
     length_selfeatmrmr = dict()
     selfeat_mrmr_names_allsplits = []
     selfeat_mrmr_id_allsplits = []
@@ -327,6 +322,7 @@ elif run_lgbm and not run_xgboost:
         print('Selection of features with mrmr method...')
         selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
         selfeat_mrmr_index = selfeat_mrmr[0]
+
         # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
         selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
         selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
@@ -347,7 +343,7 @@ elif run_lgbm and not run_xgboost:
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr and mannwhitneyu selected features
-        for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
+        for nbr_keptfeat_idx in tqdm(range(nbr_feat, -1, -1)):
 
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
@@ -380,7 +376,7 @@ elif run_lgbm and not run_xgboost:
                 if nbr_keptfeat_idx <= len(selfeat_mrmr_index):
 
                     # Kept the selected features
-                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx+1]
                     selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
                     # Generate matrix of features
@@ -425,7 +421,6 @@ else:
 
 ####################################################################
 ## Extract mean,min,max of balanced accuracy and kept feature names 
-## Calculate ROC and AUC metrics 
 ####################################################################
 
 ## calculate and write the saving of the mean balanced accuracies
@@ -453,21 +448,23 @@ for i in range(nbr_of_splits):
 nbrkept_max_allsplits = min(listoflengths)
 print(nbrkept_max_allsplits)
 
-# remove firsts elements to be comparable in termes of number of feat kept
-for i in range(nbr_of_splits):
+# if needed, remove firsts elements to be comparable in termes of number of feat kept
+# if mrmr of all splits kept all elements then we skip this step
 
-    currentsplit =  f"split_{i}"
-    # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
-    balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+if nbrkept_max_allsplits != len(featnameslist):
 
-    selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+        # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][nbrkept_max_allsplits - 1 : : -1]
+
+        selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][nbrkept_max_allsplits - 1 : : -1]
 
 
 for index in range(0, nbrkept_max_allsplits):
     
     ba_featsel_mrmr = list()
-    y_pred_mrmr = list()
-    y_test_mrmr = list()
 
     for i in range(nbr_of_splits):
 
@@ -698,6 +695,5 @@ print('Text file saved.')
 #### Save all splits balanced accuracies values 
 
 #### Save roc curve information 
-
 
 

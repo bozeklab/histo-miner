@@ -9,16 +9,16 @@
 
     paths:
       
-      checkpoints: "/data/lsancere/bestcheckpoints-histo-miner/hvn_bestweights.tar"
+      checkpoints: "/data/lsancere/Data_General/Weights/bestcheckpoints-histo-miner/scchovernet_bestweights.tar"
 
       input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra3/"
+      cSCC_CPI_Bonn/Bonn/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/Images/"
 
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra3_hvnoutput/"
+      cSCC_CPI_Bonn/Bonn_Hvn_Output/"
       # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
       # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
       # TrainingDataGeneration/TrainingSet/Val/InfonVal_output/"
