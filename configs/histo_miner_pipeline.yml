@@ -3,17 +3,18 @@
 # the "" quotes allow to break the line with \ properly for then loading into python
   paths:
     folders:
-      inferences_postproc_main: "/data/shared/scc/histo-miner/toanalyse_again/"
+      inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      cSCC_CPI_Bonn/Bonn_Hvn_Output/"
 
 
       tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_extra_folders/cSCC_CPI_extra3_hvnoutput/"
+      cSCC_CPI_Bonn/Bonn_Hvn_Output/"
 
 
       # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_35s_nomorph/"
       tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_35s_noareaimmune/"
+      Analyses_cSCC_CPI/tissue_analyser_output_Bonn/"
 
 
       # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -178,7 +179,7 @@
       # use or not the permutation index for the HP seach of curriculum
 
       plot: 
-        boxplots: True 
+        boxplots: False 
 
         distributions: False
 
@@ -190,8 +191,6 @@
 
         delete_outliers: False   
         
-
-      filter_features: True # to delete 
 
       display_classification_predictions: False
 

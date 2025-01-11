@@ -16,10 +16,10 @@
       checkpoints: "/data/lsancere/Data_General/Weights/bestcheckpoints-histo-miner/sccsegmenter_bestweights.pth"
 
       input_dir:  "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn/"
+      cSCC_CPI_Bochum/Bochum/cSCC/"
 
       output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn_segmenteroutput/"
+      cSCC_CPI_Bochum/Bochum_Segmenter_Output/"
 
      
 
