@@ -50,20 +50,31 @@ void createTileCache() {
 
 // ***** plotting annotations ******
 
+// Define colors precisely
+
+
+yellowscc = getColorRGB(255, 255, 0)
+redscc = getColorRGB(255, 1, 0)
+orangescc = getColorRGB(255, 176, 17)
+greenscc = getColorRGB(20, 233, 20)
+lightbluescc = getColorRGB(14, 242, 246)
+darkbluescc = getColorRGB(16, 5, 241)
+
+
 // setting colors
 bg = getPathClass('Background')
 gra = getPathClass('Granulocyte')
-gra.setColor(Color.BLUE.getRGB())
+gra.setColor(yellowscc)
 lym = getPathClass('Lymphocyte')
-lym.setColor(Color.GREEN.getRGB())
+lym.setColor(greenscc)
 pla = getPathClass('Plasma')
-pla.setColor(Color.CYAN.getRGB())
+pla.setColor(lightbluescc) 
 str = getPathClass('Stroma')
-str.setColor(Color.MAGENTA.getRGB())
+str.setColor(darkbluescc) 
 tum = getPathClass('Tumor')
-tum.setColor(Color.RED.getRGB())
+tum.setColor(redscc) 
 epi = getPathClass('Epithelial')
-epi.setColor(Color.ORANGE.getRGB())
+epi.setColor(orangescc) 
 
 
 cls_array = [bg, gra, lym, pla, str, tum, epi]
@@ -89,4 +100,4 @@ for (annotation in map.values()) {
 QPEx.addObjects(annotations)
 reader.close()
 
-print 'Done!'
+print'Done'

@@ -16,7 +16,7 @@ def imageData = getCurrentImageData()
 def name = GeneralTools.getNameWithoutExtension(imageData.getServer().getMetadata().getName())
 
 //  -- > If output path is ABSOLUTE
-def pathOutput = buildFilePath('/enter/path/here/region.tif')
+def pathOutput = buildFilePath('/home/lsancere/These/CMMC/Local_DATA/HoverNet_DATA/TrainingData/Carina/ExportSelected/region.tif')
 
 //  -- > If Output path is linked to Project dir (RELATIVE)
 // def pathOutput = buildFilePath(PROJECT_BASE_DIR, 'ExportSelected', name + '.tif') 
@@ -31,4 +31,4 @@ def roi = getSelectedROI()
 def requestROI = RegionRequest.createInstance(server.getPath(), 1, roi)
 writeImageRegion(server, requestROI, pathOutput)
 
-print 'Done!'
+print'Done'

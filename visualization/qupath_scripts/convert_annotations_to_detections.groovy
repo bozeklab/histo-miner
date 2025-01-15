@@ -14,5 +14,4 @@ def newDetections = annotations.collect {
 removeObjects(annotations, true)
 addObjects(newDetections)
 
-print 'Done!'
-
+print'Done'

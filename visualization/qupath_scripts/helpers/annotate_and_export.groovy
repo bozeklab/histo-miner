@@ -1,12 +1,16 @@
 
 
-// **OPEN_ANNOTATION_PANNUKECLASSES**
+// **ANNOTATE_AND_EXPORT**
 
-// Open json annotation filled with PANNUKE cell classes on the wsi file. 
+// Open json annotation on the wsi file and then save the wsi annotated file into OME.TIFF
 
 // To use this script you must have a .json file with exact same path as the image, but with .json extension instead
 // In // setting colors sections, one has to change the name of classes with the classes athat are described in the json file
+// One can set the downsampling ratio of the output (can also prevent downsampling)<<s
 
+
+
+// to use this script you must have a .json file with exact same path as the image, but with .json extension instead
 
 import com.google.gson.Gson
 import qupath.lib.geom.Point2
@@ -50,6 +54,7 @@ void createTileCache() {
 
 // setting colors
 bg = getPathClass('Background')
+bg.setColor(Color.RED.getRGB())
 np = getPathClass('Neoplastic')
 np.setColor(Color.RED.getRGB())
 inf = getPathClass('Inflammatory')
@@ -84,4 +89,32 @@ for (annotation in map.values()) {
 QPEx.addObjects(annotations)
 reader.close()
 
-print 'Done!'
+// ******** exporting flattened image to .ome.tiff *********
+createTileCache()
+
+// getting rendered image data 
+def imageData = getCurrentImageData()
+def server = new LabeledImageServer.Builder(imageData).build()
+// server = RenderedImageServer.Builder(getCurrentImageData()).build() //para cli, creo que va por aca
+
+// instantiate OMEPyramidWriter builder
+int tileHeight=1024, tileWidth=1024  // maybe it is worth to play with this parameters
+builder = new OMEPyramidWriter.Builder(server).parallelize().lossyCompression().tileSize(tileWidth, tileHeight).bigTiff(true)
+
+// configure more stuff of the builder
+// double downsample = 4
+double pyramid = 2
+builder.scaledDownsampling(pyramid)
+builder.allZSlices();
+builder.allTimePoints();
+writer = builder.build();
+
+// setting output file
+output_path = (GeneralTools.getNameWithoutExtension(img_dir) + ".ome.tiff")
+output_file = new File(output_path)
+path = output_file.getAbsolutePath();
+
+// write ome tiff
+writer = OMEPyramidWriter.createWriter(writer)
+writer.writeImage(path);
+

@@ -40,12 +40,17 @@ double downsample = 1.0 // original mag = 40 ; downsampled mag = 40/8 = 5
 // Create an ImageServer where the pixels are derived from annotations
 def labelServer = new LabeledImageServer.Builder(imageData)
     .backgroundLabel(0, ColorTools.BLACK) // Specify background label (usually 0 or 255)
+//     .downsample(downsample)    // Choose server resolution; this should match the resolution at which tiles are exported
+//    .addLabel('Background', 1)      // Choose output labels (the order matters!)
+//    .addLabel('Neoplastic',2)
+//    .addLabel('Connective', 3)     // "Stroma" here means non-tumor
+//    .addLabel('Dead',4)
+//    .addLabel('Inflammatory',5)
     .addLabel('Granulocyte', 1) 
     .addLabel('Lymphocyte', 2) 
-    .addLabel('Plasma', 3) 
-    .addLabel('Stroma', 4) 
-    .addLabel('Tumor', 5) 
-    .addLabel('Epithelial', 5)   
+    .addLabel('Plasme', 3) 
+    .addLabel('Tumor', 4) 
+    .addLabel('Stroma', 5) 
     
     .multichannelOutput(false)  // If true, each label is a different channel (required for multiclass probability)
     .build()
