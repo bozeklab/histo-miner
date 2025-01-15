@@ -57,6 +57,8 @@ delete_outliers = config.parameters.bool.plot.delete_outliers
 #############################################################
 
 
+conversion_rate = 0.053
+
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
 ext = '.npy'
@@ -88,8 +90,29 @@ featnames = list(simplifieddata.keys())
 #############################################################
 
 
-# Function to add significance bars
+# Function to add significance bars with p-value in scientific notation
 def add_stat_annotation(ax, x1, x2, y, p_value):
+    """Annotate the plot with p-value bars and p-value text in scientific notation."""
+    # Format the p-value using scientific notation
+    significance = f"p = {p_value:.2e}"  # Display p-value in scientific notation with 2 decimal places
+
+    # Add horizontal bar
+    ax.plot([x1, x2], [y, y], color="white", lw=1.5)
+    
+    # Add the p-value text above the bar
+    ax.text(
+        (x1 + x2) * 0.5,
+        y,
+        significance,
+        ha='center',
+        va='bottom',
+        color="black",
+        fontsize=13  # Optional: adjust font size
+    )
+
+
+
+def add_stat_annotation_stars(ax, x1, x2, y, p_value):
     """Annotate the plot with p-value bars and stars."""
     significance = ''
     if p_value < 0.001:
@@ -123,6 +146,10 @@ if boxplots:
 
     
     if delete_outliers:
+
+
+        ###!! ONLY FOR EXPLORATION PURPOSES AS THERE IS NO JUSTIFICATION IN DELETING OUTLIERS 
+
         pourcentagerem = 0.1
         for featindex in tqdm(range(0, len(featnames))):
             featvals = featarray[featindex, :]
@@ -141,7 +168,7 @@ if boxplots:
                 'FeatureName': [featname] * len(featvals_wooutliers)
             })
 
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(8, 10))
             ax = sns.boxplot(x='FeatureName', y='FeatureValues', hue='Classification', 
                              data=df, palette=custom_palette, hue_order=['response', 'no_response'], dodge=True,
                              gap = 0.25)
@@ -176,24 +203,50 @@ if boxplots:
             featname = featnames[featindex]
 
             df = pd.DataFrame({
-                'FeatureValues': featvals, 
+                'FeatureValues': featvals * conversion_rate, # here we can adjust if the value is in pixel squarre or in micro meter square
                 'Classification': clarray_names,
-                'FeatureName': [featname] * len(featvals)
+                'FeatureName': ''
             })
 
-            plt.figure(figsize=(10, 6))
+            hue_order = ['response', 'no_response']
+
+            plt.figure(figsize=(8, 10))
             ax = sns.boxplot(x='FeatureName', 
                              y='FeatureValues', 
                              hue='Classification', 
                              data=df, 
                              palette=custom_palette, 
-                             hue_order=['response', 'no_response'], 
+                             hue_order=hue_order, 
+                             fill=False,
                              dodge=True,
-                             gap = 0.25)
+                             gap = 0.25,
+                             showfliers=False  # Remove the outlier markers (white dot)
+                             )
+
+            # # Make the boxplot interiors transparent
+            # for patch in ax.patches:
+            #     patch.set_facecolor('none')  # Make the interior transparent
+            #     patch.set_edgecolor(patch.get_edgecolor())  # Keep the edge color
+            #     patch.set_linewidth(2)  # Optional: make edges thicker
+
+            # Overlay individual sample points
+            sns.stripplot(
+                x='FeatureName',
+                y='FeatureValues',
+                hue='Classification',
+                data=df,
+                palette=custom_palette,
+                hue_order=hue_order,
+                dodge=True,
+                size=5,  # Adjust dot size
+                ax=ax,
+                legend=False  # Exclude stripplot from the legend
+            )
 
             # Update legend labels
             handles, labels = ax.get_legend_handles_labels()
-            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right')
+            ax.legend(handles, [display_labels[label] for label in labels], loc='upper right', fontsize=13)
+            
 
             # Add statistical annotation
             if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
@@ -203,16 +256,22 @@ if boxplots:
                 y_max = df['FeatureValues'].max()
                 add_stat_annotation(ax, 0, 0.1, y_max + 0.05 * y_max, p_value)
 
-            ax.set_title(featname, fontsize=12)
-            ax.set_ylabel('Feature Values', fontsize=10)
+
+            ax.set_ylabel('Feature Values', fontsize=18)
+
+            # Remove the x-axis label
+            # ax.set_xlabel(r'Mean area of granulocytes inside tumors regions ($\mu m^2$)', fontsize=18)
+            ax.set_xlabel(r'Mean area of granulocytes in the vicinity of tumors ($\mu m^2$)', fontsize=18)
+            # ax.set_xlabel('Porcentage of lymphocytes among all cells (whole WSI)', fontsize=18)
 
             # Save the plot
-            savename = featname + '_boxplot.png'
+            savename = featname + '_boxplot.svg' 
             saveboxplot_path = os.path.join(pathtosavefolder, 'boxplots', 'allfeat', savename)
             os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
             plt.tight_layout()
-            plt.savefig(saveboxplot_path, dpi=300)
+            plt.savefig(saveboxplot_path, format='svg', dpi=300)
             plt.close()
+
 
 
 
@@ -311,14 +370,14 @@ if distributions:
                             + labs(title= featname)
                             + theme(plot_title=plotnine.element_text(size=10))
                         )
-            #Create Name for saving
-            savename = featname + '_distribution.png'
-
-            #Saving
-            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
-                os.makedirs(pathtosavefolder + '/density/allfeat/')
-            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
-            density_plot.save(savedensplot_path, dpi=300)
+            
+            # Save the plot
+            savename = featname + '_distribution.svg' 
+            saveboxplot_path = os.path.join(pathtosavefolder, 'density', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, format='svg', dpi=300)
+            plt.close()
 
 
 
@@ -422,11 +481,11 @@ if violinplots:
             ax.set_ylabel('Feature Values', fontsize=10)
 
             # Save the plot
-            savename = featname + '_violinplot.png'
+            savename = featname + '_violinplot.svg'
             saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
             os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
             plt.tight_layout()
-            plt.savefig(saveboxplot_path, dpi=300)
+            plt.savefig(saveboxplot_path, format='svg', dpi=300)
             plt.close()
 
 

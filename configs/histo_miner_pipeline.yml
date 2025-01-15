@@ -20,7 +20,7 @@
       # feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/feature_selection_allpreprint_35s_nomorph/"
       feature_selection_main: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-      validation_tables/boxplots/pythonready/csv/granulocytes/"
+      validation_tables/boxplots/pythonready/csv/stromal/"
       
 
       # feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -38,7 +38,7 @@
       # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/visualization/"
       visualizations: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-      validation_tables/boxplots/pythonready/csv/granulocytes/visualization/"
+      validation_vizu/"
         
 
     files:

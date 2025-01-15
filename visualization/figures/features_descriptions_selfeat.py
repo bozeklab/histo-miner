@@ -136,7 +136,7 @@ def add_stat_annotation_stars(ax, x1, x2, y, p_value):
 
 
 #############################################################
-## Plot boxplots for every features 
+## Plot boxplots for selected features 
 #############################################################
 
 
@@ -282,7 +282,7 @@ if boxplots:
 
 
 ########################################################################
-## Plot Kernel Density distribution for every features (with plotnine)
+## Plot Kernel Density distribution for selected features (with plotnine)
 ########################################################################
 
 if distributions:
@@ -293,9 +293,12 @@ if distributions:
     featarray_rec = featarray[:,rec_idx]
 
     if delete_outliers:
+
+        ###!! ONLY FOR EXPLORATION PURPOSES AS THERE IS NO JUSTIFICATION IN DELETING OUTLIERS 
+
         #set the variables
         # Filter extremes quartiles but here for both rec and no_rec vectors
-        for featindex in tqdm(range(0, len(featnames))):
+        for featindex in tqdm(visu_indexes):
             pourcentagerem = 0.1
             featvals_norec = list(featarray_norec[featindex,:])
             featvals_rec = list(featarray_rec[featindex,:])
@@ -350,7 +353,7 @@ if distributions:
             density_plot.save(savedensplot_path, dpi=300)
             # Filter outliers using Piercon Crriterion is also an option
     else:
-        for featindex in tqdm(range(0, len(featnames))):
+        for featindex in tqdm(visu_indexes):
             featvals_norec = list(featarray_norec[featindex,:])
             featvals_rec = list(featarray_rec[featindex,:])
             featname = featnames[featindex]
@@ -376,19 +379,18 @@ if distributions:
                             + labs(title= featname)
                             + theme(plot_title=plotnine.element_text(size=10))
                         )
-            #Create Name for saving
-            savename = featname + '_distribution.png'
 
-            #Saving
-            if not os.path.exists(pathtosavefolder + '/density/allfeat/'):
-                os.makedirs(pathtosavefolder + '/density/allfeat/')
-            savedensplot_path = pathtosavefolder + '/density/allfeat/' + savename
-            density_plot.save(savedensplot_path, dpi=300)
-
+            # Save the plot
+            savename = featname + '_distribution.svg' 
+            saveboxplot_path = os.path.join(pathtosavefolder, 'density', 'allfeat', savename)
+            os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(saveboxplot_path, format='svg', dpi=300)
+            plt.close()
 
 
 #############################################################
-## Plot Violin plots for every features (with plotnine)
+## Plot Violin plots for selected features (with plotnine)
 #############################################################
 
 
@@ -404,8 +406,11 @@ if violinplots:
     display_labels = {'response': 'Responder', 'no_response': 'Non-responder'}
 
     if delete_outliers:
+
+        ###!! ONLY FOR EXPLORATION PURPOSES AS THERE IS NO JUSTIFICATION IN DELETING OUTLIERS 
+        
         pourcentagerem = 0.1
-        for featindex in tqdm(range(0, len(featnames))):
+        for featindex in tqdm(visu_indexes):
             featvals = featarray[featindex, :]
             indices_to_keep = np.where(
                 ((featvals > np.quantile(featvals, pourcentagerem / 2)) &
@@ -451,7 +456,7 @@ if violinplots:
             plt.close()
 
     else:
-        for featindex in tqdm(range(0, len(featnames))):
+        for featindex in tqdm(visu_indexes):
             featvals = featarray[featindex, :]
             featname = featnames[featindex]
 
@@ -487,270 +492,10 @@ if violinplots:
             ax.set_ylabel('Feature Values', fontsize=10)
 
             # Save the plot
-            savename = featname + '_violinplot.png'
+            savename = featname + '_violinplot.svg'
             saveboxplot_path = os.path.join(pathtosavefolder, 'violinplots', 'allfeat', savename)
             os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
             plt.tight_layout()
-            plt.savefig(saveboxplot_path, dpi=300)
+            plt.savefig(saveboxplot_path, format='svg', dpi=300)
             plt.close()
 
-
-
-#############################################################
-## PCA and scree plots (with plt ax.scatter and plot)
-#############################################################
-
-# See https://scikit-learn.org/ Comparison of LDA and PCA 2D projection of Iris dataset
-# For an example of use
-
-if pca: 
-    #### PCA 2D 
-    pca = PCA(n_components=2)
-    # Create vector for fit method
-    X = pd.DataFrame(featarray)
-    X = np.transpose(X)
-    # X = X.astype('float32')
-    # Standardize the dataset
-    # Create an instance of StandardScaler
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    # Create classification target vector for visu
-    target = clarray
-    # Target names for visualization
-    target_names = ['no_response', 'response']
-
-    # PCA fitting
-    pca_result = pca.fit(X_scaled).transform(X_scaled)
-
-    # 2D PCA plot
-    fig, ax = plt.subplots()
-    # interesting colors = ["navy", "darkorange"]
-    colors = ["royalblue", "orangered"]
-    lw = 2
-
-    for color, i, target_name in zip(colors, [0, 1], target_names):
-        plt.scatter(
-            pca_result[target == i, 0], 
-            pca_result[target == i, 1], 
-            color=color, 
-            alpha=0.8, 
-            lw=lw, 
-            label=target_name
-        )
-    ax.set_xlabel('Principal Component 1')
-    ax.set_ylabel('Principal Component 2')
-    plt.legend(loc="best", shadow=False, scatterpoints=1)
-    plt.title("PCA of SCC WSIs (all features kept)")
-
-    #Create Name for saving
-    savename = 'PCA_SCC_WSIs_2D_all_features.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/PCA/'):
-        os.makedirs(pathtosavefolder + '/PCA/')
-    savedpca_path = pathtosavefolder + '/PCA/' + savename
-    plt.savefig(savedpca_path)
-    plt.clf()
-
-
-    #### PCA 3D
-    pca3D = PCA(n_components=3)
-    # Create vector for fit method
-    X = pd.DataFrame(featarray)
-    X = np.transpose(X)
-    # X = X.astype('float32')
-    # Standardize the dataset
-    # Create an instance of StandardScaler
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    # Create classification target vector for visu
-    target = clarray
-    # Target names for visualization
-    target_names = ['no_response', 'response']
-
-    # PCA fitting
-    pca_result = pca3D.fit(X_scaled).transform(X_scaled)
-
-    # 3D PCA plot
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # interesting colors = ["navy", "darkorange"]
-    colors = ["royalblue", "orangered"]
-    lw = 2
-
-    for color, i, target_name in zip(colors, [0, 1], target_names):
-        ax.scatter(
-            pca_result[target == i, 0], 
-            pca_result[target == i, 1], 
-            color=color, 
-            alpha=0.8, 
-            lw=lw, 
-            label=target_name
-        )
-    ax.set_xlabel('Principal Component 1')
-    ax.set_ylabel('Principal Component 2')
-    ax.set_zlabel('Principal Component 3')
-    ax.legend(loc="best", shadow=False, scatterpoints=1)
-    ax.set_title("3D PCA of SCC WSIs (all features kept)")
-
-    #Create Name for saving
-    savename = 'PCA_SCC_WSIs_3D_all_features.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/PCA/'):
-        os.makedirs(pathtosavefolder + '/PCA/')
-    savedpca_path = pathtosavefolder + '/PCA/' + savename
-    plt.savefig(savedpca_path)
-    plt.clf()
-
-    print('PCAs saved.')
-
-
-    #### Scree Plot 2D
-    pca_scree = PCA(n_components=20)
-    # We need to fit but not to fit + transform!
-    # Plus we need more components then 2 or 3
-    pca2_result = pca_scree.fit(X_scaled)
-    
-    # Scree plot
-    PC_values = np.arange(pca_scree.n_components_) + 1
-    plt.plot(
-        PC_values, 
-        pca_scree.explained_variance_ratio_, 
-        'o-', 
-        linewidth=2, 
-        color='royalblue')
-    plt.xlabel('Principal Component')
-    plt.ylabel('Variance Explained')
-    plt.title("Scree Plot of SCC WSIs (all features kept)")
-
-    #Create Name for saving
-    savename = 'ScreePlot_SCC_WSIs_all_features.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/PCA/'):
-        os.makedirs(pathtosavefolder + '/PCA/')
-    savedpca_path = pathtosavefolder + '/PCA/' + savename
-    plt.savefig(savedpca_path)
-    plt.clf()
-
-    print('Scree Plot saved.')
-
-
-#############################################################
-## T-SNE plots (with seaborn)
-#############################################################
-
-# Will tryr to follow what was done just above 
-
-if tsne:
-    #### Initialize TSNE 2D
-    tsne = TSNE(n_components=2, verbose=0, random_state=42)
-    # Create vector for fit method
-    X = pd.DataFrame(featarray)
-    X = np.transpose(X)
-    X = X.astype('float32')
-    # Standardize the dataset
-    # Create an instance of StandardScaler
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    # Create classification target vector for visu
-    target = pd.Series(clarray)
-    target = target.astype('int8')
-    # Target names for visualization
-    target_names = ['no_response', 'response']
-
-    # TSNE fitting
-    z = tsne.fit_transform(X_scaled)
-
-    # interesting colors = ["navy", "darkorange"]
-    colors = ["royalblue", "orangered"]
-
-    # T-SNE 2D plot
-    df = pd.DataFrame()
-    df["y"] = target
-    df["t-sne 1"] = z[:,0]
-    df["t-sne 2"] = z[:,1]
-
-    ax = sns.scatterplot(
-        x="t-sne 1", 
-        y="t-sne 2", 
-        hue=df.y.tolist(),
-        #palette=sns.color_palette("hls", 2),
-        palette=colors,
-        data=df
-        ).set(title="SCC data T-SNE projection (all features kept)")
-    plt = plt.gcf()
-
-    #Create Name for saving
-    savename = 'T-SNE_SCC_WSIs_2D_all_features.png'
-
-    #Saving
-    if not os.path.exists(pathtosavefolder + '/TSNE/'):
-        os.makedirs(pathtosavefolder + '/TSNE/')
-    savedtsne_path = pathtosavefolder + '/TSNE/' + savename
-    plt.savefig(savedtsne_path)
-    plt.clf()
-
-
-    #### Initialize TSNE 3D
-
-    # Explanation here
-    # https://innovationyourself.com/3d-data-visualization-seaborn-in-python/
-    # https://seaborn.pydata.org/generated/seaborn.scatterplot.html
-   
-
-    # tsne = TSNE(n_components=3, verbose=0, random_state=42)
-    # # Create vector for fit method
-    # X = pd.DataFrame(featarray)
-    # X = np.transpose(X)
-    # X = X.astype('float32')
-    # # Standardize the dataset
-    # # Create an instance of StandardScaler
-    # scaler = StandardScaler()
-    # X_scaled = scaler.fit_transform(X)
-    # # Create classification target vector for visu
-    # target = pd.Series(clarray)
-    # target = target.astype('int8')
-    # # Target names for visualization
-    # target_names = ['no_recurrence', 'recurrence']
-
-    # # TSNE fitting
-    # z = tsne.fit_transform(X_scaled)
-
-    # # interesting colors = ["navy", "darkorange"]
-    # colors = ["royalblue", "orangered"]
-
-    # # T-SNE 3D plot
-    # df = pd.DataFrame()
-    # df["y"] = target
-    # df["t-sne 1"] = z[:,0]
-    # df["t-sne 2"] = z[:,1]
-    # df["t-sne 3"] = z[:,2]
-
-    # ax = sns.scatterplot(
-    #     x="t-sne 1", 
-    #     y="t-sne 2", 
-    #     z="t-sne 3", 
-    #     hue=df.y.tolist(),
-    #     #palette=sns.color_palette("hls", 2),
-    #     palette=colors,
-    #     data=df
-    #     ).set(title="SCC data T-SNE projection")
-    # plt = plt.gcf()
-
-    # #Create Name for saving
-    # savename = 'T-SNE_SCC_WSIs_3D.png'
-
-    # #Saving
-    # if not os.path.exists(pathtosavefolder + '/TSNE/'):
-    #     os.makedirs(pathtosavefolder + '/TSNE/')
-    # savedtsne_path = pathtosavefolder + '/TSNE/' + savename
-    # plt.savefig(savedtsne_path)
-
-    print('T-SNE saved.')
-
-
-
-#

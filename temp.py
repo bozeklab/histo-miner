@@ -6,7 +6,7 @@ from io import StringIO
 
 # Hardcode the path to the folder containing your CSV files.
 FOLDER_PATH = "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-validation_tables/boxplots/pythonready/csv/granulocytes/"
+validation_tables/boxplots/pythonready/csv/tumor/"
 
 
 def convert_csv_to_npy(csv_filepath):
