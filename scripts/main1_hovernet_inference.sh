@@ -10,7 +10,7 @@
 
 # Extract all needed parameters from hovernet config
 
-config_path=../configs/models/hovernet.yml
+config_path=../configs/models/scc_hovernet.yml
 
 # We need yaml lib so we reactivate histo-miner env if it was not done befre
 conda deactivate

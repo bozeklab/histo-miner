@@ -6,7 +6,7 @@
 
 # Extract all needed parameters from mmsegmentation config
 
-config_path=../configs/models/mmsegmentation.yml
+config_path=../configs/models/scc_segmenter.yml
 
 # We need yaml lib so we reactivate histo-miner env if it was not done befre
 conda deactivate
