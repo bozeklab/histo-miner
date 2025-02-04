@@ -54,9 +54,8 @@ redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
 
 ###### Reorganise the folder and naming of files to process the concatenation of feature
 tissueanalyser_folder = pathanalyserout 
-norec_analyse_folder = tissueanalyser_folder + '/' + 'no_response'
-rec_analyse_folder = tissueanalyser_folder + '/' + 'response' 
-
+norec_analyse_folder = tissueanalyser_folder + '/' + 'no_response'  #maybe not needed
+rec_analyse_folder = tissueanalyser_folder + '/' + 'response'  #maybe not needed
 
 
 ##### /!\   
@@ -88,13 +87,19 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
         for file in files:
             namewoext, extension = os.path.splitext(file)
             filepath = root + '/' + file
-            if extension == '.json' and 'analysed' and not '._' in namewoext:
+            if (
+                extension == '.json'  
+                and 'analysed' in namewoext 
+                and '._' not in namewoext     # in case of MACOS
+                and '.DS_S' not in namewoext    # in case of MACOS
+            ):
                 if not 'response' in namewoext:
-                    raise ValueError('Some features are not associated to a response '
-                                     'or noresponse WSI classification. User must sort JSON and rename it'
-                                     ' with the corresponding response and no_response caracters')
+                    raise ValueError('Some features are not associated to a recurrence  '
+                                     'or norecurrence  WSI classification. User must sort JSON and rename it'
+                                     ' with the corresponding recurrence  and no_recurrence  caracters')
                 else:
                     jsonfiles.append(filepath)
+
 
 ####### If applicable create a dict file from the patient ID csv file 
 # And initializa the futur ordered patient ID list

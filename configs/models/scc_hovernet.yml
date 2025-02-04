@@ -5,25 +5,21 @@
 
     hovernet_mode: wsi
 
-    gpulist: "0,1"
+    gpulist: "0"
 
     paths:
       
       checkpoints: "/data/lsancere/Data_General/Weights/bestcheckpoints-histo-miner/scchovernet_bestweights.tar"
 
-      input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn/"
-      # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
-      # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
-      # TrainingDataGeneration/TrainingSet/Val/Images/"
+      # input_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # cSCC_CPI_Bonn/Bonn/"
+      input_dir : "/data/lsancere/Data_General/TrainingSets/GraphSet/TumSeg_OriginalRes/part2/"
 
-      output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn_Hvn_Output/"
-      # "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
-      # ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/\
-      # TrainingDataGeneration/TrainingSet/Val/InfonVal_output/"
+      # output_dir: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # cSCC_CPI_Bonn/Bonn_Hvn_Output/"
+      output_dir: "/data/lsancere/Data_General/TrainingSets/GraphSet/TumSeg_OriginalRes/hvn_output/"
       
-      cache_path: "/dev/shm/cache-histominer/"
+      cache_path: "/data_ssd/cache/lsancere/13/"
 
 
 
