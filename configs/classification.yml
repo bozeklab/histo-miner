@@ -6,7 +6,7 @@
 # All parameters of string names
   names:
     # run_name: "nestedcross_rec_directmunich"
-    run_name: "preprint_CPI_80_0-1"
+    run_name: "preprint_CPI_defaultHPs"
 
     # permutation_idx:
 
@@ -29,9 +29,9 @@
 
         random_forest: False
 
-        xgboost: True   
+        xgboost: True 
 
-        light_gbm: False                                     
+        light_gbm: False                                                 
 
       save_evaluations: True
 
@@ -129,14 +129,14 @@
       
       random_state: 0
 
-      n_estimators: 80
+      n_estimators: 100
       # number of boosting iterations, should be = number of trees in the forest
-      # for best split: 40
-      # for best mean: 40
+      # default value: 100
+      # first test: 80
 
-      learning_rate:  0.1
-      # for best split: 0.1
-      # for best mean: 0.1
+      learning_rate:  0.3
+      # default value: 0.3
+      # first test: 0.1
 
       objective: 'binary:logistic'
       # choice to take for binary classification
@@ -164,24 +164,22 @@
       
       random_state: 42
 
-      n_estimators: 200
+      n_estimators: 100
       # number of boosting iterations, should be = number of trees in the forest
-      # for best split: 100
-      # for best mean: 120
-      # for best mean, slides selected: 60
+      # default value: 100
+      # first test: 120
 
-      learning_rate: 0.01
-      # for best split: 0.8
-      # for best mean: 0.01
-      # for best mean, slides selected:  0.1
+      learning_rate: 0.1
+      # default value: 0.1
+      # first test: 0.01
 
       objective: 'binary'
       # choice to take for binary classification
 
-      num_leaves: 2
-      # for best split: 10
-      # for best mean: 20
-      # for best mean, slides selected: 15
+      num_leaves: 31
+      # default value: 31
+      # second test: 20
+      # first test: 2
 
       grid_dict: 
             random_state: [0, 42, 84]
