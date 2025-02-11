@@ -34,7 +34,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-featarray_folder = confighm.paths.folders.feature_selection_main
+featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 eval_folder_name = confighm.names.eval_folder
 
@@ -54,50 +54,17 @@ run_name = config.names.run_name
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
 run_lgbm = config.parameters.bool.run_classifiers.light_gbm 
 
-
-
-ridge_random_state = config.classifierparam.ridge.random_state
-ridge_alpha = config.classifierparam.ridge.alpha
-ridge_param_grid_random_state = list(config.classifierparam.ridge.grid_dict.random_state)
-ridge_param_grid_alpha = list(config.classifierparam.ridge.grid_dict.alpha)
-
-lregression_random_state = config.classifierparam.logistic_regression.random_state
-lregression_penalty = config.classifierparam.logistic_regression.penalty
-lregression_solver = config.classifierparam.logistic_regression.solver
-lregression_multi_class = config.classifierparam.logistic_regression.multi_class
-lregression_class_weight = config.classifierparam.logistic_regression.class_weight
-lregression_param_grid_random_state = list(config.classifierparam.logistic_regression.grid_dict.random_state)
-lregression_param_grid_penalty = list(config.classifierparam.logistic_regression.grid_dict.penalty)
-lregression_param_grid_solver = list(config.classifierparam.logistic_regression.grid_dict.solver)
-lregression_param_grid_multi_class = list(config.classifierparam.logistic_regression.grid_dict.multi_class)
-lregression_param_grid_class_weight = list(config.classifierparam.logistic_regression.grid_dict.class_weight)
-
-forest_random_state = config.classifierparam.random_forest.random_state
-forest_n_estimators = config.classifierparam.random_forest.n_estimators
-forest_class_weight = config.classifierparam.random_forest.class_weight
-forest_param_grid_random_state = list(config.classifierparam.random_forest.grid_dict.random_state)
-forest_param_grid_n_estimators = list(config.classifierparam.random_forest.grid_dict.n_estimators)
-forest_param_grid_class_weight = list(config.classifierparam.random_forest.grid_dict.class_weight)
-
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
 xgboost_lr = config.classifierparam.xgboost.learning_rate
 xgboost_objective = config.classifierparam.xgboost.objective
-xgboost_param_grid_random_state = list(config.classifierparam.xgboost.grid_dict.random_state)
-xgboost_param_grid_n_estimators = list(config.classifierparam.xgboost.grid_dict.n_estimators)
-xgboost_param_grid_learning_rate = list(config.classifierparam.xgboost.grid_dict.learning_rate)
-xgboost_param_grid_objective = list(config.classifierparam.xgboost.grid_dict.objective)
 
 lgbm_random_state = config.classifierparam.light_gbm.random_state
 lgbm_n_estimators = config.classifierparam.light_gbm.n_estimators
 lgbm_lr = config.classifierparam.light_gbm.learning_rate
 lgbm_objective = config.classifierparam.light_gbm.objective
 lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
-lgbm_param_grid_random_state = list(config.classifierparam.light_gbm.grid_dict.random_state)
-lgbm_param_grid_n_estimators = list(config.classifierparam.light_gbm.grid_dict.n_estimators)
-lgbm_param_grid_learning_rate = list(config.classifierparam.light_gbm.grid_dict.learning_rate)
-lgbm_param_grid_objective = list(config.classifierparam.light_gbm.grid_dict.objective)
-lgbm_param_grid_num_leaves = list(config.classifierparam.light_gbm.grid_dict.num_leaves)
+
 
 
 
@@ -149,9 +116,7 @@ ext = '.npy'
 
 
 
-# Load feature selection numpy files*
-# need to readapt this 
-# -->
+# Load feature selection numpy files
 if run_xgboost and not run_lgbm:
     classifier_name = 'xgboost'
 if run_lgbm and not run_xgboost:
@@ -197,14 +162,14 @@ print('Refinement of feature selected indexes done.')
 ################################################################
 
 #This is to check but should be fine
+print('Load feature array')
 path_featarray = featarray_folder + 'perwsi_featarray' + ext
 path_clarray = featarray_folder + 'perwsi_clarray' + ext
 path_patientids_array = featarray_folder + 'patientids' + ext
 
 train_featarray = np.load(path_featarray)
 train_clarray = np.load(path_clarray)
-# train_clarray = np.transpose(train_clarray)
-train_featarray = np.transpose(train_featarray)
+
 
 if patientid_avail:
     patientids_load = np.load(path_patientids_array, allow_pickle=True)
@@ -220,8 +185,8 @@ if patientid_avail:
 ## Keep best features
 ################################################################
 
-
-train_featarray = train_featarray[:,selfeat_mrmr_idx]
+selected_features_matrix = SelectedFeaturesMatrix(train_featarray)
+train_featarray = selected_features_matrix.mrmr_matr(selfeat_mrmr_idx)
 
 
 
@@ -265,7 +230,7 @@ lightgbm_clf = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 #                                      class_weight=lregression_class_weight)
 # ##### RANDOM FOREST
 # forest_clf = ensemble.RandomForestClassifier(random_state= forest_random_state,
-#                                          n_estimators=forest_n_estimators,
+#                                           n_estimators=forest_n_estimators,
 #                                          class_weight=forest_class_weight)
 
 # Create folder is it doesn't exist yet

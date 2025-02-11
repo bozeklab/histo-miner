@@ -27,7 +27,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 pathanalyserout = config.paths.folders.tissue_analyser_output
-pathfeatselect = config.paths.folders.feature_selection_main
+featarray_folder = config.paths.folders.featarray_folder
 patientid_csv = config.paths.files.patientid_csv
 patientid_avail = config.parameters.bool.patientid_avail
 perpatient_feat = config.parameters.bool.perpatient_feat
@@ -259,7 +259,7 @@ if perpatient_feat:
 # Save all the files in the tissue analyses folder
 # Create the path to folder that will contain the numpy feature selection files
 
-pathoutput = pathfeatselect
+pathoutput = featarray_folder
 ext = '.npy'
 
 # If the folder doesn't exist create it

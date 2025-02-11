@@ -8,6 +8,8 @@
     # run_name: "nestedcross_rec_directmunich"
     run_name: "preprint_CPI_defaultHPs"
 
+    trained_model: "xgboost_mrmr"
+
     # permutation_idx:
 
     #   perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
@@ -36,6 +38,10 @@
       save_evaluations: True
 
       search_bestsplit: False
+
+      display_classification_predictions: True 
+
+      display_classification_scores: True
 
 
     int:

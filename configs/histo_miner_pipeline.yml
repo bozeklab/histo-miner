@@ -17,7 +17,7 @@
       # Analyses_cSCC_CPI/tissue_analyser_output_Bonn/"
 
 
-      feature_selection_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      featarray_folder: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       Analyses_cSCC_CPI/feature_selection_allpreprint_35s/"
       # feature_selection_main: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
       # validation_tables/boxplots/pythonready/csv/stromal/"
@@ -190,13 +190,6 @@
         tsne: False  
 
         delete_outliers: False   
-        
-
-      display_classification_predictions: False
-
-      display_classification_scores: True
-
-
 
 
     str:

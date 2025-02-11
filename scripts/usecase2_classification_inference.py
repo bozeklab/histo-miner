@@ -12,13 +12,6 @@ from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import joblib
 
 
-
-###### DEV ATTENTION #####
-### Add saving of the predictions
-##########################
-
-
-
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -26,13 +19,28 @@ import joblib
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
 with open("./../configs/histo_miner_pipeline.yml", "r") as f:
+    confighm = yaml.load(f, Loader=yaml.FullLoader)
+# Create a config dict from which we can access the keys with dot syntax
+confighm = attributedict(confighm)
+classification_eval_folder = confighm.paths.folders.classification_evaluation
+featarray_folder = confighm.paths.folders.featarray_folder
+eval_folder_name = confighm.names.eval_folder
+nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
+
+with open("./../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtofolder = config.paths.folders.tissue_analyser_main
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
+model_name = config.names.trained_model
+classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures # see if we remove it
+nbr_of_splits = config.parameters.int.nbr_of_splits
+run_name = config.names.run_name
+run_xgboost = config.parameters.bool.run_classifiers.xgboost
+run_lgbm = config.parameters.bool.run_classifiers.light_gbm 
+
 displayclass_score = config.parameters.bool.display_classification_scores
 displayclass_pred = config.parameters.bool.display_classification_predictions
+
 
 
 
@@ -41,13 +49,13 @@ displayclass_pred = config.parameters.bool.display_classification_predictions
 ############################################################
 
 
-# Folder name to save models (might not be used)
-modelfolder = pathtofolder +'/classification_models/'
+# remove the last folder from pah 
+rootmodelfolder = os.path.dirname(classification_eval_folder.rstrip(os.path.sep))
+modelfolder = rootmodelfolder + '/classification_models/'
+modelext = '.joblib'
 
-pathnameofmodel_vanilla = modelfolder + 'nameofmodel_vanilla.joblib'
-pathnameofmodel_mrmr = modelfolder + 'nameofmodel_mrmr.joblib'
-pathnameofmodel_boruta = modelfolder + 'nameofmodel_boruta.joblib'
-pathnameofmodel_mannwhitney = modelfolder + 'nameofmodel_mannwhitney.joblib'
+
+model_path = modelfolder + model_name + modelext
 
 
 
@@ -55,32 +63,74 @@ pathnameofmodel_mannwhitney = modelfolder + 'nameofmodel_mannwhitney.joblib'
 ## Load inference data
 ############################################################
 
-pathfeatselect = pathtofolder + '/feature_selection/'
+print('Load feature selection numpy files...')
+
+featsel_folder = classification_eval_folder + eval_folder_name + '/'
 ext = '.npy'
 
-print('Load feeature selection numpy files...')
 
-pathfeatarray = pathfeatselect + 'inffeatarray' + ext
-pathclarray = pathfeatselect + 'infclarray' + ext
+# Load feature selection numpy files
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
+
+# Only one will be kept here but we take consideration of all feature selection methods 
+name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
+name_boruta_output = '_ba_boruta_' + str(nbr_of_splits) + 'splits_' + run_name 
+name_mannwhitneyu_output = '_ba_mannwhitneyu_' + str(nbr_of_splits) + 'splits_' + run_name 
+
+path_selfeat_mrmr = featsel_folder + 'topselfeatid_' + classifier_name  + name_mrmr_output + ext
+path_selfeat_boruta =  featsel_folder + 'topselfeatid_' + classifier_name  + name_boruta_output + ext
+path_selfeat_mannwhitneyu = featsel_folder + 'topselfeatid_' + classifier_name  + name_mannwhitneyu_output + ext
+
+
+# load the indexes fo the top features
+if os.path.exists(path_selfeat_mrmr):
+    selfeat_mrmr = np.load(path_selfeat_mrmr, allow_pickle=True)
+
+if os.path.exists(path_selfeat_boruta):
+    selfeat_boruta = np.load(path_selfeat_boruta, allow_pickle=True)
+
+if os.path.exists(path_selfeat_mannwhitneyu):
+    selfeat_mannwhitneyu = np.load(path_selfeat_mannwhitneyu, allow_pickle=True)
+
+print('Loading feature selected indexes done.')
+
+
+# !!! Kept given number of features
+if os.path.exists(path_selfeat_mrmr):
+    selfeat_mrmr_idx = selfeat_mrmr[0:nbr_keptfeat]
+if os.path.exists(path_selfeat_mannwhitneyu):
+    selfeat_mannwhitneyu_idx = selfeat_mrmr[0:nbr_keptfeat]
+print('Refinement of feature selected indexes done.')
+
+
+
+print('Load feature array')
+pathfeatarray = featarray_folder + 'perwsi_featarray' + ext
+pathclarray = featarray_folder + 'perwsi_clarray' + ext
 #TO DO:
 #raise an error here if one of the file doesn't exist
 
 inf_featarray = np.load(pathfeatarray)
 inf_clarray = np.load(pathclarray)
-inf_clarray = np.transpose(inf_clarray)
 
 
-# Each time we check if the file exist because all selections are not forced to run
-pathselfeat_mrmr = pathfeatselect + 'selfeat_mrmr_idx' + ext
-if os.path.exists(pathselfeat_mrmr):
-    selfeat_mrmr = np.load(pathselfeat_mrmr, allow_pickle=True)
-pathselfeat_boruta = pathfeatselect + 'selfeat_boruta_idx' + ext
-if os.path.exists(pathselfeat_boruta):
-    selfeat_boruta = np.load(pathselfeat_boruta, allow_pickle=True)
-pathorderedp_mannwhitneyu = pathfeatselect + 'selfeat_mannwhitneyu_idx' + ext
-if os.path.exists(pathorderedp_mannwhitneyu):
-    orderedp_mannwhitneyu = np.load(pathorderedp_mannwhitneyu, allow_pickle=True)
-print('Loading done.')
+
+################################################################
+## Keep best features
+################################################################
+
+selected_features_matrix = SelectedFeaturesMatrix(inf_featarray)
+
+if os.path.exists(path_selfeat_mrmr):
+    inf_featarray = selected_features_matrix.mrmr_matr(selfeat_mrmr_idx)    
+if os.path.exists(path_selfeat_boruta):
+    inf_featarray = selected_features_matrix.mrmr_matr(selfeat_boruta)
+if os.path.exists(path_selfeat_mannwhitneyu):
+    inf_featarray = selected_features_matrix.mrmr_matr(selfeat_mannwhitneyu_idx)
+
 
 
 
@@ -89,80 +139,63 @@ print('Loading done.')
 ############################################################
 
 
-#### Classification  with all features kept 
-
-if classification_from_allfeatures:
-    # Load test data (no feature selection)
-    inf_globfeatarray = np.transpose(inf_featarray)
-
-    # Predict the labels for new data
-    ##### nameofmodel
-    if os.path.exists(pathnameofmodel_vanilla):
-        nameofmodel_vanilla = joblib.load(pathnameofmodel_vanilla)
-        if displayclass_pred:
-            nameofmodel_vanilla_pred = nameofmodel_vanilla.predict(inf_globfeatarray)
-            print('nameofmodel_pred : {}'.format(nameofmodel_vanilla_pred))
-        if displayclass_score:
-            print("Accuracy of nameofmodel classifier:",
-              nameofmodel_vanilla.score(inf_globfeatarray, inf_clarray))
-
-
-
-#### Parse the featarray to the class SelectedFeaturesMatrix 
-
-selected_features_matrix = SelectedFeaturesMatrix(inf_featarray)
-
 #### Classification training with the features kept by mrmr
 
-if os.path.exists(pathselfeat_mrmr):
-    # Load test data (that went through mrmr method)
-    test_featarray_mrmr = selected_features_matrix.mrmr_matr(selfeat_mrmr)
-    # test_featarray_mrmr = np.transpose(test_featarray_mrmr)
-
+if os.path.exists(path_selfeat_mrmr) and os.path.exists(model_path):
+    model = joblib.load(model_path)
     # Predict the labels for new data
-    ##### nameofmodel
-    if os.path.exists(pathnameofmodel_mrmr):
-        nameofmodel_mrmr = joblib.load(pathnameofmodel_mrmr)
-        if displayclass_pred:
-            nameofmodel_mrmr_pred = nameofmodel_mrmr.predict(test_featarray_mrmr)
-            print('nameofmodel_mrmr_pred : {}'.format(nameofmodel_mrmr_pred))
-        if displayclass_score:
-            print("Accuracy of nameofmodel MRMR classifier:",
-              nameofmodel_mrmr.score(test_featarray_mrmr, inf_clarray))
+    if displayclass_pred:
+        model_pred = model.predict(inf_featarray)
+        print('model_pred : {}'.format(model_pred))
+    if displayclass_score:
+        print("Accuracy of classifier:",
+              model.score(inf_featarray, inf_clarray))
 
 
 #### Classification training with the features kept by boruta
 
-if os.path.exists(pathselfeat_boruta):
-    test_featarray_boruta = selected_features_matrix.mrmr_matr(selfeat_boruta)
-    # test_featarray_boruta = np.transpose(test_featarray_boruta)
-
+if os.path.exists(path_selfeat_boruta) and os.path.exists(model_path):
+    model = joblib.load(model_path)
     # Predict the labels for new data
-    ##### nameofmodel
-    if os.path.exists(pathnameofmodel_boruta):
-        nameofmodel_boruta = joblib.load(pathnameofmodel_boruta)
-        if displayclass_pred:
-            nameofmodel_boruta_pred = nameofmodel_boruta.predict(test_featarray_boruta)
-            print('nameofmodel_boruta_pred : {}'.format(nameofmodel_boruta_pred))
-        if displayclass_score:
-            print("Accuracy of nameofmodel BORUTA classifier:",
-              nameofmodel_boruta.score(test_featarray_boruta, inf_clarray))
+    if displayclass_pred:
+        model_pred = model.predict(inf_featarray)
+        print('model_pred : {}'.format(model_pred))
+    if displayclass_score:
+        print("Accuracy of classifier:",
+              model.score(inf_featarray, inf_clarray))
 
 
 #### Classification training with the features kept by mannwhitneyu
 
-if os.path.exists(pathorderedp_mannwhitneyu):
-    test_featarray_mannwhitney = selected_features_matrix.mannwhitney_matr(orderedp_mannwhitneyu)
-    # test_featarray_mannwhitney = np.transpose(test_featarray_mannwhitney)
-
+if os.path.exists(path_selfeat_mannwhitneyu) and os.path.exists(model_path):
+    model = joblib.load(model_path)
     # Predict the labels for new data
-    ##### nameofmodel
-    if os.path.exists(pathnameofmodel_mannwhitney):
-        nameofmodel_mannwhitney = joblib.load(pathnameofmodel_mannwhitney)
-        if displayclass_pred:
-            nameofmodel_mannwhitney_pred = nameofmodel_mannwhitney.predict(test_featarray_mannwhitney)
-            print('nameofmodel_mannwhitney_pred : {}'.format(nameofmodel_mannwhitney_pred))
-        if displayclass_score:
-            print("Accuracy of nameofmodel MANN WHITNEY classifier:",
-              nameofmodel_mannwhitney.score(test_featarray_mannwhitney, inf_clarray))
+    if displayclass_pred:
+        model_pred = model.predict(inf_featarray)
+        print('model_pred : {}'.format(model_pred))
+    if displayclass_score:
+        print("Accuracy of classifier:",
+              model.score(inf_featarray, inf_clarray))
+
+
+
+
+
+# DO in a second time
+#### Classification  with all features kept 
+
+# if classification_from_allfeatures:
+#     # Load test data (no feature selection)
+#     inf_globfeatarray = np.transpose(inf_featarray)
+
+#     # Predict the labels for new data
+#     ##### nameofmodel
+#     if os.path.exists(pathnameofmodel_vanilla):
+#         nameofmodel_vanilla = joblib.load(pathnameofmodel_vanilla)
+#         if displayclass_pred:
+#             nameofmodel_vanilla_pred = nameofmodel_vanilla.predict(inf_globfeatarray)
+#             print('nameofmodel_pred : {}'.format(nameofmodel_vanilla_pred))
+#         if displayclass_score:
+#             print("Accuracy of nameofmodel classifier:",
+#               nameofmodel_vanilla.score(inf_globfeatarray, inf_clarray))
 

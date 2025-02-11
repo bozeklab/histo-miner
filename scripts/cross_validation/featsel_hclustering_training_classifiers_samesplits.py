@@ -35,7 +35,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathfeatselect = confighm.paths.folders.feature_selection_main
+featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 use_permutations = confighm.parameters.bool.permutation
 
@@ -79,10 +79,10 @@ ext = '.npy'
 
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
-pathfeatnames = pathfeatselect + 'featnames' + ext
+pathfeatnames = featarray_folder + 'featnames' + ext
 
-train_featarray = np.load(pathfeatselect + featarray_name + ext)
-train_clarray = np.load(pathfeatselect + classarray_name + ext)
+train_featarray = np.load(featarray_folder + featarray_name + ext)
+train_clarray = np.load(featarray_folder + classarray_name + ext)
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
