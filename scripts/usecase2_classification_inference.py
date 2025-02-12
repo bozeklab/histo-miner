@@ -12,6 +12,7 @@ from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import joblib
 
 
+
 #############################################################
 ## Load configs parameter
 #############################################################
@@ -32,7 +33,7 @@ with open("./../configs/classification.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 model_name = config.names.trained_model
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures # see if we remove it
+classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures #see if we remove it
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
@@ -55,8 +56,20 @@ modelfolder = rootmodelfolder + '/classification_models/'
 modelext = '.joblib'
 
 
-model_path = modelfolder + model_name + modelext
+# Load feature selection numpy files
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
 
+model_path = [
+    modelfolder + 
+    classifier_name + '_'  
+    + model_name + '_'
+    + str(nbr_keptfeat) + 'featkept'
+    + modelext
+    ]
+model_path = str(model_path[0])
 
 
 ############################################################
@@ -68,12 +81,6 @@ print('Load feature selection numpy files...')
 featsel_folder = classification_eval_folder + eval_folder_name + '/'
 ext = '.npy'
 
-
-# Load feature selection numpy files
-if run_xgboost and not run_lgbm:
-    classifier_name = 'xgboost'
-if run_lgbm and not run_xgboost:
-    classifier_name = 'lgbm'
 
 # Only one will be kept here but we take consideration of all feature selection methods 
 name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
@@ -154,7 +161,7 @@ if os.path.exists(path_selfeat_mrmr) and os.path.exists(model_path):
 
 #### Classification training with the features kept by boruta
 
-if os.path.exists(path_selfeat_boruta) and os.path.exists(model_path):
+elif os.path.exists(path_selfeat_boruta) and os.path.exists(model_path):
     model = joblib.load(model_path)
     # Predict the labels for new data
     if displayclass_pred:
@@ -167,7 +174,7 @@ if os.path.exists(path_selfeat_boruta) and os.path.exists(model_path):
 
 #### Classification training with the features kept by mannwhitneyu
 
-if os.path.exists(path_selfeat_mannwhitneyu) and os.path.exists(model_path):
+elif os.path.exists(path_selfeat_mannwhitneyu) and os.path.exists(model_path):
     model = joblib.load(model_path)
     # Predict the labels for new data
     if displayclass_pred:
@@ -176,6 +183,13 @@ if os.path.exists(path_selfeat_mannwhitneyu) and os.path.exists(model_path):
     if displayclass_score:
         print("Accuracy of classifier:",
               model.score(inf_featarray, inf_clarray))
+
+else:
+    raise ValueError(
+        'Config path are incorrect and do not point towards the model or the selected features.' 
+        ' Model path entered is {}. The feature selected folder entered is {}'
+        .format(model_path, featsel_folder)
+        )
 
 
 

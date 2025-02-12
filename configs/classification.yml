@@ -8,7 +8,7 @@
     # run_name: "nestedcross_rec_directmunich"
     run_name: "preprint_CPI_defaultHPs"
 
-    trained_model: "xgboost_mrmr"
+    trained_model: "mrmr_35s_nomorph"
 
     # permutation_idx:
 

@@ -22,7 +22,6 @@ import joblib
 
 
 
-
 ##############################################################
 ## Load configs parameter
 #############################################################
@@ -50,6 +49,7 @@ with open("./../../configs/classification.yml", "r") as f:
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures # see if we remove it
 nbr_of_splits = config.parameters.int.nbr_of_splits
+training_model_name = config.names.trained_model
 run_name = config.names.run_name
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
 run_lgbm = config.parameters.bool.run_classifiers.light_gbm 
@@ -73,36 +73,26 @@ lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
 ############################################################
 
 
-
 # Folder name to save models (might not be used)
 # remove the last folder from pah 
 rootmodelfolder = os.path.dirname(classification_eval_folder.rstrip(os.path.sep))
 modelfolder = rootmodelfolder + '/classification_models/'
+modelext = '.joblib'
 
-pathridge_vanilla = modelfolder + 'ridge_vanilla.joblib'
-pathlr_vanilla = modelfolder + 'lr_vanilla.joblib'
-pathforest_vanilla = modelfolder + 'forest_vanilla.joblib'
-pathxgboost_vanilla = modelfolder + 'xgboost_vanilla.joblib'
-pathlgbm_vanilla = modelfolder + 'lgbm_vanilla.joblib'
 
-pathridge_mrmr = modelfolder + 'ridge_mrmr.joblib'
-pathlr_mrmr = modelfolder + 'lr_mrmr.joblib'
-pathforest_mrmr = modelfolder + 'forest_mrmr.joblib'
-pathxgboost_mrmr = modelfolder + 'xgboost_mrmr.joblib'
-pathlgbm_mrmr = modelfolder + 'lgbm_mrmr.joblib'
+if run_xgboost and not run_lgbm:
+    classifier_name = 'xgboost'
+if run_lgbm and not run_xgboost:
+    classifier_name = 'lgbm'
 
-pathridge_boruta = modelfolder + 'ridge_boruta.joblib'
-pathlr_boruta = modelfolder + 'lr_boruta.joblib'
-pathforest_boruta = modelfolder + 'forest_boruta.joblib'
-pathxgboost_boruta = modelfolder + 'xgboost_boruta.joblib'
-pathlgbm_boruta = modelfolder + 'lgbm_boruta.joblib'
-
-pathridge_mannwhitney = modelfolder + 'ridge_mannwhitney.joblib'
-pathlr_mannwhitney = modelfolder + 'lr_mannwhitney.joblib'
-pathforest_mannwhitney = modelfolder + 'forest_mannwhitney.joblib'
-pathxgboost_mannwhitney = modelfolder + 'xgboost_mannwhitney.joblib'
-pathlgbm_mannwhitney = modelfolder + 'lgbm_mannwhitney.joblib'
-
+path_to_model = [
+    modelfolder + 
+    classifier_name + '_'  
+    + training_model_name + '_'
+    + str(nbr_keptfeat) + 'featkept'
+    + modelext
+    ]
+path_to_model = str(path_to_model[0])
 
 
 ############################################################
@@ -115,12 +105,7 @@ featsel_folder = classification_eval_folder + eval_folder_name + '/'
 ext = '.npy'
 
 
-
 # Load feature selection numpy files
-if run_xgboost and not run_lgbm:
-    classifier_name = 'xgboost'
-if run_lgbm and not run_xgboost:
-    classifier_name = 'lgbm'
 
 name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
 name_boruta_output = '_ba_boruta_' + str(nbr_of_splits) + 'splits_' + run_name 
@@ -253,8 +238,8 @@ if run_xgboost and not run_lgbm:
     xgboost_clf.fit(train_featarray, train_clarray)
 
     # Save the trained XGBoost model
-    joblib.dump(xgboost_clf, pathxgboost_mrmr)
-    print(f"XGBoost model saved to: {pathxgboost_mrmr}\n")
+    joblib.dump(xgboost_clf, path_to_model)
+    print(f"XGBoost model saved to: {path_to_model}\n")
 
 
 
@@ -264,8 +249,8 @@ if run_lgbm and not run_xgboost:
     lightgbm_clf.fit(train_featarray, train_clarray)
 
     # Save the trained XGBoost model
-    joblib.dump(lightgbm_clf, pathlgbm_mrmr)
-    print(f"XGBoost model saved to: {pathlgbm_mrmr}\n")
+    joblib.dump(lightgbm_clf, path_to_model)
+    print(f"XGBoost model saved to: {path_to_model}\n")
 
 
 

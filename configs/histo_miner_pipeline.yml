@@ -11,28 +11,28 @@
       cSCC_CPI_Bonn/Bonn_Hvn_Output_2/"
 
 
-      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_allpreprint_35s/"
+      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/tissue_analyser_output_Bochum_nomorph/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/tissue_analyser_output_Bonn/"
 
 
       featarray_folder: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_allpreprint_35s/"
+      Analyses_cSCC_CPI/feature_selection_Bochum_nomorph/"
       # feature_selection_main: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
       # validation_tables/boxplots/pythonready/csv/stromal/"
       
 
       # feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s_nomorph/"
-      feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s/"
+      # feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s_nomorph/"
 
 
       # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/"
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s/"
+      Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/"
 
 
       # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -86,6 +86,32 @@
 
 # All not strings parameters
   parameters:
+
+    int:
+
+      nbr_keptfeat: 21
+      # default 317
+      # IF number kept is higher than total number of feat
+      # then the total number of feat is kept
+
+      maskmap_downfactor: 32
+
+
+
+      boruta_max_depth: 4
+      # boruta_max_depth: 18 leading to best results so far
+      # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
+      # parenthesis are for Boruta applied to selected slides 
+
+      boruta_random_state: 1
+
+      default_tumormargin: 4338
+      # it corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in:
+      #  "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
+      # A Practical Review for Pathologists and Proposal for a Standardized Method 
+      # From the International Immunooncology Biomarkers Working Group"
+      #
+
     lists:
       selectedcls_dist: [1, 2, 3, 5]
       # Selected Classes for the Distance Calculation (average closest distance between cells of given class)
@@ -142,25 +168,6 @@
                 ]
 
 
-
-    int:
-      maskmap_downfactor: 32
-
-      nbr_keptfeat: 312
-
-      boruta_max_depth: 4
-      # boruta_max_depth: 18 leading to best results so far
-      # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
-      # parenthesis are for Boruta applied to selected slides 
-
-      boruta_random_state: 1
-
-      default_tumormargin: 4338
-      # it corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in:
-      #  "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
-      # A Practical Review for Pathologists and Proposal for a Standardized Method 
-      # From the International Immunooncology Biomarkers Working Group"
-      #
 
 
     bool:
