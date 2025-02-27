@@ -37,7 +37,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
-use_permutations = confighm.parameters.bool.permutation
 
 eval_folder_name = confighm.names.eval_folder
 

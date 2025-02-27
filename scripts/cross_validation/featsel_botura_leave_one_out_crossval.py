@@ -13,7 +13,7 @@ import yaml
 import xgboost 
 import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold, StratifiedKFold
+from sklearn.model_selection import ParameterGrid, cross_val_score, LeaveOneGroupOut
 from sklearn.metrics import balanced_accuracy_score, roc_curve
 from sklearn.preprocessing import StandardScaler 
 from scipy.cluster.hierarchy import linkage, fcluster
@@ -24,6 +24,8 @@ from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSel
 import src.histo_miner.utils.misc as utils_misc
 
 
+# RUN LEAVE ONE COHORT OUT CROSS VAL
+# work if you have cohort id available and cohortid_array created
 
 #############################################################
 ## Load configs parameter
@@ -38,7 +40,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
-use_permutations = confighm.parameters.bool.permutation
 
 eval_folder_name = confighm.names.eval_folder
 boruta_max_depth = confighm.parameters.int.boruta_max_depth
@@ -51,7 +52,6 @@ with open("./../../configs/classification.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
@@ -72,7 +72,6 @@ run_lgbm = config.parameters.bool.run_classifiers.light_gbm
 # elif run_lgbm and not run_xgboost:
 # else: RAISE error
 
-              
 
 ################################################################
 ## Load feat array, class arrays and IDs arrays (if applicable)
@@ -83,12 +82,13 @@ ext = '.npy'
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
 pathfeatnames = featarray_folder + 'featnames' + ext
+cohortidarray_name = 'cohortids'
 
 train_featarray = np.load(featarray_folder + featarray_name + ext)
 train_clarray = np.load(featarray_folder + classarray_name + ext)
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
-
+cohortidarray = np.load(featarray_folder + cohortidarray_name + ext)
 
 
 
@@ -137,6 +137,7 @@ print('Start Classifiers trainings...')
 train_featarray = np.transpose(train_featarray)
 
 
+
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
 # scaler.fit(train_featarray) 
@@ -144,15 +145,18 @@ train_featarray = np.transpose(train_featarray)
 
 
 ### Create Stratified Group to further split the dataset into n_splits 
-stratkf = StratifiedKFold(n_splits=nbr_of_splits, shuffle=False)
+logo = LeaveOneGroupOut()
+cohort_groups = cohortidarray
 
 
 # Create a list of splits with all features 
 splits_nested_list = list()
 # Create a list of patient IDs corresponding of the splits:
 splits_patientID_list = list()
-for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray, 
-                                                                 train_clarray 
+for i, (train_index, test_index) in enumerate(logo.split(
+                                                    train_featarray, 
+                                                    train_clarray,
+                                                    cohort_groups
                                                                  )):
     # Generate training and test data from the indexes
     X_train = train_featarray[train_index]
@@ -167,6 +171,7 @@ for i, (train_index, test_index) in enumerate(stratkf.split(train_featarray,
 nbr_feat = len(X_train[1])
 print('nbr_feat is:',nbr_feat)
 
+nbr_of_splits = logo.get_n_splits(groups=cohort_groups)
 
 
 ##############################################################
@@ -538,7 +543,7 @@ print('Numpy saved.')
 txtfilename = (
     classifier_name +  '_' +
     'boruta' +  '_' +
-    str(nbr_of_splits) + 'splits_' +
+    'LOGO' + 
     run_name + '_info'
 )
 

@@ -11,14 +11,14 @@
       cSCC_CPI_Bonn/Bonn_Hvn_Output_2/"
 
 
-      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/tissue_analyser_output_Bochum_nomorph/"
+      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/tissue_analyser_output_35s_Bonn_nomorph/"
       # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/tissue_analyser_output_Bonn/"
 
 
       featarray_folder: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_Bochum_nomorph/"
+      Analyses_cSCC_CPI/feature_selection_35s_Bonn_nomorph/"
       # feature_selection_main: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
       # validation_tables/boxplots/pythonready/csv/stromal/"
       
@@ -32,7 +32,7 @@
       # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/"
       classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/"
+      Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/"
 
 
       # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
@@ -42,8 +42,12 @@
         
 
     files:
-      patientid_csv: "/data/shared/scc/histo-miner/data_analysis/crea_patient_ID_lst/\
-      AllCohorts_PatientIDs.csv"
+      patientid_csv: "/data/lsancere/Data_General/TrainingSets/histo-miner-all-datasets/\
+      IDpatients_files/AllCohorts_PatientIDs.csv"
+
+      cohortid_csv: "/data/lsancere/Data_General/TrainingSets/histo-miner-all-datasets/\
+      IDcohorts_files/cSCC_CPI_idcohorts.csv"
+
       # patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
       # Analyses_cSCC_CPI/PatientIDs.csv"
       #it is including extension of the file as well (.csv)
@@ -177,13 +181,12 @@
 
       calculate_distances: True   
 
-      patientid_avail: False      
+      patientid_avail: False  
+
+      cohortid_avail: False   
       
       perpatient_feat: False
       # TO delete before publication
-
-      permutation: False
-      # use or not the permutation index for the HP seach of curriculum
 
       plot: 
         boxplots: True

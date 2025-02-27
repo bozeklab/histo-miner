@@ -8,14 +8,7 @@
     # run_name: "nestedcross_rec_directmunich"
     run_name: "preprint_CPI_defaultHPs"
 
-    trained_model: "mrmr_35s_nomorph"
-
-    # permutation_idx:
-
-    #   perm_bestsplit: "bestperm/random_permutation_index_11_28_xgboost_bestsplit"
-
-    #   perm_cvmean: "bestperm/random_permutation_index_11_28_xgboost_bestmean"
-
+    trained_model: "mrmr_35s_Bonn_noarea"
 
 
 # All not strings parameters
@@ -45,7 +38,7 @@
 
 
     int:
-      nbr_of_splits: 5
+      nbr_of_splits: 3
 
       nestedcross_inner_splits: 3
 

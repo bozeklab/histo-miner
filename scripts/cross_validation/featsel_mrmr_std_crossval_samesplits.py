@@ -38,7 +38,6 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
 confighm = attributedict(config)
 featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
-use_permutations = confighm.parameters.bool.permutation
 
 eval_folder_name = confighm.names.eval_folder
 
@@ -134,6 +133,7 @@ print('Start Classifiers trainings...')
 train_featarray = np.transpose(train_featarray)
 
 
+
 # Initialize a StandardScaler 
 # scaler = StandardScaler() 
 # scaler.fit(train_featarray) 
@@ -173,11 +173,13 @@ print('nbr_feat is:',nbr_feat)
 
 if run_xgboost and not run_lgbm:
 
-    balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True}}
+    balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
 
-    selfeat_mannwhitneyu_names_allsplits = [] 
-    selfeat_mannwhitneyu_id_allsplits = [] 
+    length_selfeatmrmr = dict()
+    selfeat_mrmr_names_allsplits = []
+    selfeat_mrmr_id_allsplits = []
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -196,13 +198,15 @@ if run_xgboost and not run_lgbm:
         else: 
             feature_selector.reset_attributes(X_train_tr, y_train)
 
-        ## Mann Whitney U calculations
-        print('Selection of features with mannwhitneyu method...')
-        selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_feat)
-        # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
-        selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
-        selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
-        selfeat_mannwhitneyu_id_allsplits.append(selfeat_mannwhitneyu_index)
+        ## mr.MR calculations
+        print('Selection of features with mrmr method...')
+        selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = selfeat_mrmr[0]
+
+        # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+        selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
+        selfeat_mrmr_id_allsplits.append(selfeat_mrmr_index)
 
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
@@ -214,11 +218,12 @@ if run_xgboost and not run_lgbm:
         feature_array = X_train
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        balanced_accuracies_mannwhitneyu = list()
+        balanced_accuracies_mrmr = list()
+
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
-        ### With mrmr and mannwhitneyu selected features
-        for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
+        ### With mrmr selected features
+        for nbr_keptfeat_idx in tqdm(range(nbr_feat, -1, -1)):
 
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
@@ -232,38 +237,39 @@ if run_xgboost and not run_lgbm:
                 balanced_accuracy_allfeat = balanced_accuracy_score(y_test, 
                                                                     y_pred_allfeat)
 
-                # Update  mannwhitney list with the all feature evaluation
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_allfeat)
+                # Update mrmr list with the all feature evaluation
+                all_features_balanced_accuracy.append(balanced_accuracy_allfeat)
 
 
             # Then we decrease number of feature kept during training + evaluation
             else:
 
-                # Kept the selected features
-                selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
-                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
+                # We have to take into account the mrmr is removing 0s from the feature list
+                # as it cannot work with 0s
+                if nbr_keptfeat_idx <=  len(selfeat_mrmr_index):
 
-                # Generate matrix of features
-                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
+                    # Kept the selected features
+                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx+1]
+                    selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
-                #Training
-                # needs to be re initialized each time!!!! Very important
-                xgboost_mannwhitneyu_training = xgboost 
-                # actual training
-                xgboost_mannwhitneyu_training_inst = xgboost_mannwhitneyu_training.fit(
-                                                                       featarray_mannwhitneyu, 
-                                                                       y_train
-                                                                       )
+                    # Generate matrix of features
+                    featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
-                # Predictions on the test split
-                y_pred_mannwhitneyu = xgboost_mannwhitneyu_training_inst.predict(
-                    X_test[:, selfeat_mannwhitneyu_index_reduced]
-                    )
+                    #Training
+                    # needs to be re initialized each time!!!! Very important
+                    xgboost_mrmr_training = xgboost
+                    # actual training
+                    xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
+                                                                           y_train)
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
-                                                                         y_pred_mannwhitneyu)
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+                    # Predictions on the test split
+                    y_pred_mrmr = xgboost_mrmr_training_inst.predict(
+                        X_test[:, selfeat_mrmr_index_reduced]
+                        )
+                    # Calculate balanced accuracy for the current split
+                    balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                                     y_pred_mrmr)
+                    balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
 
 
         ### Store results 
@@ -272,7 +278,10 @@ if run_xgboost and not run_lgbm:
         currentsplit =  f"split_{i}"
 
         # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
-        balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit] = balanced_accuracies_mannwhitneyu
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+
+        # update changing size of kept feature for mrmr
+        length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
 
 
 
@@ -283,12 +292,13 @@ if run_xgboost and not run_lgbm:
 
 elif run_lgbm and not run_xgboost:
 
- 
-    balanced_accuracies = {"balanced_accuracies_mannwhitneyu": {"initialization": True}}
+    balanced_accuracies = {"balanced_accuracies_mrmr": {"initialization": True}}
 
-    selfeat_mannwhitneyu_names_allsplits = [] 
-    selfeat_mannwhitneyu_id_allsplits = [] 
+    length_selfeatmrmr = dict()
+    selfeat_mrmr_names_allsplits = []
+    selfeat_mrmr_id_allsplits = []
 
+    all_features_balanced_accuracy = list()
 
     for i in range(nbr_of_splits):  
 
@@ -307,14 +317,16 @@ elif run_lgbm and not run_xgboost:
         else: 
             feature_selector.reset_attributes(X_train_tr, y_train)
 
-        ## Mann Whitney U calculations
-        print('Selection of features with mannwhitneyu method...')
-        selfeat_mannwhitneyu_index, orderedp_mannwhitneyu = feature_selector.run_mannwhitney(nbr_feat)
-        # Now associate the index of selected features (selfeat_mannwhitneyu_index) to the list of names:
-        selfeat_mannwhitneyu_names = [featnameslist[index] for index in selfeat_mannwhitneyu_index]
-        selfeat_mannwhitneyu_names_allsplits.append(selfeat_mannwhitneyu_names)
-        selfeat_mannwhitneyu_id_allsplits.append(selfeat_mannwhitneyu_index)
+        ## mr.MR calculations
+        print('Selection of features with mrmr method...')
+        selfeat_mrmr = feature_selector.run_mrmr(nbr_feat)
+        selfeat_mrmr_index = selfeat_mrmr[0]
 
+        # Now associate the index of selected features (selfeat_mrmr_index) to the list of names:
+        selfeat_mrmr_names = [featnameslist[index] for index in selfeat_mrmr_index] 
+        selfeat_mrmr_names_allsplits.append(selfeat_mrmr_names)
+        selfeat_mrmr_id_allsplits.append(selfeat_mrmr_index)
+        
 
         ########## GENERATION OF MATRIX OF SELECTED FEATURES
         # If the class was not initalized, do it. If not, reset attributes if the class instance
@@ -324,12 +336,13 @@ elif run_lgbm and not run_xgboost:
         #     selected_features_matrix.reset_attributes(X_train_tr)
         feature_array = X_train
 
+
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
-        balanced_accuracies_mannwhitneyu = list()
+        balanced_accuracies_mrmr = list()
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
         ### With mrmr and mannwhitneyu selected features
-        for nbr_keptfeat_idx in tqdm(range(nbr_feat, 0, -1)):
+        for nbr_keptfeat_idx in tqdm(range(nbr_feat, -1, -1)):
 
             # First we train with all features 
             if nbr_keptfeat_idx == nbr_feat:
@@ -351,36 +364,40 @@ elif run_lgbm and not run_xgboost:
                                                                     y_pred_allfeat)
 
                 # Update mrmr and mannwhitney list with the all feature evaluation
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_allfeat)
+                all_features_balanced_accuracy.append(balanced_accuracy_allfeat)
 
 
             # Then we decrease number of feature kept during training + evaluation
             else:
 
-                # Kept the selected features
-                selfeat_mannwhitneyu_index_reduced = selfeat_mannwhitneyu_index[0:nbr_keptfeat_idx]
-                selfeat_mannwhitneyu_index_reduced = sorted(selfeat_mannwhitneyu_index_reduced)
+                # We have to take into account the mrmr is removing 0s from the feature list
+                # as it cannot work with 0s
+                if nbr_keptfeat_idx <= len(selfeat_mrmr_index):
 
-                # Generate matrix of features
-                featarray_mannwhitneyu = feature_array[:, selfeat_mannwhitneyu_index_reduced]
+                    # Kept the selected features
+                    selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx+1]
+                    selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
-                #Training
-                train_data = lightgbm.Dataset(featarray_mannwhitneyu, label=y_train)
-                lightgbm_mannwhitneyu_training_inst = lightgbm.train(
-                    param_lightgbm,
-                    train_data
-                    )
+                    # Generate matrix of features
+                    featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
-                # Predictions on the test split
-                y_pred_mannwhitneyu_prob = lightgbm_mannwhitneyu_training_inst.predict(
-                    X_test[:, selfeat_mannwhitneyu_index_reduced]
-                    )
-                y_pred_mannwhitneyu = (y_pred_mannwhitneyu_prob > 0.5).astype(int)
+                    #Training
+                    train_data = lightgbm.Dataset(featarray_mrmr, label=y_train)
+                    lightgbm_mrmr_training_inst = lightgbm.train(
+                        param_lightgbm,
+                        train_data
+                        )
 
-                # Calculate balanced accuracy for the current split
-                balanced_accuracy_mannwhitneyu = balanced_accuracy_score(y_test, 
-                                                                         y_pred_mannwhitneyu)
-                balanced_accuracies_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
+                    # Predictions on the test split
+                    y_pred_mrmr_prob = lightgbm_mrmr_training_inst.predict(
+                        X_test[:, selfeat_mrmr_index_reduced],
+                        )
+                    y_pred_mrmr = (y_pred_mrmr_prob > 0.5).astype(int)
+
+                    # Calculate balanced accuracy for the current split
+                    balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                                     y_pred_mrmr)
+                    balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
 
 
         ### Store results 
@@ -389,7 +406,10 @@ elif run_lgbm and not run_xgboost:
         currentsplit =  f"split_{i}"
 
         # Fill the dictionnary with nested key values pairs for the different balanced accurarcy
-        balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit] = balanced_accuracies_mannwhitneyu
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
+
+        # update changing size of kept feature for mrmr
+        length_selfeatmrmr[currentsplit] = len(selfeat_mrmr_index)
 
 
 else:
@@ -402,56 +422,84 @@ else:
 ## Extract mean,min,max of balanced accuracy and kept feature names 
 ####################################################################
 
-
 ## calculate and write the saving of the mean balanced accuracies
-## Do for mannwhitneyu
+## Do for mrmr
 # Calculate the mean accuracies 
 
-mean_balanced_accuracies_mannwhitneyu = list()
-min_balanced_accuracies_mannwhitneyu = list()
-max_balanced_accuracies_mannwhitneyu = list()
-std_balanced_accuracies_mannwhitneyu = list()
+mean_balanced_accuracies_mrmr = list()
+min_balanced_accuracies_mrmr = list()
+max_balanced_accuracies_mrmr = list()
+std_balanced_accuracies_mrmr = list()
 
-best_mean_mannwhitneyu = 0
+best_mean_mrmr = 0
 
-# do the list of means for mannwhitneyu and mrmr
-for index in range(0, nbr_feat):
+
+# we want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
+# but we keep the first element as it is with all features
+
+listoflengths = list()
+
+for i in range(nbr_of_splits):
+
+    currentsplit =  f"split_{i}"
+    listoflengths.append(length_selfeatmrmr[currentsplit])
+
+nbrkept_max_allsplits = min(listoflengths)
+print(nbrkept_max_allsplits)
+
+# if needed, remove firsts elements to be comparable in termes of number of feat kept
+# if mrmr of all splits kept all elements then we skip this step
+
+if nbrkept_max_allsplits != len(featnameslist):
+
+    for i in range(nbr_of_splits):
+
+        currentsplit =  f"split_{i}"
+        # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
+        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][nbrkept_max_allsplits - 1 : : -1]
+
+        selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][nbrkept_max_allsplits - 1 : : -1]
+
+
+for index in range(0, nbrkept_max_allsplits):
     
-    ba_featsel_mannwhitneyu = list()
+    ba_featsel_mrmr = list()
 
     for i in range(nbr_of_splits):
 
         currentsplit =  f"split_{i}"
 
-        balanced_accuracy_mannwhitneyu = np.asarray(
-            balanced_accuracies['balanced_accuracies_mannwhitneyu'][currentsplit][index]
+        balanced_accuracy_mrmr = np.asarray(
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
             ) 
 
-        ba_featsel_mannwhitneyu.append(balanced_accuracy_mannwhitneyu)
-    
-    ba_featsel_mannwhitneyu = np.asarray(ba_featsel_mannwhitneyu)
+        ba_featsel_mrmr.append(balanced_accuracy_mrmr)
 
-    mean_balanced_accuracies_mannwhitneyu.append(np.mean(ba_featsel_mannwhitneyu))
-    min_balanced_accuracies_mannwhitneyu.append(np.min(ba_featsel_mannwhitneyu))
-    max_balanced_accuracies_mannwhitneyu.append(np.max(ba_featsel_mannwhitneyu))
-    std_balanced_accuracies_mannwhitneyu.append(np.std(ba_featsel_mannwhitneyu))
+
+    ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
+
+    mean_balanced_accuracies_mrmr.append(np.mean(ba_featsel_mrmr))
+    min_balanced_accuracies_mrmr.append(np.min(ba_featsel_mrmr))
+    max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
+    std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
 
     ###### Find name of selected features that leads to the best prediction
-    # it is not optimised because some if condition could habe been written previously
-    # but it is the easiest to read
-   
-    if np.mean(ba_featsel_mannwhitneyu) > best_mean_mannwhitneyu:
-        nbr_kept_features_mannwhitneyu = nbr_feat - index
-        kept_features_mannwhitneyu = [split[0: nbr_kept_features_mannwhitneyu] for split in selfeat_mannwhitneyu_names_allsplits]
-        best_mean_mannwhitneyu = np.mean(ba_featsel_mannwhitneyu)
+    if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
+        nbr_kept_features_mrmr = nbrkept_max_allsplits - index
+        kept_features_mrmr = [split[0: nbr_kept_features_mrmr] for split in selfeat_mrmr_names_allsplits]
+        best_mean_mrmr = np.mean(ba_featsel_mrmr)
 
 
-mean_ba_mannwhitneyu_npy = np.asarray(mean_balanced_accuracies_mannwhitneyu)
-min_ba_mannwhitneyu_npy = np.asarray(min_balanced_accuracies_mannwhitneyu)
-max_ba_mannwhitneyu_npy = np.asarray(max_balanced_accuracies_mannwhitneyu)
-std_ba_mannwhitneyu_npy = np.asarray(std_balanced_accuracies_mannwhitneyu)
+mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
+min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
+max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
+std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 
 
+# for all features
+
+all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
+mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
 
 
@@ -464,8 +512,45 @@ std_ba_mannwhitneyu_npy = np.asarray(std_balanced_accuracies_mannwhitneyu)
 # than we keep them
 
 
+#### Create a save to debug (OPTIONNAL)
+debug5splits = False
+
+if debug5splits:
+
+    nbr_kept_features_mrmr_save = np.asarray(nbr_kept_features_mrmr)
+    nbr_of_splits_save = np.asarray(nbr_of_splits)
+    featnames_save = np.asarray(featnames)
+
+    selfeat_mrmr_id_allsplits_save_0 = np.asarray(selfeat_mrmr_id_allsplits[0])
+    selfeat_mrmr_id_allsplits_save_1 = np.asarray(selfeat_mrmr_id_allsplits[1])
+    selfeat_mrmr_id_allsplits_save_2 = np.asarray(selfeat_mrmr_id_allsplits[2])
+    selfeat_mrmr_id_allsplits_save_3 = np.asarray(selfeat_mrmr_id_allsplits[3])
+    selfeat_mrmr_id_allsplits_save_4 = np.asarray(selfeat_mrmr_id_allsplits[4])
+
+
+    # save the mean balanced accuracies for visualization
+    save_results_path = classification_eval_folder  + '/'
+    np.save(save_results_path + 'nbr_kept_features_mrmr_save.npy', 
+        nbr_of_splits_save)
+    np.save(save_results_path + 'nbr_of_splits_save.npy', 
+        nbr_of_splits_save)
+    np.save(save_results_path + 'featnames_save.npy', 
+        featnames_save)
+
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_0.npy', 
+        selfeat_mrmr_id_allsplits_save_0)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_1.npy', 
+        selfeat_mrmr_id_allsplits_save_1)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_2.npy', 
+        selfeat_mrmr_id_allsplits_save_2)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_3.npy', 
+        selfeat_mrmr_id_allsplits_save_3)
+    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_4.npy', 
+        selfeat_mrmr_id_allsplits_save_4)
+
+
 # We set the number of features kept for each splits again
-nbr_kept_feat = nbr_kept_features_mannwhitneyu
+nbr_kept_feat = nbr_kept_features_mrmr
 
 
 # Create a score for feature selection
@@ -474,45 +559,47 @@ prescores = [10**(index) for index in range(nbr_kept_feat,0,-1)]
 featscores = prescores * nbr_of_splits
 
 
-##### Best slected features by Mannwhitney U 
+##### Best slected features by MRMR 
 
 # We start by counting number of occurance in top 5
-bestsel_mannwhitneyu_index = [
+bestsel_mrmr_index = [
     featindex 
     for splitindex in range(0, nbr_of_splits)
-    for featindex in selfeat_mannwhitneyu_id_allsplits[splitindex][0:nbr_kept_feat]  
+    for featindex in selfeat_mrmr_id_allsplits[splitindex][0:nbr_kept_feat]   
     ]
 
 # Count occurrences of each featindex
-featindex_counts_mannwhitneyu = Counter(bestsel_mannwhitneyu_index)
+featindex_counts_mrmr = Counter(bestsel_mrmr_index)
 
 # Calculate score of each featindex (in case of draw we advantage feat arriving first more often)
 score_sums = defaultdict(int)
-for idx, featindex in enumerate(bestsel_mannwhitneyu_index):
+for idx, featindex in enumerate(bestsel_mrmr_index):
     score_sums[featindex] += featscores[idx]
 
 # Take log10 for all values
 score_sums = {key: math.log10(value) for key, value in score_sums.items()}
 
 # Sort featindex by occurrence count and then by  scores
-sorted_bestfeatindex_mannwhitneyu = sorted(
-        featindex_counts_mannwhitneyu.keys(), 
-        key=lambda x: (-featindex_counts_mannwhitneyu[x], -score_sums[x])
+sorted_bestfeatindex_mrmr = sorted(
+        featindex_counts_mrmr.keys(), 
+        key=lambda x: (-featindex_counts_mrmr[x], -score_sums[x])
         )
 
 # Retrieve names of best selected features
-mannwhitneyu_finalselfeat_names = list(featnames[sorted_bestfeatindex_mannwhitneyu[0:nbr_kept_feat]])
+mrmr_finalselfeat_names = list(featnames[sorted_bestfeatindex_mrmr[0:len(bestsel_mrmr_index)]])
 
 
 # create a list with  featindex count and score 
 # Create a dictionary to store the best features with their count and score
 best_features_info = {
     featnames[featindex]: {
-        'count': featindex_counts_mannwhitneyu[featindex],
+        'count': featindex_counts_mrmr[featindex],
         'score': score_sums[featindex]
     }
-    for featindex in sorted_bestfeatindex_mannwhitneyu[0:len(bestsel_mannwhitneyu_index)]
+    for featindex in sorted_bestfeatindex_mrmr[0:len(bestsel_mrmr_index)]
 }
+
+
 
 
 
@@ -539,17 +626,18 @@ if run_lgbm and not run_xgboost:
 
 print('Start saving numpy in folder: ', save_results_path)
 
-name_mannwhitneyu_output = '_ba_mannwhitneyut_' + str(nbr_of_splits) + 'splits_' + run_name
-np.save(save_results_path + 'mean_' + classifier_name + name_mannwhitneyu_output + save_ext, 
-    mean_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'min_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
-    min_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'max_' + classifier_name + name_mannwhitneyu_output + save_ext, 
-    max_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'std_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
-    std_ba_mannwhitneyu_npy)
-np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_mannwhitneyu_output + save_ext, 
-    sorted_bestfeatindex_mannwhitneyu)
+
+name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
+np.save(save_results_path + 'mean_' + classifier_name + name_mrmr_output + save_ext, 
+    mean_ba_mrmr_npy)
+np.save(save_results_path + 'min_' + classifier_name + name_mrmr_output + save_ext, 
+    min_ba_mrmr_npy)
+np.save(save_results_path + 'max_' + classifier_name + name_mrmr_output + save_ext, 
+    max_ba_mrmr_npy)
+np.save(save_results_path + 'std_' + classifier_name + name_mrmr_output + save_ext, 
+    std_ba_mrmr_npy)
+np.save(save_results_path + 'topselfeatid_' + classifier_name  + name_mrmr_output + save_ext, 
+    sorted_bestfeatindex_mrmr)
 
 
 print('Numpy saved.')
@@ -563,7 +651,7 @@ print('Numpy saved.')
 
 txtfilename = (
     classifier_name +  '_' +
-    'mannwhitneyu' +  '_' +
+    'mrmr' +  '_' +
     str(nbr_of_splits) + 'splits_' +
     run_name + '_info'
 )
@@ -584,24 +672,27 @@ print('Start saving name and number of feature kept in best case')
 with open(save_text_path, 'w') as file:
     file.write('** With {} classifier **'.format(classifier_name))
 
-    file.write('\n\n\n\n ** mannwhitneyu **')
-    file.write('\n\nBest mean balanced accuracy is:' + 
-        str(best_mean_mannwhitneyu))  
+    file.write('\n\n\n\n ** mrmr **')
+    file.write('\n\nBest mean balanced accuracy is:' +  
+        str(best_mean_mrmr)) 
+    file.write('\n\nAll feat mean balanced accuracy is:' +  
+        str(mean_ba_allfeat))  
     file.write('\n\nThe number of kept features in the best scenario is:' + 
-        str(nbr_kept_features_mannwhitneyu))  
-    # file.write('\n\nThese features are:' +  
-    #     str(kept_features_mannwhitneyu)) 
-    file.write('\n\nThe best 5 features overall are:' +  
+        str(nbr_kept_features_mrmr))  
+    # file.write('\n\nThese features are:' +
+    #     str(kept_features_mrmr)) 
+    file.write('\n\nThe best features overall are:' +  
         str([best_features_info]))
-    # file.write('\n\nThe best 5 features are:' +  
-    # str([kept_features[0:4] for kept_features in kept_features_mannwhitneyu]))
+    # file.write('\n\nRemoved index:' +  
+    #     str([idx_rmv_raws]))
+    #file.write('\n\nThe best 5 features are:' +  
+    # str([kept_features[0:4] for kept_features in kept_features_mrmr])) 
 
-print('Text files saved.')
+print('Text file saved.')
 
 
 #### Save all splits balanced accuracies values 
 
 #### Save roc curve information 
-
 
 

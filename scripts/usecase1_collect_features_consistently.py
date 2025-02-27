@@ -28,7 +28,9 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 config = attributedict(config)
 pathanalyserout = config.paths.folders.tissue_analyser_output
 featarray_folder = config.paths.folders.featarray_folder
+cohortid_csv = config.paths.files.cohortid_csv
 patientid_csv = config.paths.files.patientid_csv
+cohortid_avail = config.parameters.bool.cohortid_avail
 patientid_avail = config.parameters.bool.patientid_avail
 perpatient_feat = config.parameters.bool.perpatient_feat
 calculate_vicinity = config.parameters.bool.calculate_vicinity
@@ -107,6 +109,11 @@ if patientid_avail:
     patientid_dict = noheadercsv_to_dict(patientid_csv)
     patientid_list = list()
 
+####### If applicable create a dict file from the cohort ID csv file 
+# And initializa the futur ordered cohort ID list
+if cohortid_avail:
+    cohortid_dict = noheadercsv_to_dict(cohortid_csv)
+    cohortid_list = list()    
 
 
 ######## Process the files
@@ -164,6 +171,22 @@ for jsonfile in jsonfiles:
                              'with the corresponding reccurence and noreccurence caracters'
                              'User can check src.utils.filemanagement.anaylser2featselect function for more details.')
 
+        # Generate the cohort list if available for corss-validation;
+        if cohortid_avail:
+            if 'response' in nameoffile:
+                if calculate_vicinity:
+                    if 'no_response' in nameoffile:
+                        namesimplified = nameoffile.replace('_vicinity_no_response_analysed','')
+                    else:
+                        namesimplified = nameoffile.replace('_vicinity_response_analysed','')
+                else:
+                    if 'no_response' in nameoffile:
+                        namesimplified = nameoffile.replace('_no_response_analysed','')
+                    else:
+                        namesimplified = nameoffile.replace('_response_analysed','')
+            cohortid_list.append(cohortid_dict.get(namesimplified))
+
+
     if  feature_init:
         #Create a list of names of the features, (only done once as all the json have the same features)
         #We create a new dictionnary that is using not the same keys name, but simplified ones.
@@ -204,6 +227,8 @@ clarray = np.asarray(cllist)
 print("Feature Matrix Shape is", featarray.shape)
 print("Feature Matrix is", featarray)
 print("Classification Vector is", clarray)
+if cohortid_avail:
+    print("Cohort ID list is", cohortid_list)
 
 
 ### Maybe better to do the per patient column based on the previous matrix
@@ -294,12 +319,17 @@ if perpatient_feat:
     np.save(path_perpat_median_featarray, patient_medianfeatarray)
 
 
-
 # If applicable, save the patient_ID list as a ids array:
 if patientid_avail:
     patientid_array = np.asarray(patientid_list)
     pathpatientids =  pathoutput + 'patientids' + ext
     np.save(pathpatientids, patientid_array)
+
+# If applicable, save the cohort_ID list as a ids array:
+if cohortid_avail:
+    cohortid_array = np.asarray(cohortid_list)
+    pathcohortids =  pathoutput + 'cohortids' + ext
+    np.save(pathcohortids, cohortid_array)
 
 
 # Calculate Pearson correlation regardless of the class response, no-response
