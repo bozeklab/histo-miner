@@ -12,6 +12,6 @@ docs4paper
 
 *.DS_Store
 *._.DS_Store
+*._.gitignore
 *._
-scripts/usecase1bisrec_collect_features_consistently.py
 temp.py
