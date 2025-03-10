@@ -111,7 +111,7 @@ for jsonfile in jsonfiles:
         print('Process cells identification '
               '(number of cells and tot area of cells) inside tumor regions...')
 
-        # Calculation of pourcentages of cells and ratios -----
+        # Calculation of percentages of cells and ratios -----
         if calculate_vicinity:
             cells_inregion_dict = analyser.cells_classandmargin_classjson(
                                                             maskmappath, 

@@ -513,40 +513,40 @@ mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
 
 #### Create a save to debug (OPTIONNAL)
-debug5splits = False
+# debug5splits = False
 
-if debug5splits:
+# if debug5splits:
 
-    nbr_kept_features_mrmr_save = np.asarray(nbr_kept_features_mrmr)
-    nbr_of_splits_save = np.asarray(nbr_of_splits)
-    featnames_save = np.asarray(featnames)
+#     nbr_kept_features_mrmr_save = np.asarray(nbr_kept_features_mrmr)
+#     nbr_of_splits_save = np.asarray(nbr_of_splits)
+#     featnames_save = np.asarray(featnames)
 
-    selfeat_mrmr_id_allsplits_save_0 = np.asarray(selfeat_mrmr_id_allsplits[0])
-    selfeat_mrmr_id_allsplits_save_1 = np.asarray(selfeat_mrmr_id_allsplits[1])
-    selfeat_mrmr_id_allsplits_save_2 = np.asarray(selfeat_mrmr_id_allsplits[2])
-    selfeat_mrmr_id_allsplits_save_3 = np.asarray(selfeat_mrmr_id_allsplits[3])
-    selfeat_mrmr_id_allsplits_save_4 = np.asarray(selfeat_mrmr_id_allsplits[4])
+#     selfeat_mrmr_id_allsplits_save_0 = np.asarray(selfeat_mrmr_id_allsplits[0])
+#     selfeat_mrmr_id_allsplits_save_1 = np.asarray(selfeat_mrmr_id_allsplits[1])
+#     selfeat_mrmr_id_allsplits_save_2 = np.asarray(selfeat_mrmr_id_allsplits[2])
+#     selfeat_mrmr_id_allsplits_save_3 = np.asarray(selfeat_mrmr_id_allsplits[3])
+#     selfeat_mrmr_id_allsplits_save_4 = np.asarray(selfeat_mrmr_id_allsplits[4])
 
 
-    # save the mean balanced accuracies for visualization
-    save_results_path = classification_eval_folder  + '/'
-    np.save(save_results_path + 'nbr_kept_features_mrmr_save.npy', 
-        nbr_of_splits_save)
-    np.save(save_results_path + 'nbr_of_splits_save.npy', 
-        nbr_of_splits_save)
-    np.save(save_results_path + 'featnames_save.npy', 
-        featnames_save)
+#     # save the mean balanced accuracies for visualization
+#     save_results_path = classification_eval_folder  + '/'
+#     np.save(save_results_path + 'nbr_kept_features_mrmr_save.npy', 
+#         nbr_of_splits_save)
+#     np.save(save_results_path + 'nbr_of_splits_save.npy', 
+#         nbr_of_splits_save)
+#     np.save(save_results_path + 'featnames_save.npy', 
+#         featnames_save)
 
-    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_0.npy', 
-        selfeat_mrmr_id_allsplits_save_0)
-    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_1.npy', 
-        selfeat_mrmr_id_allsplits_save_1)
-    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_2.npy', 
-        selfeat_mrmr_id_allsplits_save_2)
-    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_3.npy', 
-        selfeat_mrmr_id_allsplits_save_3)
-    np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_4.npy', 
-        selfeat_mrmr_id_allsplits_save_4)
+#     np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_0.npy', 
+#         selfeat_mrmr_id_allsplits_save_0)
+#     np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_1.npy', 
+#         selfeat_mrmr_id_allsplits_save_1)
+#     np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_2.npy', 
+#         selfeat_mrmr_id_allsplits_save_2)
+#     np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_3.npy', 
+#         selfeat_mrmr_id_allsplits_save_3)
+#     np.save(save_results_path + 'selfeat_mrmr_id_allsplits_save_4.npy', 
+#         selfeat_mrmr_id_allsplits_save_4)
 
 
 # We set the number of features kept for each splits again

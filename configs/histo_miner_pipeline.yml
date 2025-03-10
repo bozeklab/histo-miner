@@ -35,10 +35,10 @@
       Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/"
 
 
-      # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/visualization/"
-      visualizations: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-      validation_vizu/"
+      visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/visualization/"
+      # visualizations: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
+      # validation_vizu/"
         
 
     files:
@@ -53,7 +53,7 @@
       #it is including extension of the file as well (.csv)
 
       example_json: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/cSCC_CPI_tissue_analysis_output1/S03646_02_vicinity_analysed.json"     
+      Analyses_cSCC_CPI/tissue_analyser_output_35s_Bonn_nomorph/S03612_03_vicinity_no_response_analysed.json"     
 
 
 # All parameters of string names
@@ -200,6 +200,7 @@
         tsne: False  
 
         delete_outliers: False   
+        # For visualization purposes only
 
 
     str:

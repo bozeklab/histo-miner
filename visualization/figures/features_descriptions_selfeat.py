@@ -37,7 +37,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtoworkfolder = config.paths.folders.feature_selection_main
+pathtoworkfolder = config.paths.folders.featarray_folder
 pathtosavefolder = config.paths.folders.visualizations
 path_exjson = config.paths.files.example_json
 redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
@@ -49,6 +49,22 @@ violinplots = config.parameters.bool.plot.violinplots
 pca = config.parameters.bool.plot.pca
 tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
+
+
+visu_featnames = [
+    # 'Pourcentage_Lymphocytes_allcellsinTumorVicinity'
+    # 'LogRatio_Granulocytes_Lymphocytes_inTumorVicinity'
+    # 'Pourcentage_Lymphocytes_allcellsinTumor'
+    'Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_mean'
+    ]
+
+
+# xlabelname = r'Percentage of lymphocytes among cells in tumor vicinity'
+# xlabelname = r'Ratio numbers granulocytes/lymphocytes in tumor vicinity(log)'
+# xlabelname = r'Percentage of lymphocytes among cells in tumor regions'
+xlabelname = r'Mean closest distance between granulocytes and plasma cells in tumor regions'
+
+
 
 
 #############################################################
@@ -83,9 +99,7 @@ with open(path_exjson, 'r') as filename:
 featnames = list(simplifieddata.keys())
 
 # find index of selected features for viso:
-# visu_featnames = ['Morphology_insideTumor_Granulocyte_areas_mean']
-visu_featnames = ['Morphology_insideTumorVicinity_Granulocyte_areas_mean']
-# visu_featnames = ['Lymphocytes_Pourcentage']
+
 
      
 visu_indexes = [featnames.index(feat) for feat in visu_featnames if feat in featnames]
@@ -245,7 +259,7 @@ if boxplots:
                 palette=custom_palette,
                 hue_order=hue_order,
                 dodge=True,
-                size=5,  # Adjust dot size
+                size=9,  # Adjust dot size
                 ax=ax,
                 legend=False  # Exclude stripplot from the legend
             )
@@ -268,7 +282,7 @@ if boxplots:
 
             # Remove the x-axis label
             # ax.set_xlabel(r'Mean area of granulocytes inside tumors regions ($\mu m^2$)', fontsize=18)
-            ax.set_xlabel(r'Mean area of granulocytes in the vicinity of tumors ($\mu m^2$)', fontsize=18)
+            ax.set_xlabel(xlabelname, fontsize=18)
             # ax.set_xlabel('Porcentage of lymphocytes among all cells (whole WSI)', fontsize=18)
 
             # Save the plot

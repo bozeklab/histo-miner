@@ -34,7 +34,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-featselfolder = config.paths.folders.feature_selection_main
+featarray_folder = config.paths.folders.featarray_folder
 pathtosavefolder = config.paths.folders.visualizations
 example_json = config.paths.files.example_json
 
@@ -47,9 +47,9 @@ example_json = config.paths.files.example_json
 matrix_relative_path = '/correlation_matrix.npy'
 
 #load correlation matrix
-corrmat = np.load(featselfolder + matrix_relative_path)
+corrmat = np.load(featarray_folder + matrix_relative_path)
 
-pathfeatnames = featselfolder + 'featnames' + '.npy'
+pathfeatnames = featarray_folder + 'featnames' + '.npy'
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 

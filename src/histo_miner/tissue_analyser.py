@@ -1720,22 +1720,22 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         totalnumberofcells = (
                 sum(allcells_in_wsi_dict.values()) - allcells_in_wsi_dict["Background"]
         )
-        fractions_wsi_dict["Granulocytes_Pourcentage"] = (
+        fractions_wsi_dict["Granulocytes_Percentage"] = (
                 allcells_in_wsi_dict["Granulocyte"] / totalnumberofcells
         )
-        fractions_wsi_dict["Lymphocytes_Pourcentage"] = (
+        fractions_wsi_dict["Lymphocytes_Percentage"] = (
                 allcells_in_wsi_dict["Lymphocyte"] / totalnumberofcells
         )
-        fractions_wsi_dict["PlasmaCells_Pourcentage"] = (
+        fractions_wsi_dict["PlasmaCells_Percentage"] = (
                 allcells_in_wsi_dict["Plasma"] / totalnumberofcells
         )
-        fractions_wsi_dict["StromaCells_Pourcentage"] = (
+        fractions_wsi_dict["StromaCells_Percentage"] = (
                 allcells_in_wsi_dict["Stroma"] / totalnumberofcells
         )
-        fractions_wsi_dict["TumorCells_Pourcentage"] = (
+        fractions_wsi_dict["TumorCells_Percentage"] = (
                 allcells_in_wsi_dict["Tumor"] / totalnumberofcells
         )
-        fractions_wsi_dict["EpithelialCells_Pourcentage"] = (
+        fractions_wsi_dict["EpithelialCells_Percentage"] = (
                 allcells_in_wsi_dict["Epithelial"] / totalnumberofcells
         )
 
@@ -1805,7 +1805,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     # Create dictionnary for the whole section of calculations linked to WSI cells
     calculations_wsi_dict = {
-        "Pourcentages_of_cell_types_in_WSI": fractions_wsi_dict,
+        "Percentages_of_cell_types_in_WSI": fractions_wsi_dict,
         "Ratios_between_cell_types_WSI": ratio_wsi_dict,
     }
 
@@ -1828,21 +1828,21 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             )  # No background cell class inside  instmaskdict
                     
             if selectedcls_ratio == [1, 2, 3, 4, 5]:    
-                fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumor"] = (
+                fractions_tumor_dict["Percentage_Granulocytes_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Granulocyte"]
                         / numcells
                 )
-                fractions_tumor_dict["Pourcentage_Lymphocytes_allcellsinTumor"] = (
+                fractions_tumor_dict["Percentage_Lymphocytes_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Lymphocyte"]
                         / numcells
                 )
-                fractions_tumor_dict["Pourcentage_PlasmaCells_allcellsinTumor"] = (
+                fractions_tumor_dict["Percentage_PlasmaCells_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Plasma"] / numcells
                 )
-                fractions_tumor_dict["Pourcentage_StromaCells_allcellsinTumor"] = (
+                fractions_tumor_dict["Percentage_StromaCells_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Stroma"] / numcells
                 )
-                fractions_tumor_dict["Pourcentage_TumorCells_allcellsinTumor"] = (
+                fractions_tumor_dict["Percentage_TumorCells_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Tumor"] / numcells
                         )
                 # Cell Type ratios (LogRatioTumorDict)
@@ -1950,23 +1950,23 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                 )  # No background cell class inside  instmaskdict
 
                 if selectedcls_ratiovicinity == [1, 2, 3, 4, 6]:
-                    fractions_tumor_dict["Pourcentage_Granulocytes_allcellsinTumorVicinity"] = (
+                    fractions_tumor_dict["Percentage_Granulocytes_allcellsinTumorVicinity"] = (
                             cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Granulocyte"]
                             / numcells_vicinity
                     )
-                    fractions_tumor_dict["Pourcentage_Lymphocytes_allcellsinTumorVicinity"] = (
+                    fractions_tumor_dict["Percentage_Lymphocytes_allcellsinTumorVicinity"] = (
                             cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Lymphocyte"]
                             / numcells_vicinity
                     )
-                    fractions_tumor_dict["Pourcentage_PlasmaCells_allcellsinTumorVicinity"] = (
+                    fractions_tumor_dict["Percentage_PlasmaCells_allcellsinTumorVicinity"] = (
                             cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Plasma"] 
                             / numcells_vicinity
                     )
-                    fractions_tumor_dict["Pourcentage_StromaCells_allcellsinTumorVicinity"] = (
+                    fractions_tumor_dict["Percentage_StromaCells_allcellsinTumorVicinity"] = (
                             cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Stroma"] 
                             / numcells_vicinity
                     )
-                    fractions_tumor_dict["Pourcentage_EpithelialCells_allcellsinTumorVicinity"] = (
+                    fractions_tumor_dict["Percentage_EpithelialCells_allcellsinTumorVicinity"] = (
                             cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] 
                             / numcells_vicinity
                             )
@@ -2023,7 +2023,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions ratios
     calculations_ratio_tumor_dict = {
-        "Pourcentages_of_cell_types_in_Tumor_Regions": fractions_tumor_dict,
+        "Percentages_of_cell_types_in_Tumor_Regions": fractions_tumor_dict,
         "Density_of_cell_types_inside_Tumor_Regions": density_tumor_dict,
         "Ratios_between_cell_types_Tumor_Regions": ratio_tumor_dict,
     }
@@ -2033,19 +2033,19 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     if allcells_in_wsi_dict and cells_inregion_dict:
         # Fraction of the cells outside and inside tumor regions per type (InsidevsOutsideDict)
         if masktype == "Tumor":
-            insidevs_outside_dict["Pourcentage_Granulocytes_insideTumor"] = (
+            insidevs_outside_dict["Percentage_Granulocytes_insideTumor"] = (
                     cells_inregion_dict["dict_numinstanceperclass"]["Granulocyte"]
                     / allcells_in_wsi_dict["Granulocyte"]
             )
-            insidevs_outside_dict["Pourcentage_Lymphocytes_insideTumor"] = (
+            insidevs_outside_dict["Percentage_Lymphocytes_insideTumor"] = (
                     cells_inregion_dict["dict_numinstanceperclass"]["Lymphocyte"]
                     / allcells_in_wsi_dict["Lymphocyte"]
             )
-            insidevs_outside_dict["Pourcentage_PlasmaCells_insideTumor"] = (
+            insidevs_outside_dict["Percentage_PlasmaCells_insideTumor"] = (
                     cells_inregion_dict["dict_numinstanceperclass"]["Plasma"]
                     / allcells_in_wsi_dict["Plasma"]
             )
-            insidevs_outside_dict["Pourcentage_StromaCells_insideTumor"] = (
+            insidevs_outside_dict["Percentage_StromaCells_insideTumor"] = (
                     cells_inregion_dict["dict_numinstanceperclass"]["Stroma"]
                     / allcells_in_wsi_dict["Stroma"]
             )
@@ -2053,7 +2053,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
     # Create dictionnary for the whole section of calculations linked to cells inside and outside tumor regions
     calculations_mixed_dict = {
-        "Pourcentage_of_Cells_inside_Tumor_regions_for_a_given_cell_type": insidevs_outside_dict
+        "Percentage_of_Cells_inside_Tumor_regions_for_a_given_cell_type": insidevs_outside_dict
     }
 
 

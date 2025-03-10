@@ -38,7 +38,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
-pathfeatselect = confighm.paths.folders.feature_selection_main
+featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 eval_folder_name = confighm.names.eval_folder
 pathtosavefolder = confighm.paths.folders.visualizations
@@ -49,7 +49,6 @@ with open("./../../configs/classification.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
-test_lesssamples = config.parameters.bool.test_lesssamples
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 
@@ -59,14 +58,18 @@ xgboost_lr = config.classifierparam.xgboost.learning_rate
 xgboost_objective = config.classifierparam.xgboost.objective
 
 
+if not os.path.exists(pathtosavefolder):
+    os.mkdir(pathtosavefolder)
+
 
 #############################################################
 ## Set global parameters outside config
 #############################################################
 
-
-display_splits = False   
-
+# If the graph should contains curves for all cross validation splits
+display_splits = True
+# Recall number of feature kept for analyses
+nbr_keptfeat = 19
 
 
 ################################################################
@@ -77,13 +80,15 @@ ext = '.npy'
 
 featarray_name = 'perwsi_featarray'
 classarray_name = 'perwsi_clarray'
-pathfeatnames = pathfeatselect + 'featnames' + ext
+pathfeatnames = featarray_folder + 'featnames' + ext
 
-train_featarray = np.load(pathfeatselect + featarray_name + ext)
-train_clarray = np.load(pathfeatselect + classarray_name + ext)
+train_featarray = np.load(featarray_folder + featarray_name + ext)
+train_clarray = np.load(featarray_folder + classarray_name + ext)
 featnames = np.load(pathfeatnames)
 featnameslist = list(featnames)
 
+# Indexing
+nbr_keptfeat_idx = nbr_keptfeat 
 
 
 
@@ -111,12 +116,6 @@ print('Start Classifiers trainings...')
 
 train_featarray = np.transpose(train_featarray)
 
-# Test with CPI data if to see how the cross validation perform with less sample
-if test_lesssamples:
-    # random generate numbers between 0 and 37 to remove them form the list 
-    idx_rmv_raws = np.random.randint(0,37,16)# Removing the specified rows
-    train_featarray = np.delete(train_featarray, idx_rmv_raws, axis=0)
-    train_clarray = np.delete(train_clarray, idx_rmv_raws, axis=0)
 
 
 # Initialize a StandardScaler 
@@ -232,11 +231,9 @@ if display_splits:
         all_test = list()
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
-        ### With mrmr selected features
-        nbr_keptfeat_idx = 10
 
         # Kept the selected features
-        selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0:nbr_keptfeat_idx]
+        selfeat_mrmr_index_reduced =  selfeat_mrmr_index[0: nbr_keptfeat_idx]
         selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
         # Generate matrix of features
@@ -478,29 +475,32 @@ else:
 
         ########## TRAINING AND EVALUATION WITH FEATURE SELECTION
         balanced_accuracies_mrmr = list()
-        all_pred = list()
-        all_test = list()
+        # all_pred = list()
+        # all_test = list()
 
         print('Calculate balanced_accuracies for decreasing number of features kept')
-        ### With mrmr selected features
-        nbr_keptfeat_idx = 10
 
-        # Keep the selected features
+        # Kept the selected features
         selfeat_mrmr_index_reduced = selfeat_mrmr_index[0:nbr_keptfeat_idx]
         selfeat_mrmr_index_reduced = sorted(selfeat_mrmr_index_reduced)
 
         # Generate matrix of features
         featarray_mrmr = feature_array[:, selfeat_mrmr_index_reduced]
 
-        # Training
+        #Training
+        # needs to be re initialized each time!!!! Very important
         xgboost_mrmr_training = xgboost
-        # Actual training
-        xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, y_train)
+        # actual training
+        xgboost_mrmr_training_inst = xgboost_mrmr_training.fit(featarray_mrmr, 
+                                                               y_train)
 
         # Predictions on the test split
-        y_pred_mrmr = xgboost_mrmr_training_inst.predict(X_test[:, selfeat_mrmr_index_reduced])
+        y_pred_mrmr = xgboost_mrmr_training_inst.predict(
+            X_test[:, selfeat_mrmr_index_reduced]
+            )
         # Calculate balanced accuracy for the current split
-        balanced_accuracy_mrmr = balanced_accuracy_score(y_test, y_pred_mrmr)
+        balanced_accuracy_mrmr = balanced_accuracy_score(y_test, 
+                                                         y_pred_mrmr)
         balanced_accuracies_mrmr.append(balanced_accuracy_mrmr)
 
         # Compute ROC curve without plotting
@@ -518,13 +518,15 @@ else:
         # Fill the dictionary with nested key-value pairs for the different balanced accuracies
         balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies_mrmr
 
+
+
     ####################################################################
-    ## Temporary check if best balanced accuracy
+    ## Ccheck if it corresponds to best balanced accuracy
     ####################################################################
 
-    ## Calculate and write the saving of the mean balanced accuracies
-    ## Do for mrmr
-    # Calculate the mean accuracies 
+    # calculate and write the saving of the mean balanced accuracies
+    # Do for mrmr
+    #  Calculate the mean accuracies 
 
     mean_balanced_accuracies_mrmr = list()
     min_balanced_accuracies_mrmr = list()
@@ -533,39 +535,47 @@ else:
 
     best_mean_mrmr = 0
 
-    # We want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
-    # But we keep the first element as it is with all features
+
+    # we want to delete the first elements of the lists when there is not the same number of features kept by mrmr.
+    # but we keep the first element as it is with all features
 
     listoflengths = list()
 
     for i in range(nbr_of_splits):
 
-        currentsplit = f"split_{i}"
+        currentsplit =  f"split_{i}"
         listoflengths.append(length_selfeatmrmr[currentsplit])
 
     nbrkept_max_allsplits = min(listoflengths)
     print(nbrkept_max_allsplits)
 
-    # Remove first elements to be comparable in terms of number of features kept
-    for i in range(nbr_of_splits):
+    # if needed, remove firsts elements to be comparable in termes of number of feat kept
+    # if mrmr of all splits kept all elements then we skip this step
 
-        currentsplit = f"split_{i}"
-        # We use slicing to keep the last nbrkept_max_allsplits elements of the list 
-        balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][-nbrkept_max_allsplits:]
+    if nbrkept_max_allsplits != len(featnameslist):
 
-        selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][-nbrkept_max_allsplits:]
+        for i in range(nbr_of_splits):
 
+            currentsplit =  f"split_{i}"
+            # We use sclicing to keep the nbr_feat-nbrkept_max_allsplits last elements of the list 
+            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit] = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][nbrkept_max_allsplits - 1 : : -1]
+
+            selfeat_mrmr_names_allsplits[i] = selfeat_mrmr_names_allsplits[i][nbrkept_max_allsplits - 1 : : -1]
+
+        
     ba_featsel_mrmr = list()
 
+    #here we only do with one set of features so in the dict we have only one balanced accuracy per split then:
+    index = 0
+
     for i in range(nbr_of_splits):
 
-        currentsplit = f"split_{i}"
+        currentsplit =  f"split_{i}"
 
-        balanced_accuracy_mrmr = np.asarray(
-            balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][0]
-        ) 
+        balanced_accuracy_mrmr = balanced_accuracies['balanced_accuracies_mrmr'][currentsplit][index]
 
         ba_featsel_mrmr.append(balanced_accuracy_mrmr)
+
 
     ba_featsel_mrmr = np.asarray(ba_featsel_mrmr)
 
@@ -574,20 +584,25 @@ else:
     max_balanced_accuracies_mrmr.append(np.max(ba_featsel_mrmr))
     std_balanced_accuracies_mrmr.append(np.std(ba_featsel_mrmr))
 
-    ###### Find names of selected features that lead to the best prediction
-    kept_features_mrmr = [split[0:nbr_keptfeat_idx] for split in selfeat_mrmr_names_allsplits]
-    best_mean_mrmr = np.mean(ba_featsel_mrmr)
+    ###### Find name of selected features that leads to the best prediction
+    if np.mean(ba_featsel_mrmr) > best_mean_mrmr:
+        nbr_kept_features_mrmr = nbrkept_max_allsplits - index
+        kept_features_mrmr = [split[0: nbr_kept_features_mrmr] for split in selfeat_mrmr_names_allsplits]
+        best_mean_mrmr = np.mean(ba_featsel_mrmr)
+
 
     mean_ba_mrmr_npy = np.asarray(mean_balanced_accuracies_mrmr)
     min_ba_mrmr_npy = np.asarray(min_balanced_accuracies_mrmr)
     max_ba_mrmr_npy = np.asarray(max_balanced_accuracies_mrmr)
     std_ba_mrmr_npy = np.asarray(std_balanced_accuracies_mrmr)
 
-    # For all features
+
+    # for all features
+
     all_features_balanced_accuracy_npy = np.asarray(all_features_balanced_accuracy)
     mean_ba_allfeat = np.mean(all_features_balanced_accuracy_npy)
 
-    debug = True 
+
 
     ##############################################################
     ##  Visualization of AUC  
@@ -613,13 +628,13 @@ else:
         mean_fpr,
         mean_tpr,
         color="b",
-        label=f"Mean ROC: AUC = {mean_auc:.3f} $\pm$ {std_auc:.3f}\n(5 folds cross-validation)",
+        label=f"Mean ROC: AUC = {mean_auc:.3f} $\pm$ {std_auc:.3f}\n(3 folds cross-validation)",
         lw=2,
         alpha=0.8,
     )
 
     # we can either calculate standard deviation or standard error 
-    number_of_sample = 35
+    number_of_sample = 45
     std_tpr = np.std(tprs, axis=0) / math.sqrt(number_of_sample)
     # std_tpr = np.std(tprs, axis=0) 
     tprs_upper = np.minimum(mean_tpr + std_tpr, 1)

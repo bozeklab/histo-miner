@@ -36,7 +36,7 @@ with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-pathtoworkfolder = config.paths.folders.feature_selection_main
+pathtoworkfolder = config.paths.folders.featarray_folder
 pathtosavefolder = config.paths.folders.visualizations
 path_exjson = config.paths.files.example_json
 redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
@@ -49,7 +49,10 @@ tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
+if not os.path.exists(pathtosavefolder):
+    os.mkdir(pathtosavefolder)
 
+    
 #############################################################
 ## Load feature matrix and classification array, feat names
 #############################################################
