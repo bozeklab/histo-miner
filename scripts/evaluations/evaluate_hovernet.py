@@ -27,7 +27,7 @@ import sklearn.metrics
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../../configs/models/eval_hovernet.yml", "r") as f:
+with open("./../../configs/models/eval_scc_hovernet.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
@@ -225,98 +225,202 @@ debugink = True
 #############################################################
 
 
+
 if calculate_confusion:
 
-	alltrue_labels = list()
-	allpred_labels = list()
+    alltrue_labels = []
+    allpred_labels = []
+
+    files = os.path.join(predfolder, '*.npy')
+    files = glob.glob(files)
+    for path in tqdm(files):
+        if os.path.exists(path):
+            fname = os.path.split(path)[1]
+            print('Patch being processed is,', fname)
+
+            # load pred classmap
+            prednpy_classmap = np.load(path)
+
+            # load gt classmap
+            gtname = os.path.join(gtfolder, fname)
+            gtnpy_hvnformat = np.load(gtname)
+            gtnpy_classmap = gtnpy_hvnformat[:, :, 4]
+
+            # load pred instmap
+            predinstmap_name = os.path.join(instancemapfolder, fname)
+            prednpy_instmap = np.load(predinstmap_name)
+
+            # load gt instmap
+            gtnpy_instmap = gtnpy_hvnformat[:, :, 3]
+
+            # to ensure that the instance numbering is contiguous
+            pred_newinstmap = remap_label(prednpy_instmap, by_size=False)
+            gt_newinstmap   = remap_label(gtnpy_instmap,   by_size=False)
+
+            paired_true_id, paired_pred_id = pairing_cells(gt_newinstmap, pred_newinstmap)
+
+            # Collect true labels
+            for label in paired_true_id:
+                indices = np.argwhere(gt_newinstmap == label)
+                centroid = indices.mean(axis=0).astype(int)
+                true_class = gtnpy_classmap[centroid[0], centroid[1]]
+                alltrue_labels.append(true_class)
+
+            # Collect predicted labels
+            for label in paired_pred_id:
+                indices = np.argwhere(pred_newinstmap == label)
+                centroid = indices.mean(axis=0).astype(int)
+                pred_class = prednpy_classmap[centroid[0], centroid[1]]
+                allpred_labels.append(pred_class)
+
+    # Remove 0s (we evaluate only classification here, not detection)
+    idxzeros_true_labels = [i for i, val in enumerate(alltrue_labels) if val == 0]
+    idxzeros_pred_labels = [i for i, val in enumerate(allpred_labels) if val == 0]
+    unique_idxzeros = set(idxzeros_true_labels + idxzeros_pred_labels)
+    idx_zeros = sorted(list(unique_idxzeros))
+
+    # Filter out zeros from both lists in sync
+    alltrue_labels = [item for i, item in enumerate(alltrue_labels) if i not in idx_zeros]
+    allpred_labels = [item for i, item in enumerate(allpred_labels) if i not in idx_zeros]
+
+    # Calculate confusion matrices
+    conf_mat = sklearn.metrics.confusion_matrix(alltrue_labels, allpred_labels)
+
+    conf_mat_true_norm = sklearn.metrics.confusion_matrix(
+        alltrue_labels, allpred_labels, normalize='true'
+    )
+    conf_mat_pred_norm = sklearn.metrics.confusion_matrix(
+        alltrue_labels, allpred_labels, normalize='pred'
+    )
+
+    # -- Build string matrices that combine counts & percentage --
+    # 1) True-normalized string matrix
+    n_classes = conf_mat.shape[0]
+    conf_mat_str_true = np.empty_like(conf_mat, dtype=object)
+    for i in range(n_classes):
+        for j in range(n_classes):
+            count_val = conf_mat[i, j]
+            pct_val = conf_mat_true_norm[i, j] * 100
+            conf_mat_str_true[i, j] = f"{count_val} ({pct_val:.2f}%)"
+    
+    # 2) Pred-normalized string matrix
+    conf_mat_str_pred = np.empty_like(conf_mat, dtype=object)
+    for i in range(n_classes):
+        for j in range(n_classes):
+            count_val = conf_mat[i, j]
+            pct_val = conf_mat_pred_norm[i, j] * 100
+            conf_mat_str_pred[i, j] = f"{count_val} ({pct_val:.2f}%)"
+
+    conf_mat_name            = 'confusion_matrix.npy'
+    conf_mat_name_truenorm   = 'confusion_matrix_truenorm.npy'
+    conf_mat_name_prednorm   = 'confusion_matrix_prednorm.npy'
+    conf_mat_name_str_true   = 'confusion_matrix_true_string.npy'
 
 
-	files = os.path.join(predfolder, '*.npy')
-	files = glob.glob(files)
-	for path in tqdm(files):
-		if os.path.exists(path):
-			#keep name of the file and not only path
-			fname = os.path.split(path)[1]
-			print('Patch beeing processed is,',fname)
+    if not os.path.exists(save_folder):
+        os.mkdir(save_folder)
+
+    # Numeric versions
+    np.save(os.path.join(save_folder, conf_mat_name),            conf_mat)
+    np.save(os.path.join(save_folder, conf_mat_name_truenorm),   conf_mat_true_norm)
+    np.save(os.path.join(save_folder, conf_mat_name_prednorm),   conf_mat_pred_norm)
+
+    # String-combined versions
+    np.save(os.path.join(save_folder, conf_mat_name_str_true),   conf_mat_str_true)
+
+    print('Confusion matrices files (counts and normalized) saved in folder {}'.format(save_folder))
+
+
+	# alltrue_labels = list()
+	# allpred_labels = list()
+
+
+	# files = os.path.join(predfolder, '*.npy')
+	# files = glob.glob(files)
+	# for path in tqdm(files):
+	# 	if os.path.exists(path):
+	# 		#keep name of the file and not only path
+	# 		fname = os.path.split(path)[1]
+	# 		print('Patch beeing processed is,',fname)
 			
-			# load pred classmap
-			prednpy_classmap = np.load(path)
+	# 		# load pred classmap
+	# 		prednpy_classmap = np.load(path)
 
-			# load gt classmap
-			gtname = gtfolder + fname
-			gtnpy_hvnformat = np.load(gtname)
-			gtnpy_classmap = gtnpy_hvnformat[:, :, 4]
+	# 		# load gt classmap
+	# 		gtname = gtfolder + fname
+	# 		gtnpy_hvnformat = np.load(gtname)
+	# 		gtnpy_classmap = gtnpy_hvnformat[:, :, 4]
 
-			# load pred instmap
-			predinstmap_name = instancemapfolder + fname
-			prednpy_instmap = np.load(predinstmap_name)
+	# 		# load pred instmap
+	# 		predinstmap_name = instancemapfolder + fname
+	# 		prednpy_instmap = np.load(predinstmap_name)
 			 
-			# load gt instmap
-			gtnpy_instmap = gtnpy_hvnformat[:, :, 3]
+	# 		# load gt instmap
+	# 		gtnpy_instmap = gtnpy_hvnformat[:, :, 3]
 
-			# to ensure that the instance numbering is contiguous
-			pred_newinstmap = remap_label(prednpy_instmap, by_size=False)
-			gt_newinstmap = remap_label(gtnpy_instmap, by_size=False)
+	# 		# to ensure that the instance numbering is contiguous
+	# 		pred_newinstmap = remap_label(prednpy_instmap, by_size=False)
+	# 		gt_newinstmap = remap_label(gtnpy_instmap, by_size=False)
 
-			paired_true_id, paired_pred_id = pairing_cells(gt_newinstmap, pred_newinstmap)
+	# 		paired_true_id, paired_pred_id = pairing_cells(gt_newinstmap, pred_newinstmap)
 
-		    # Maybe ADD sanity checks here
-		    # first the len of paired should be the same
-		    # and no element with 0s in the class map 
+	# 	    # Maybe ADD sanity checks here
+	# 	    # first the len of paired should be the same
+	# 	    # and no element with 0s in the class map 
 
-			for label in paired_true_id:
-				indices = np.argwhere(gt_newinstmap == label)
-				centroid = indices.mean(axis=0)
-				centroid = [int(centroid[0]), int(centroid[1])]
+	# 		for label in paired_true_id:
+	# 			indices = np.argwhere(gt_newinstmap == label)
+	# 			centroid = indices.mean(axis=0)
+	# 			centroid = [int(centroid[0]), int(centroid[1])]
 
-				true_class = gtnpy_classmap[centroid[0], centroid[1]]
-				alltrue_labels.append(true_class)
+	# 			true_class = gtnpy_classmap[centroid[0], centroid[1]]
+	# 			alltrue_labels.append(true_class)
 
-			for label in paired_pred_id: 
-				indices = np.argwhere(pred_newinstmap == label)
-				centroid = indices.mean(axis=0)
-				centroid = [int(centroid[0]), int(centroid[1])]
+	# 		for label in paired_pred_id: 
+	# 			indices = np.argwhere(pred_newinstmap == label)
+	# 			centroid = indices.mean(axis=0)
+	# 			centroid = [int(centroid[0]), int(centroid[1])]
 
-				true_class = prednpy_classmap[centroid[0], centroid[1]]
-				allpred_labels.append(true_class)
+	# 			true_class = prednpy_classmap[centroid[0], centroid[1]]
+	# 			allpred_labels.append(true_class)
 
-	# Remove 0s (we evaluate only classification here)
+	# # Remove 0s (we evaluate only classification here, not detection)
 
-	# We need a sanity check by removing all background class prediction (not detected)
-	idxzeros_true_labels = [idx for idx, value in enumerate(alltrue_labels) if value == 0]
-	idxzeros_pred_labels = [idx for idx, value in enumerate(allpred_labels) if value == 0]
+	# # We need a sanity check by removing all background class prediction (not detected)
+	# idxzeros_true_labels = [idx for idx, value in enumerate(alltrue_labels) if value == 0]
+	# idxzeros_pred_labels = [idx for idx, value in enumerate(allpred_labels) if value == 0]
 
-	# We create a list of indexes where there is a 0 in at least one of the vectors
-	unique_idxzeros = set(idxzeros_true_labels + idxzeros_pred_labels)
-	idx_zeros = sorted(list(unique_idxzeros))
+	# # We create a list of indexes where there is a 0 in at least one of the vectors
+	# unique_idxzeros = set(idxzeros_true_labels + idxzeros_pred_labels)
+	# idx_zeros = sorted(list(unique_idxzeros))
 
-	# We refine the prediction by removing item where they were a 0, but for both lists not to change order
-	alltrue_labels = [item for i, item in enumerate(alltrue_labels) if i not in idx_zeros]
-	allpred_labels = [item for i, item in enumerate(allpred_labels) if i not in idx_zeros]
+	# # We refine the prediction by removing item where they were a 0, but for both lists not to change order
+	# alltrue_labels = [item for i, item in enumerate(alltrue_labels) if i not in idx_zeros]
+	# allpred_labels = [item for i, item in enumerate(allpred_labels) if i not in idx_zeros]
 
-	# Calculate confusiton matrices
+	# # Calculate confusiton matrices
 
-	conf_mat = sklearn.metrics.confusion_matrix(alltrue_labels, allpred_labels)
+	# conf_mat = sklearn.metrics.confusion_matrix(alltrue_labels, allpred_labels)
 
-	conf_mat_true_normalized = sklearn.metrics.confusion_matrix(
-    	alltrue_labels,
-    	allpred_labels,
-    	normalize='true')
-	conf_mat_pred_normalized = sklearn.metrics.confusion_matrix(
-    	alltrue_labels,
-    	allpred_labels,
-    	normalize='pred')
+	# conf_mat_true_normalized = sklearn.metrics.confusion_matrix(
+    # 	alltrue_labels,
+    # 	allpred_labels,
+    # 	normalize='true')
+	# conf_mat_pred_normalized = sklearn.metrics.confusion_matrix(
+    # 	alltrue_labels,
+    # 	allpred_labels,
+    # 	normalize='pred')
 
-	conf_mat_name = 'confusion_matrix.npy'
-	conf_mat_name_truenorm = 'confusion_matrix_truenorm.npy'
-	conf_mat_name_prednorm = 'confusion_matrix_prednorm.npy'
+	# conf_mat_name = 'confusion_matrix.npy'
+	# conf_mat_name_truenorm = 'confusion_matrix_truenorm.npy'
+	# conf_mat_name_prednorm = 'confusion_matrix_prednorm.npy'
 
-	if not os.path.exists(save_folder):
-		os.mkdir(save_folder)
+	# if not os.path.exists(save_folder):
+	# 	os.mkdir(save_folder)
 
-	np.save(save_folder + '/' + conf_mat_name, conf_mat)
-	np.save(save_folder + '/' + conf_mat_name_truenorm, conf_mat_true_normalized)
-	np.save(save_folder + '/' + conf_mat_name_prednorm, conf_mat_pred_normalized)
+	# np.save(save_folder + '/' + conf_mat_name, conf_mat)
+	# np.save(save_folder + '/' + conf_mat_name_truenorm, conf_mat_true_normalized)
+	# np.save(save_folder + '/' + conf_mat_name_prednorm, conf_mat_pred_normalized)
 
-	print('Confusion matrices files saved in folder {}'.format(save_folder))
+	# print('Confusion matrices files saved in folder {}'.format(save_folder))
 

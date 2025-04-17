@@ -8,8 +8,7 @@
     # run_name: "nestedcross_rec_directmunich"
     run_name: "preprint_CPI_defaultHPs"
 
-    trained_model: "mrmr_35s_Bonn_noarea"
-
+    trained_model: "35s_Bonn_nomorph"
 
 # All not strings parameters
   parameters:
@@ -201,9 +200,14 @@
  
 
 
+# Boruta parameters
 
+  borutaparam:
+    boruta_max_depth: 1 
+    # high depth can prevent feature selection and return no feature
+    # low depth can be detrimental and lead to too many features selected 
 
-
+    boruta_random_state: 0
 
 
 

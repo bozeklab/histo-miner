@@ -35,10 +35,9 @@
       Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/"
 
 
-      visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/visualization/"
-      # visualizations: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-      # validation_vizu/"
+      # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
+      # Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/visualization/"
+      visualizations: "/data/lsancere/Data_General/Evaluations/Evaluation_Hovernet/"
         
 
     files:
@@ -93,7 +92,7 @@
 
     int:
 
-      nbr_keptfeat: 21
+      nbr_keptfeat: 19
       # default 317
       # IF number kept is higher than total number of feat
       # then the total number of feat is kept
@@ -101,13 +100,12 @@
       maskmap_downfactor: 32
 
 
-
-      boruta_max_depth: 4
+      boruta_max_depth: 10
       # boruta_max_depth: 18 leading to best results so far
       # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
       # parenthesis are for Boruta applied to selected slides 
 
-      boruta_random_state: 1
+      boruta_random_state: 0
 
       default_tumormargin: 4338
       # it corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in:

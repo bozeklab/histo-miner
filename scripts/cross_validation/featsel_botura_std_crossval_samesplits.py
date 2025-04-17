@@ -40,8 +40,6 @@ featarray_folder = confighm.paths.folders.featarray_folder
 classification_eval_folder = confighm.paths.folders.classification_evaluation
 
 eval_folder_name = confighm.names.eval_folder
-boruta_max_depth = confighm.parameters.int.boruta_max_depth
-boruta_random_state = confighm.parameters.int.boruta_random_state
 
 
 
@@ -52,6 +50,9 @@ config = attributedict(config)
 classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
+
+boruta_max_depth = config.borutaparam.boruta_max_depth
+boruta_random_state = config.borutaparam.boruta_random_state
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators

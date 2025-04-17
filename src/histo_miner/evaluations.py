@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import scipy
 from scipy.optimize import linear_sum_assignment
 
@@ -298,6 +299,58 @@ def plot_conf_matrix(conf_matrix: np.ndarray,
     #print('All plot shown')
 
 
+
+def plot_conf_matrix_doublevalues(conf_matrix: np.ndarray, 
+                     conf_matrix_normalized: np.ndarray,
+                     savefolder: str) -> None:
+    """
+    Plot three confusion matrices:
+      1) Raw confusion matrix (counts only),
+      2) True/Recall-normalized matrix, each cell annotated with "count (norm)",
+      3) Pred-normalized matrix, each cell annotated with "count (norm)".
+
+    Saves each figure as a PNG to 'savefolder'.
+    """
+    # For indexing: you have 5 classes labeled 1..5 in your matrix
+    # If your matrix is in 0..4, you can adjust below or keep it as is.
+    selectedclass = [1, 2, 3, 4, 5]
+
+    # Build an annotation array of strings combining raw count + normalized value
+    # If you prefer showing percentages, multiply conf_matrix_normalized * 100 
+    # and adapt the format string accordingly.
+    annot_recall = np.empty_like(conf_matrix, dtype=object)
+    for i in range(conf_matrix.shape[0]):
+        for j in range(conf_matrix.shape[1]):
+            count_val = conf_matrix[i, j]
+            recall_val = conf_matrix_normalized[i, j]
+            # Example: "5 (0.35)" or you could do f"{count_val}\n({recall_val:.2%})"
+            annot_recall[i, j] = f"{recall_val:.2f}\n({count_val})"
+
+    _, ax = plt.subplots(figsize=(9, 6))
+    # We pass conf_matrix_normalized for the color scale,
+    # and 'annot_recall' as the string annotation
+    heatmap(conf_matrix_normalized, 
+            annot=annot_recall, 
+            linewidths=.5, 
+            ax=ax, 
+            fmt='s',   # 's' to display custom string annotations
+            cmap='YlGnBu',
+            annot_kws={"ha": "center", "va": "center"})
+    plt.title('Confusion Matrix: Recall Normalization')
+    plt.ylabel('Groundtruth')
+    ax.set_xlabel('Predicted')
+    ax.xaxis.set_label_position('top')
+    ax.xaxis.set_ticks_position('top')
+
+
+    my_xticks = ['granul        ', 'lympho         ', 'plasma       ', 'stroma       ', 'tumor      ']
+    my_yticks = ['      granul', '      lympho', '      plasma', '      stroma', '       tumor']
+    plt.xticks(ticks=selectedclass, labels=my_xticks)
+    plt.yticks(ticks=selectedclass, labels=my_yticks)
+
+    # Save
+    plt.savefig(os.path.join(savefolder, 'conf_mat_truenorm.png'), dpi=1000, bbox_inches='tight')
+    plt.close()
 
 
 

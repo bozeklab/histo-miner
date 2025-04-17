@@ -13,6 +13,7 @@ from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
+import matplotlib  
 import pandas as pd
 import plotnine
 import seaborn as sns
@@ -51,18 +52,24 @@ tsne = config.parameters.bool.plot.tsne
 delete_outliers = config.parameters.bool.plot.delete_outliers
 
 
+# visu_featnames = [
+#     'Pourcentage_Lymphocytes_allcellsinTumorVicinity'
+#     'LogRatio_Granulocytes_Lymphocytes_inTumorVicinity'
+#     'Pourcentage_Lymphocytes_allcellsinTumor'
+#     'Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_mean'
+#     ]
+
 visu_featnames = [
-    # 'Pourcentage_Lymphocytes_allcellsinTumorVicinity'
-    # 'LogRatio_Granulocytes_Lymphocytes_inTumorVicinity'
-    # 'Pourcentage_Lymphocytes_allcellsinTumor'
-    'Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_mean'
+    'PlasmaCells_perTumorarea'
     ]
 
 
 # xlabelname = r'Percentage of lymphocytes among cells in tumor vicinity'
-# xlabelname = r'Ratio numbers granulocytes/lymphocytes in tumor vicinity(log)'
+# xlabelname = r'Ratio numbers granulocytes/lymphocytes in tumor vicinity (log)'
 # xlabelname = r'Percentage of lymphocytes among cells in tumor regions'
-xlabelname = r'Mean closest distance between granulocytes and plasma cells in tumor regions'
+# xlabelname = r'Mean closest distance between granulocytes and plasma cells in tumor regions'
+
+xlabelname = r'Numbers of Plasma Cells per Tumorarea'
 
 
 
@@ -150,6 +157,29 @@ def add_stat_annotation_stars(ax, x1, x2, y, p_value):
 
 
 #############################################################
+##V Sample names for data exploration
+#############################################################
+
+
+# Name of samples to be displayed  
+# AS it is EXPLORATOY, the list will be hardcoded
+sample_names = [
+    'D1316.21', 'D3849.20', 'D4148.19', 'D_20.1325', 'D_21.1576', 
+    'D_22.1308', 'D_23.3170', 'D_23.863', 'D_24.1102', 'D_686.20B',
+    'S03604_03', 'S03605_01', 'S03611_03', 'S03612_03', 'S03613_01', 
+    'S03614_01', 'S03615_01', 'S03616_01', 'S03622_01', 'S03623_01', 
+    'S03625_03', 'S03627_02', 'S03628_03', 'S03631_01', 'S03633_02', 
+    'S03637_01', 'S03638_02', 'S03639_01', 'S03640_01', 'S03642_03', 
+    'S03643_01', 'S03644_02', 'S03645_01', 'S03646_02', 'S03647_02', 
+    'S03651_03', 'S03652_01', 'S03654_01', 'S03655_01', 'S03656_02', 
+    'S03785_01', 'S03786_01', 'TUM16', 'TUM17', 'TUM18'
+]
+
+
+
+
+
+#############################################################
 ## Plot boxplots for selected features 
 #############################################################
 
@@ -226,8 +256,10 @@ if boxplots:
             df = pd.DataFrame({
                 'FeatureValues': featvals * conversion_rate, # here we can adjust if the value is in pixel squarre or in micro meter square
                 'Classification': clarray_names,
-                'FeatureName': ''
+                'FeatureName': '', 
+                'SampleName': sample_names,  
             })
+        
 
             hue_order = ['response', 'no_response']
 
@@ -251,7 +283,7 @@ if boxplots:
             #     patch.set_linewidth(2)  # Optional: make edges thicker
 
             # Overlay individual sample points
-            sns.stripplot(
+            strip = sns.stripplot(
                 x='FeatureName',
                 y='FeatureValues',
                 hue='Classification',
@@ -264,10 +296,45 @@ if boxplots:
                 legend=False  # Exclude stripplot from the legend
             )
 
+
+
             # Update legend labels
             handles, labels = ax.get_legend_handles_labels()
             ax.legend(handles, [display_labels[label] for label in labels], loc='upper right', fontsize=13)
             
+
+            #  Annotate points with text for data exploration (OPTIONNAL)
+            # Identify all PathCollections
+            # all_collections = [
+            #     c for c in ax.collections 
+            #     if isinstance(c, matplotlib.collections.PathCollection)
+            # ]
+
+            # # The *last N collections* generally correspond to the stripplot’s N categories
+            # unique_cats = df['Classification'].unique()
+            # n_cats = len(unique_cats)
+            # point_collections = all_collections[-n_cats:]
+
+            # # Group df by Classification
+            # grouped_df = df.groupby('Classification')
+
+            # # Label each group’s points
+            # for cat, path_coll in zip(unique_cats, point_collections):
+            #     sub_df = grouped_df.get_group(cat).reset_index(drop=True)
+            #     offsets = path_coll.get_offsets()  # x,y positions for that cat only
+                
+            #     # Loop over each point
+            #     for (x_pos, y_pos), (_, row) in zip(offsets, sub_df.iterrows()):
+            #         sample_label = row["SampleName"]
+            #         ax.text(
+            #             x_pos, y_pos,
+            #             sample_label,
+            #             fontsize=4,
+            #             rotation=45,
+            #             ha='left', 
+            #             va='bottom'
+            #         )
+
 
             # Add statistical annotation
             if 'no_response' in df['Classification'].values and 'response' in df['Classification'].values:
@@ -286,11 +353,12 @@ if boxplots:
             # ax.set_xlabel('Porcentage of lymphocytes among all cells (whole WSI)', fontsize=18)
 
             # Save the plot
+            # savename = featname + '_boxplot_dotlabels.svg' 
             savename = featname + '_boxplot.svg' 
             saveboxplot_path = os.path.join(pathtosavefolder, 'boxplots', 'allfeat', savename)
             os.makedirs(os.path.dirname(saveboxplot_path), exist_ok=True)
             plt.tight_layout()
-            plt.savefig(saveboxplot_path, format='svg', dpi=300)
+            plt.savefig(saveboxplot_path, format='svg', dpi=3000)
             plt.close()
 
 
