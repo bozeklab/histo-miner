@@ -2,7 +2,7 @@
 
 ## Important notes
 
-**The README will be comprehensive when the corresponding paper presenting histo-miner will be available on arxiv. ** 
+**The README will be comprehensive when the corresponding paper presenting histo-miner will be available on arxiv.** 
 
 <div align="center">
 
