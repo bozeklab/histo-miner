@@ -10,7 +10,7 @@ config_path=../configs/models/scc_segmenter.yml
 
 # We need yaml lib so we reactivate histo-miner env if it was not done befre
 conda deactivate
-conda activate histo-miner-env-2
+conda activate histo-miner-env
 
 # We extract all parameters now:
 yaml() {
@@ -53,7 +53,7 @@ fi
 
 
 conda deactivate
-conda activate mmsegmentation2
+conda activate mmsegmentation_submodule
 
 cd ../src/models/mmsegmentation/
 
@@ -147,5 +147,5 @@ fi
 
 # return to previous path and reeactivate histo-miner env for following steps
 conda deactivate
-conda activate histo-miner-env-2
+conda activate histo-miner-env
 cd "$OLDPWD"

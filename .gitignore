@@ -4,6 +4,7 @@ scripts/multi_launch
 scripts/archive
 scripts/training-tests
 scripts/cross_validation_patid
+scripts/exploratory_analyses
 docs/devnotes
 src/archive 
 docs4paper
