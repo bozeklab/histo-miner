@@ -1,24 +1,150 @@
-# Histo-Miner
+# Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
-## Important notes
-
-**The README will be made available right after publication on arxiv.org of corresponding manuscript presenting Histo-Miner** 
 
 <div align="center">
 
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Histo-Miner visualization](#vizualization) • [Installation](#installation) • [Project Structure](#project-structure) • [Usage](#usage) • [Examples](#examples) • [Roadmap](#roadmap) 
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Histo-Miner visualization](#vizualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) • [Checkpoints](#model-checkpoints) • [Datasets](#datasets) • [Q&A](#q&a) • [Citation](#citation)  
 
 </div>
 
 
+This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://www.arxiv.org/abs/2505.04672) paper.
+
+
 ## Presentation of the pipeline
 
-## Vizualization
+<p align="center">
+  <img src="docs/images/pipeline-repr-forgithub.png" width="650">
+</p>
+
+
+Histo-Miner employs convolutional neural networks and vision transformers models for nucleus segmentation and classification as well as tumor region segmentation **(a), (b), (c)**. From these predictions, it generates a compact feature vector summarizing tissue morphology and cellular interactions. **(d)** We used such generated features to classify cSCC patient response to immunotherapy. 
+
+
+## Project structure 
+
+Here is an explanation of the project structure:
+
+```bash
+├── configs                          # All configs file with explanations
+│   ├── models                       # example configs for both models inference
+│   ├── classification_training      # Configs for classifier training 
+│   ├── histo_miner_pipeline         # Configs for the core code of histo-minerent
+├── docs                             # Documentation files (in addition to this main README.md)
+├── scripts                          # Main code for users to run Histo-Miner 
+├── src                              # Functions used for scripts
+│   ├── histo-miner                  # All functions from the core code (everything except deep learning)
+│   ├── models                       # Submodules of models for inference and training
+│   │   ├── hover-net                # hover-net submodule, simplification of original code to fit histo-miner needs
+│   │   ├── mmsegmentation           # segmenter submodule, simplification of original code to fit histo-miner needs
+├── supplements                      # Mathematica notebook for probability of distance overestimaiton calculation
+├── visualization                    # Both python and groovy scripts to either reproduce paper figures or to vizualize model inference with qupath   
+
+```
+
+_Note:_ Use the slider to fully read the comments for each section. 
+
+## Visualization
+
+<div align="center">
+
+![](docs/videos/qupath_visualization_v01_crop.gif)
+
+</div>
+
+SCC Hovernet and SCC Segmenter nucleus segmentation and classificationoutput visualization (step **(c)** from figure above).
+
 
 ## Installation
 
+The full pipeline requires 3 environments to work, one for each git submodule and one for the core histo-miner code. We propose hovernet git submodule containing the code of SCC Hovernet model and mmsegmentation git submodule containing the code of SCC Segmenter model. The reason why git submodules are used in this project are detailed in the Q&A section.
+
+
+### Installation commands
+
+The easiest way to install all these environments is from the yml files of the submodules conda envs and the requirement file of the core histo-miner code:
+
+```bash
+# histo-miner env
+conda create -n histo-miner-env python=3.10
+conda activate histo-miner-env
+conda install -c conda-forge openslide=3.4.1
+pip install -r ./requirements.txt
+pip install --no-dependencies mrmr-selection==0.2.5
+conda deactivate
+
+# hovernet submodule env
+conda env create -f src/models/hover_net/hovernet_submodule.yml
+conda activate hovernet_submodule
+pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
+conda deactivate
+
+# mmsegmentation submodule env
+conda env create -f src/models/mmsegmentation/mmsegmentation_submodule.yml
+conda activate mmsegmentation_submodule
+pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
+conda deactivate
+``` 
+
+If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. The installation can take some time, especially for `conda install -c conda-forge openslide` and `pip install torch` commands.
+
+
+### Installation details and alternatives 
+
+Further details as well as alternative installation methods are available in the README files of each git submodule.
+These files are: 
+- For hovernet submodule: `/src/models/hover_net/README.md`
+- For mmsegmentation submodule: `/src/models/mmsegmentation/README.md`
+
+
 ## Usage
+
+-> Under construction: `Available on 15/05/25 or before`
+
 
 ## Examples 
 
-## Roadmap
+-> Under construction: `Available on 22/05/25 or before` 
+-> Config folder will also be improved for this date 
+
+
+## Datasets
+
+* [NucSeg and TumSeg datasets](https://doi.org/10.5281/zenodo.8362593)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8362593.svg)](https://doi.org/10.5281/zenodo.8362593)
+* [CPI dataset](https://doi.org/10.5281/zenodo.13986860)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13986860.svg)](https://doi.org/10.5281/zenodo.13986860) 
+
+
+
+## Model checkpoints
+
+* [SCC Hovernet and SCC Segmenter models weights](https://doi.org/10.5281/zenodo.13970198)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13970198.svg)](https://doi.org/10.5281/zenodo.13970198)
+
+
+
+## Q&A
+
+_**Why this repository is using git submodules and needs 3 conda envs?**_
+
+Git submodules allow for development of SCC Hovernet (hovernet submodule) and SCC Segmenter (mmsegmentation submodule) outside of their initial repositories. This allow to develop them in parallel, not to be influenced by any change done in the original repositories. Also, the code in the submodule contains only the necessary scripts and function to run histo-miner, facilitating readability and reducing repository weight. These modules require python and packages versions that are not compatible with histo-miner core code, so it is not possible to have an environment that fits for the whole repository. <br>
+
+ In short, git submodules allow to treat SCC Hovernet and SCC Segmenter codes as separate projects from histo-miner core code while still allowing for their use within each other. More about git submodule can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+
+_**Why pytorch installation is not included inside the env.yml from hovernet and mmsegmentation submodules?**_
+
+Pytorch versioning depends on the GPUs of your machine. By excluding pytorch installation from the yml files, it allows user to find the pytorch version the most compatible with their software.
+
+
+## Citation
+
+```
+@misc{sancéré2025histominerdeeplearningbased,
+      title={Histo-Miner: Deep Learning based Tissue Features Extraction Pipeline from H&E Whole Slide Images of Cutaneous Squamous Cell Carcinoma}, 
+      author={Lucas Sancéré and Carina Lorenz and Doris Helbig and Oana-Diana Persa and Sonja Dengler and Alexander Kreuter and Martim Laimer and Anne Fröhlich and Jennifer Landsberg and Johannes Brägelmann and Katarzyna Bozek},
+      year={2025},
+      eprint={2505.04672},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2505.04672}, 
+}
+```
+

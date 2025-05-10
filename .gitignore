@@ -16,4 +16,5 @@ docs4paper
 *._.DS_Store
 *._.gitignore
 *._
+archive-env.yml
 temp.py
