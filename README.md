@@ -8,9 +8,6 @@
 </div>
 
 <br>
-<br>
-<br>
-
 
 
 This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://www.arxiv.org/abs/2505.04672) paper.
@@ -120,7 +117,7 @@ These files are:
 
 
 
-## Model checkpoints
+## Models checkpoints
 
 * [SCC Hovernet and SCC Segmenter models weights](https://doi.org/10.5281/zenodo.13970198)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13970198.svg)](https://doi.org/10.5281/zenodo.13970198)
 
