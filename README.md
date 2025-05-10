@@ -3,9 +3,14 @@
 
 <div align="center">
 
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Histo-Miner visualization](#vizualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) • [Checkpoints](#model-checkpoints) • [Datasets](#datasets) • [Q&A](#q&a) • [Citation](#citation)  
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#model-checkpoints)  • [Q&A](#model-checkpoints) • [Citation](#citation)  
 
 </div>
+
+<br>
+<br>
+<br>
+
 
 
 This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://www.arxiv.org/abs/2505.04672) paper.
