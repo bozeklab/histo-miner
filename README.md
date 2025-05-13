@@ -137,8 +137,8 @@ You can use the 2 conversion scripts to make navigation easy. In fact, detection
 Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification.  It corresponds to step **(d)** from the figure above.
 
 - First follow the steps from "Models inference: nucleus segmentation and classification". 
-- Add the paths to the folder containing the jsons (_tissue_analyser_mai_n field) and the path the output folder (_tissue_analyser_output_ field) in the  `histo_miner_pipeline.yml` config file.
-- Decide wich features to compute based on
+- Add the paths to the folder containing the jsons (_tissue_analyser_main_ field) and the path the output folder (_tissue_analyser_output_ field) in the  `histo_miner_pipeline.yml` config file.
+- Decide wich features to compute based on 
 
 
 ### Classification cSCC response to immunotherapy  
