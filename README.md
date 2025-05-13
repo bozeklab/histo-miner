@@ -125,10 +125,20 @@ The json files finally obtained contain the nucleus classified and segmented for
 
 Here we will explain how to visualize the nucleus segmentation and classification as shown in [Visualization](#visualization). 
 
+- Put the json file of nucleus segmentation and classification obtained previsouly and the corresponding input WSI in the same folder, and rename if needed that they both have the same name (only extension change). You can use symbolic links to avoid copying.
+- Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/)
+- Open the script editor (Automate menu on top), select the `/visualization/qupath_scripts/open_annotations_SCC_Classes.groovy` file and run it.
+
+You can use the 2 conversion scripts to make navigation easy. In fact, detections object are lighter than annotation in QuPath and `convert_annotation_to_detection.groovy` will allow for easier navigation. 
+
 
 ### Tissue Analyser
 
 Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification.  It corresponds to step **(d)** from the figure above.
+
+- First follow the steps from "Models inference: nucleus segmentation and classification". 
+- Add the paths to the folder containing the jsons (_tissue_analyser_mai_n field) and the path the output folder (_tissue_analyser_output_ field) in the  `histo_miner_pipeline.yml` config file.
+- Decide wich features to compute based on
 
 
 ### Classification cSCC response to immunotherapy  
