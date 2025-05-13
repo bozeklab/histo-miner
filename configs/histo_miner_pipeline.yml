@@ -1,67 +1,38 @@
 
-# All path related parameters
-# the "" quotes allow to break the line with \ properly for then loading into python
-  paths:
-    folders:
-      inferences_postproc_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn_Hvn_Output/"
+# All path and names related parameters
 
+  paths:                                         # --- parent key, DO NOT FILL this line
 
-      tissue_analyser_main: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      cSCC_CPI_Bonn/Bonn_Hvn_Output_2/"
+    folders:                                     # --- parent key, DO NOT FILL this line
 
+      inferences_postproc_main:                  # Path to the folder containing output of SCC Hovernet and SCC Segmenter. Ex: "/data/inference/results/" [str]
 
-      tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_35s_Bonn_nomorph/"
-      # tissue_analyser_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/tissue_analyser_output_Bonn/"
+      tissue_analyser_main:                      # Path to the folder containing the processed inference output (main3_inferences_postproc.py output). Ex: "/data/postprocess/" [str] 
 
+      tissue_analyser_output:                    # Path to the folder to save tissue analyser json outputs. Ex: "/data/postprocess/tissue_analyser_output/" [str] 
+ 
+      featarray_folder:                          # Path to the folder containing the classification vector and the feature matrix of the dataset. It is a (N x M) matrix, with N = number of samples, M = number of features per sample. 
 
-      featarray_folder: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/feature_selection_35s_Bonn_nomorph/"
-      # feature_selection_main: "/data/lsancere/Data_General/Other_Dataset/histo-miner/\
-      # validation_tables/boxplots/pythonready/csv/stromal/"
-      
+      classification_evaluation:                 # Path to the image classification evaluation parent folder. Ex: "/data/classification_evaluation/" [str] 
 
-      # feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s_nomorph/"
-      # feature_selection_output: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/feature_selection_pretest/feature_selection_output_allpreprint_35s_nomorph/"
-
-
-      # classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/classification_evaluation_allpreprint_35s_nomorph/"
-      classification_evaluation: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/"
-
-
-      # visualizations: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/classification_evaluation_35s_Bonn_nomorph/visualization/"
-      visualizations: "/data/lsancere/Data_General/Evaluations/Evaluation_Hovernet/"
+      visualizations:                            # Path to the analyses visualization output. Ex: "/data/samples/visualization/" [str]
         
+    files:                                       # --- parent key, DO NOT FILL this line
 
-    files:
-      patientid_csv: "/data/lsancere/Data_General/TrainingSets/histo-miner-all-datasets/\
-      IDpatients_files/AllCohorts_PatientIDs.csv"
+      example_json:                              # Path to any json file output of tissue analyser. Ex: "/data/postprocess/tissue_analyser_output/wsi_sample1.json" [str]
 
-      cohortid_csv: "/data/lsancere/Data_General/TrainingSets/histo-miner-all-datasets/\
-      IDcohorts_files/cSCC_CPI_idcohorts.csv"
+      cohortid_csv:                              # In a case of a dataset with several cohort: Path to the csv with cohort ID for each sample. Ex: "/data/datasets/dataset1/cohortid.csv" [str]
 
-      # patientid_csv: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      # Analyses_cSCC_CPI/PatientIDs.csv"
-      #it is including extension of the file as well (.csv)
+      patientid_csv:                             # In case of a dataset with more than 1 sample per patient: Path to the csv with patient ID for each sample. Ex: "/data/datasets/dataset1/patientid.csv" [str]
 
-      example_json: "/data/lsancere/Data_General/Collaborators_Dataset/cSCC_CPI_all/\
-      Analyses_cSCC_CPI/tissue_analyser_output_35s_Bonn_nomorph/S03612_03_vicinity_no_response_analysed.json"     
+  names:                                         # --- parent key, DO NOT FILL this line
 
+      hovernet_mode: wsi                         # Options: [wsi, tile]. If the inference run for full WSIs, choose wsi. If it runs for patches, choose tile. Default: wsi [str]
 
-# All parameters of string names
-  names:
-      hovernet_mode: wsi
-      eval_folder: results 
+      eval_folder: results                       # Name of the folder containing classification evalutation. Default: results [str]
 
-      managment:
-        # >- is needed because if not we will have an issue with the quotes inside the string
+      managment:                                 # NOT TO CHANGE. Used to adapt json files to SCC Hovernet and to visualization scripts.
+        
         str2replace_tilemode: >-
            {"mag": null, "nuc": {
 
@@ -86,59 +57,70 @@
         newstr2_wsimode: >-
           }}
 
+# All none strings parameters (except maskmap_ext that is also str)
 
-# All not strings parameters
-  parameters:
+  parameters:                                    # --- parent key, DO NOT FILL this line. All none string parameters
 
+    bool:                                        # --- parent key, DO NOT FILL this line.
+ 
+      calculate_vicinity: True                   # Allow or not to calculate features for cells in the tumor vicinity while running tissue analyser. Default: True [bool]
+
+      calculate_distances: False                 # Allow or not to calculate distance related features while running tissue analyser. If True, this will considerably increase the time to run main4_tissue_analyser.py. Default: False [bool]
+
+      cohortid_avail: False                      # In a case of a dataset with several cohort, if cohort information is used for classification/evaluation and if cohortid_csv exists (see above), select True. Default: False [bool]
+
+      patientid_avail: False                     # In case of a dataset with more than 1 sample per patient, if patient information is used for classification/evaluation and if patientid_csv exists (see above), select True. Default: False [bool]
+
+      plot:                                      # --- parent key, DO NOT FILL this line
+
+        boxplots: True                           # Allow or not computing of boxplots while running python scripts from /visualization/figures/. Default: True [bool] 
+
+        distributions: True                      # Allow or not computing distribution curves while running python scripts from /visualization/figures/. Default: True [bool] 
+
+        violinplots: False                       # Allow or not computing violinplots while running python scripts from /visualization/figures/. Default: False [bool] 
+
+        pca: True                                # Allow or not computing PCA while running python scripts from /visualization/figures/. Default: True [bool]
+
+        tsne: True                               # Allow or not computing t-SNE while running python scripts from /visualization/figures/. Default: True [bool]
+
+        delete_outliers: False                   # Delete sample outliers for visualization purposes only. Default: False [bool]
+        
     int:
 
-      nbr_keptfeat: 19
-      # default 317
-      # IF number kept is higher than total number of feat
-      # then the total number of feat is kept
+      nbr_keptfeat: 19                           # Number of best feature kept. In Histo-Miner paper case it is 19. IF number kept is higher than total number of feat then the total number of feat is kept. Default: 19. [int]
 
-      maskmap_downfactor: 32
+      maskmap_downfactor: 32                     # NOT TO CHANGE. Downsample factor of the SCC Segmenter tumor segmentation map compated to original size WSI. In the original work this is fixed to 32 with no changes.
 
+      default_tumormargin: 4338                  # NOT TO CHANGE. More information below. 
 
-      boruta_max_depth: 10
-      # boruta_max_depth: 18 leading to best results so far
-      # boruta_max_depth: (2, 4) 6, 8, 10, 12, 14, 16, 18, 20
-      # parenthesis are for Boruta applied to selected slides 
+      # --- More details ---
 
-      boruta_random_state: 0
-
-      default_tumormargin: 4338
-      # it corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in:
-      #  "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
+      # It corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in: 
+      # "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
       # A Practical Review for Pathologists and Proposal for a Standardized Method 
       # From the International Immunooncology Biomarkers Working Group"
-      #
 
     lists:
-      selectedcls_dist: [1, 2, 3, 5]
-      # Selected Classes for the Distance Calculation (average closest distance between cells of given class)
-      # For a very comprehensive (but wazy too long for now) analysis we can keep all classes:
+
+      selectedcls_dist: [1, 2, 3, 5]             # Selected classes for the distance related features (average closest distance between cells of given class). More information below. Default: [1, 2, 3, 5] [list] 
+
+      # --- More details ---
+
+      # For a very comprehensive (but very long) analysis we can keep all classes:
       # [1, 2, 3, 4, 5, 6]
       # For a realistic analysis speed, avoid including stroma cells and epithelial cells
       # in the distance calculation and then keep:
       # [1, 2, 3, 5]
 
-      selectedcls_ratio: [1, 2, 3, 4, 5]
-      # Selected Classes for ratio calculcations inside tumor regions
+      selectedcls_ratio: [1, 2, 3, 4, 5]         # Selected classes for ratio calculcations inside tumor regions. Default option is the one including all cells except none-neoplastic epithelial cells that are already all outside of tumor regions Default: [1, 2, 3, 4, 5] [list]
 
-      selectedcls_ratiovic: [1, 2, 3, 4, 6]
-      # Selected Classes for ratio calculcations inside vicinity of tumor regions
+      selectedcls_ratiovic: [1, 2, 3, 4, 6]      # Selected classes for ratio calculcations inside vicinity of tumor regions. Default option is the one including all cells except tumor cells Default: [1, 2, 3, 4, 6] [list]
 
-      classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']
-      #Still to test when the analyser will run
+      values2change: [1, 2]                      #  NOT TO CHANGE
 
-      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5', '"type": 6']
+      newvalues: [0, 255]                        #  NOT TO CHANGE
 
-      values2change: [1, 2]
-
-      newvalues: [0, 255]
-
-      redundant_feat_names: [
+      redundant_feat_names: [                    #  NOT TO CHANGE
                 'areas_mean',
                 'areas_std',
                 'areas_median',
@@ -169,40 +151,12 @@
                 'dist_iqr'
                 ]
 
+      classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']    
 
-
-
-    bool:
-      calculate_vicinity: True  
-      #Used to calculate number of cells (in pourcentage) of a given type
-      #in the vicinity 
-
-      calculate_distances: True   
-
-      patientid_avail: False  
-
-      cohortid_avail: False   
-      
-      perpatient_feat: False
-      # TO delete before publication
-
-      plot: 
-        boxplots: True
-
-        distributions: False
-
-        violinplots: True 
-
-        pca: False  
-
-        tsne: False  
-
-        delete_outliers: False   
-        # For visualization purposes only
-
+      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5', '"type": 6']
 
     str:
-      maskmap_ext: .png
+      maskmap_ext: .png                          # Extension of tumor segmentation maps. Default .png [str] 
 
 
 

@@ -2,7 +2,6 @@
 # Could be just classifiation the name of file becasue I think it is not 
 # used only for training (to check)
 
-
 # All parameters of string names
   names:
     # run_name: "nestedcross_rec_directmunich"

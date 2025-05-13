@@ -3,7 +3,7 @@
 
 <div align="center">
 
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#model-checkpoints)  • [Q&A](#model-checkpoints) • [Citation](#citation)  
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)  
 
 </div>
 
@@ -101,7 +101,24 @@ These files are:
 
 ## Usage
 
--> Under construction: `Available on 15/05/25 or before`
+-> Under construction: `Final version on 15/05/25 or before`
+
+
+Here we present how to use histo-miner code. A complete end-to-end example is also included in next paragraph to facilitate usage.
+
+
+### Models inference: nucleus segmentation and classification
+
+
+### Models inference visualization
+
+
+### Tissue Analyser
+
+
+### Classification cSCC response to immunotherapy  
+
+
 
 
 ## Examples 

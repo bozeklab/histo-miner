@@ -18,7 +18,15 @@ import cv2
 import copy
 import sklearn.metrics
 
-# add the script to transform mat files into npy for instances and npy for types (using hovernet utils)
+
+
+#############################################################
+## Notes
+#############################################################
+
+# This code use npy files from SCC Hovernet output, and not directly .mat files.
+# User will need to run src/histo-miner/hovernet_utils.py: extr_matinstances and extr_mattypes
+# functions to transform mat files into npy files for instance maps and type vectors. 
 
 
 #############################################################

@@ -8,6 +8,7 @@ scripts/exploratory_analyses
 docs/devnotes
 src/archive 
 docs4paper
+dev-configs
 .idea
 
 #Files
@@ -18,5 +19,6 @@ docs4paper
 *._
 ._README.md
 ._supplements
+._*
 archive-env.yml
 temp.py

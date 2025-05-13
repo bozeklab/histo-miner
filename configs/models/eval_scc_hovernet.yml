@@ -1,35 +1,36 @@
 
+# Parameters for evaluaton
 
-# parameter for evaluaton
-  eval_paths:
-    eval_folders:
-        parentfolder: "/data/lsancere/Data_General/TrainingSets/Hovernet/Carina-Corinna-Johannes-Data/\
-        ChrisSeg-LucasJohannesUpdatesClass/Hvn-Mc-annotations/NapariClassCorrection/TrainingDataGeneration/"
-      
-        instancemap_subfolder: '/InfonVal_output/mat/InstancesMaps/'
+  eval_paths:                          # --- parent key, DO NOT FILL this line 
 
-        classvector_subfolder: '/InfonVal_output/mat/InstancesTypes/'
+    eval_folders:                      # --- parent key, DO NOT FILL this line 
+ 
+        parentfolder:                  # Path to the parent folder that will be used as root to other subfolders. Ex: "/data/evaluate_scchvn/" [str]
+ 
+        instancemap_subfolder:         # Path to the subfolder (relative to parent folder) containing numpy instance maps from SCC Hovernet tile prediction. Ex: "/instancemaps/" [str] 
 
-        prediction_subfolder:  '/InfonVal_output/mat/InstancesTypes/ClassMaps/'
+        classvector_subfolder:         # Path to the subfolder (relative to parent folder) containing numpy class vectors from SCC Hovernet tile prediction. Ex: "/instancetypes/" [str] 
 
-        gt_subfolder: '/TrainingSet/Val/Labels/'
+        prediction_subfolder:          # Path to the subfolder (relative to parent folder) containing numpy class maps from SCC Hovernet tile prediction. Ex: "/instancetypes/classmaps/" [str]
 
-        save_folder: '/data/lsancere/Data_General/Evaluations/Evaluation_Hovernet/'
+        gt_subfolder:                  # Path to the subfolder (relative to parent folder) containing groundtruth labels in 5D numpy Hovernet format (see NucSeg dataset description). Ex: /trainingset/validation/labels/ [str]
+
+        save_folder:                   # Absolute path to the folder to save evaluation results. Ex: "/data/evaluate_scchvn/results/" [str]
          
 
-# All not strings parameters
-  parameters:
+# All none strings parameters
 
-    int:
-      nbr_classes: 5
-      #number of cell classes 
+  parameters:                          # --- parent key, DO NOT FILL this line 
 
-    bool:
-      calculate_pq: False 
-      # Calculate or not panoptic quality
+    int:                               # --- parent key, DO NOT FILL this line 
 
-      calculate_confusion: True 
-      # Calculate or not confusion matrix
+      nbr_classes: 5                   # Number of cell classes predicted by SCC Hovernet. Default: 5 [int]
 
-      create_classmap: False
-      # Generate class map from class vector output of Hovernet 
+    bool:                              # --- parent key, DO NOT FILL this line 
+
+      calculate_pq: True               # Calculate or not panoptic quality. Default: True [bool]
+     
+      calculate_confusion: True        # Calculate or not confusion matrix. Default: True [bool]
+    
+      create_classmap: True            # Generate or not class map from class vector output of Hovernet. Default: True [bool]
+       
