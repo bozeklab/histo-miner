@@ -104,16 +104,31 @@ These files are:
 -> Under construction: `Final version on 15/05/25 or before`
 
 
-Here we present how to use histo-miner code. A complete end-to-end example is also included in next paragraph to facilitate usage.
+Here we present how to use histo-miner code. **A complete end-to-end example is also included in next paragraph to facilitate usage.**
 
 
 ### Models inference: nucleus segmentation and classification
 
+Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above. 
+
+- Download the SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets))
+- Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference
+- Run: `sh scripts/main1_hovernet_inference.sh`
+- Run: `sh scripts/main2_segmenter_inference.sh`
+- Put both inference outputs on the same folder, add the path of this folder to `histo_miner_pipeline.yml` config file on the _inferences_postproc_main_ field
+- Run: `python scripts/main3_inferences_postproc.py`
+
+The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
+
 
 ### Models inference visualization
 
+Here we will explain how to visualize the nucleus segmentation and classification as shown in [Visualization](#visualization). 
+
 
 ### Tissue Analyser
+
+Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification.  It corresponds to step **(d)** from the figure above.
 
 
 ### Classification cSCC response to immunotherapy  
