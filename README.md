@@ -109,7 +109,7 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
   - [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
   - [Models inference visualization](#models-inference-visualization)
   - [Tissue Analyser](#tissue-analyser)
-  - [Classification cSCC response to immunotherapy](#classification-cscc-response-to-immunotherapy)
+  - [Classification cSCC response to immunotherapy](#classification-of-cscc-response-to-immunotherapy)
 - [Examples](#examples)
 
 
@@ -147,7 +147,7 @@ Here we will described how to calculate tissue relevant features based on the pr
 - Decide wich features to compute based on 
 
 
-### Classification cSCC response to immunotherapy  
+### Classification of cSCC response to immunotherapy  
 
 
 
