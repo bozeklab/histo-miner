@@ -107,7 +107,7 @@ These files are:
 Here we present how to use histo-miner code. **A complete end-to-end example is also included in next paragraph to facilitate usage.**
 
 
-### Models inference: nucleus segmentation and classification
+### Models inference: nucleus segmentation and classification _______________________
 
 Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above. 
 
@@ -121,7 +121,7 @@ Here we will described how to obtained nucleus segmentation and classification f
 The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
 
 
-### Models inference visualization
+### Models inference visualization _______________________
 
 Here we will explain how to visualize the nucleus segmentation and classification as shown in [Visualization](#visualization). 
 
@@ -132,7 +132,7 @@ Here we will explain how to visualize the nucleus segmentation and classificatio
 You can use the 2 conversion scripts to make navigation easy. In fact, detections object are lighter than annotation in QuPath and `convert_annotation_to_detection.groovy` will allow for easier navigation. 
 
 
-### Tissue Analyser
+### Tissue Analyser _______________________
 
 Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification.  It corresponds to step **(d)** from the figure above.
 
@@ -141,7 +141,7 @@ Here we will described how to calculate tissue relevant features based on the pr
 - Decide wich features to compute based on 
 
 
-### Classification cSCC response to immunotherapy  
+### Classification cSCC response to immunotherapy  _______________________
 
 
 
