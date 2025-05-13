@@ -106,11 +106,11 @@ These files are:
 Here we present how to use histo-miner code. **A complete end-to-end example is also included in next paragraph to facilitate usage.**
 
 - [Usage](#Usage)
-  - [Models inference: nucleus segmentation and classification](#models-inference- nucleus-segmentation-and-classification)
+  - [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
   - [Models inference visualization](#models-inference-visualization)
   - [Tissue Analyser](#tissue-analyser)
   - [Classification cSCC response to immunotherapy](#classification-cscc-response-to-immunotherapy)
-- [Example](#example)
+- [Examples](#examples)
 
 
 ### Models inference: nucleus segmentation and classification 
