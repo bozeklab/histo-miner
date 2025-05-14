@@ -52,8 +52,7 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 </div>
 
-<p style="text-align: center;">SCC Hovernet and SCC Segmenter nucleus segmentation and classification<br> visualization (step <b>(c)</b> from figure above).</b> 
-</p>
+<p style="text-align: center;">SCC Hovernet and SCC Segmenter nucleus segmentation and classification <br> visualization (step <b>(c)</b> from figure above).</p>
 
 
 
@@ -117,13 +116,8 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
 
 ### Models inference: nucleus segmentation and classification 
 
-
 Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above.
 
-<details>
-<summary> Click to unfold:
-</summary> 
-</br>
 - Download the SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets))
 - Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference,
 - Run: `sh scripts/main1_hovernet_inference.sh`,
@@ -132,8 +126,6 @@ Here we will described how to obtained nucleus segmentation and classification f
 - Run: `python scripts/main3_inferences_postproc.py`.
 
 The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
-
-</details>
 
 
 ### Models inference visualization 
