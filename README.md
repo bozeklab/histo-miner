@@ -1,14 +1,14 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
-
 <div align="center">
+
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)  
 
 </div>
 
+
+
 <br>
-
-
 This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://www.arxiv.org/abs/2505.04672) paper.
 
 
@@ -53,8 +53,7 @@ _Note:_ Use the slider to fully read the comments for each section.
 </div>
 
 <div align="center">
-SCC Hovernet and SCC Segmenter nucleus segmentation and classification visualization (step <b>(c)</b> from figure above)
-
+&nbsp &nbsp &nbsp SCC Hovernet and SCC Segmenter nucleus segmentation and classification visualization (step <b>(c)</b> from figure above)
 </div>
 
 
