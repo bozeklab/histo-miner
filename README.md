@@ -117,11 +117,13 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
 
 ### Models inference: nucleus segmentation and classification 
 
-<details>
-  
-<summary> Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above:
-</summary> 
 
+Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above.
+
+<details>
+<summary> Click to unfold:
+</summary> 
+</br>
 - Download the SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets))
 - Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference,
 - Run: `sh scripts/main1_hovernet_inference.sh`,
