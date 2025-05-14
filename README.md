@@ -56,7 +56,7 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 
 <center>
-SCC Hovernet and SCC Segmenter nucleus segmentation and classification 
+SCC Hovernet and SCC Segmenter nucleus segmentation and classification <br> 
 output visualization (step **(c)** from figure above).
 </center>
 
@@ -147,16 +147,26 @@ You can use the 2 conversion scripts to make navigation easy. In fact, detection
 Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification. It corresponds to step **(d)** from the figure above.
 
 - First follow the steps from "Models inference: nucleus segmentation and classification"
-- Add the paths to the folder containing the jsons (_tissue_analyser_main_ setting) and the path the output folder (_tissue_analyser_output_ setting) in the  `histo_miner_pipeline.yml` config file
+- Add the paths to the folder containing the segmentation jsons (_tissue_analyser_main_ setting) and the path the output folder (_tissue_analyser_output_ setting) in the  `histo_miner_pipeline.yml` config file
 - Decide wich features to compute based on the choice of _calculate_morphologies_ , _calculate_vicinity_ and _calculate_distances_ boolean parameters in  `histo_miner_pipeline.yml` config file
 - Run: 'python scripts/main4_tissue_analyser.py'
 
 The structured json files obtained contain the features values computed.
 
 
-### Classification of cSCC response to immunotherapy  
+### Classification of cSCC response to immunotherapy with paper feature selection   
+
+Here we perform binary classification of WSI with tumor region into responder and non-responder to a futur immunotherapy (CPI) treatment. We will use the same selected feature as in the paper. 
+
+- First follow the steps from "Models inference: nucleus segmentation and classification" and "Tissue Analyser"
+- Add the paths to the folder containing the features jsons (_tissue_analyser_output_ setting) and the path to the post-processed ffeatures output folder (_featarray_folder_ setting) in the  `histo_miner_pipeline.yml` config file
+- Run: ``
 
 
+
+### Classification of cSCC response to immunotherapy with custom feature selection
+
+Here we perform binary classification of WSI with tumor region into responder and non-responder to a futur immunotherapy (CPI) treatment. We will perform a new feature selection to fit more with our dataset.
 
 
 
@@ -165,7 +175,6 @@ The structured json files obtained contain the features values computed.
 ## Examples 
 
 -> Under construction: `Available on 22/05/25 or before` 
--> Config folder will also be improved for this date 
 
 
 ## Datasets
