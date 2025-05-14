@@ -2,7 +2,6 @@
 
 
 <div align="center">
-
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)  
 
 </div>
@@ -40,8 +39,7 @@ Here is an explanation of the project structure:
 │   │   ├── hover-net                # hover-net submodule, simplification of original code to fit histo-miner needs
 │   │   ├── mmsegmentation           # segmenter submodule, simplification of original code to fit histo-miner needs
 ├── supplements                      # Mathematica notebook for probability of distance overestimaiton calculation
-├── visualization                    # Both python and groovy scripts to either reproduce paper figures or to vizualize model inference with qupath   
-
+├── visualization                    # Both python and groovy scripts to either reproduce paper figures or to vizualize model inference with qupath   s
 ```
 
 _Note:_ Use the slider to fully read the comments for each section. 
@@ -54,11 +52,10 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 </div>
 
+<p style="text-align: center;">SCC Hovernet and SCC Segmenter nucleus segmentation and classification<br> visualization (step <b>(c)</b> from figure above).</b> 
+</p>
 
-<center>
-SCC Hovernet and SCC Segmenter nucleus segmentation and classification <br> 
-output visualization (step **(c)** from figure above).
-</center>
+
 
 
 ## Installation
@@ -90,7 +87,7 @@ conda env create -f src/models/mmsegmentation/mmsegmentation_submodule.yml
 conda activate mmsegmentation_submodule
 pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
 conda deactivate
-``` 
+```
 
 If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. The installation can take some time, especially for `conda install -c conda-forge openslide` and `pip install torch` commands.
 
@@ -115,13 +112,15 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
   - [Tissue Analyser](#tissue-analyser)
   - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
   - [Classification of cSCC response to immunotherapy with custom feature selection](#classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
-
 - [Examples](#examples)
 
 
 ### Models inference: nucleus segmentation and classification 
 
-Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above. 
+<details>
+  
+<summary> Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above:
+</summary> 
 
 - Download the SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets))
 - Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference,
@@ -131,6 +130,8 @@ Here we will described how to obtained nucleus segmentation and classification f
 - Run: `python scripts/main3_inferences_postproc.py`.
 
 The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
+
+</details>
 
 
 ### Models inference visualization 
@@ -162,7 +163,7 @@ Here we perform binary classification of WSI with tumor region into responder an
 
 
 - First follow the steps from "Models inference: nucleus segmentation and classification" and "Tissue Analyser",
-- Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)). We will use these selected features to do our classification later on,
+- Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)). We will use these pre-defined selected features to do our classification later on,
 - Add the paths to the folder containing the features jsons (_tissue_analyser_output_ setting) and the path to the post-processed features output folder (_featarray_folder_ setting) in the  `histo_miner_pipeline.yml` config file,
 - Run: `python scripts/usecase1_collect_features_consistently.py` to create one matrix with all samples feature,
 - _Writting of next steps in progress_ 
