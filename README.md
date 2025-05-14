@@ -54,7 +54,10 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 </div>
 
+
+<center>
 SCC Hovernet and SCC Segmenter nucleus segmentation and classificationoutput visualization (step **(c)** from figure above).
+</center>
 
 
 ## Installation
@@ -121,7 +124,7 @@ Here we will described how to obtained nucleus segmentation and classification f
 - Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference
 - Run: `sh scripts/main1_hovernet_inference.sh`
 - Run: `sh scripts/main2_segmenter_inference.sh`
-- Put both inference outputs on the same folder, add the path of this folder to `histo_miner_pipeline.yml` config file on the _inferences_postproc_main_ field
+- Put both inference outputs on the same folder, add the path of this folder to `histo_miner_pipeline.yml` config file on the _inferences_postproc_main_ setting
 - Run: `python scripts/main3_inferences_postproc.py`
 
 The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
@@ -131,23 +134,29 @@ The json files finally obtained contain the nucleus classified and segmented for
 
 Here we will explain how to visualize the nucleus segmentation and classification as shown in [Visualization](#visualization). 
 
-- Put the json file of nucleus segmentation and classification obtained previsouly and the corresponding input WSI in the same folder, and rename if needed that they both have the same name (only extension change). You can use symbolic links to avoid copying.
+- Put the json file of nucleus segmentation and classification obtained previsouly and the corresponding input WSI in the same folder, and rename if needed that they both have the same name (only extension change). You can use symbolic links to avoid copying
 - Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/)
-- Open the script editor (Automate menu on top), select the `/visualization/qupath_scripts/open_annotations_SCC_Classes.groovy` file and run it.
+- Open the script editor (Automate menu on top), select the `/visualization/qupath_scripts/open_annotations_SCC_Classes.groovy` file and run it
 
 You can use the 2 conversion scripts to make navigation easy. In fact, detections object are lighter than annotation in QuPath and `convert_annotation_to_detection.groovy` will allow for easier navigation. 
 
 
 ### Tissue Analyser 
 
-Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification.  It corresponds to step **(d)** from the figure above.
+Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification. It corresponds to step **(d)** from the figure above.
 
-- First follow the steps from "Models inference: nucleus segmentation and classification". 
-- Add the paths to the folder containing the jsons (_tissue_analyser_main_ field) and the path the output folder (_tissue_analyser_output_ field) in the  `histo_miner_pipeline.yml` config file.
-- Decide wich features to compute based on 
+- First follow the steps from "Models inference: nucleus segmentation and classification"
+- Add the paths to the folder containing the jsons (_tissue_analyser_main_ setting) and the path the output folder (_tissue_analyser_output_ setting) in the  `histo_miner_pipeline.yml` config file
+- Decide wich features to compute based on the choice of _calculate_morphologies_ , _calculate_vicinity_ and _calculate_distances_ boolean parameters in  `histo_miner_pipeline.yml` config file
+- Run: 'python scripts/main4_tissue_analyser.py'
+
+The structured json files obtained contain the features values computed.
 
 
 ### Classification of cSCC response to immunotherapy  
+
+
+
 
 
 

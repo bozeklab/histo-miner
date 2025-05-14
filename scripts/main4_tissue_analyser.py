@@ -29,6 +29,7 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
 pathanalyserout = config.paths.folders.tissue_analyser_output
+calculate_morphologies = config.parameters.bool.calculate_morphologies
 calculate_vicinity = config.parameters.bool.calculate_vicinity
 calculate_distances = config.parameters.bool.calculate_distances
 maskmap_downfactor = config.parameters.int.maskmap_downfactor
@@ -135,30 +136,34 @@ for jsonfile in jsonfiles:
         print('cells_inregion_dict generated as follow:', cells_inregion_dict)
 
         # Calculation of morphology features -----
-        if calculate_vicinity:
-            # Temporary test to modify!
-            morph_inregion_dict = analyser.morph_classandmargin_classjson(
-                                                            maskmappath, 
-                                                            jsonfile,
-                                                            selectedcls_ratio,
-                                                            selectedcls_ratiovic,
-                                                            maskmapdownfactor=maskmap_downfactor,
-                                                            classnameaskey=classnames,
-                                                            tumormargin=default_tumormargin
-                                                            )
-        
-        else:
-            morph_inregion_dict = analyser.morph_insidemask_classjson(
-                                                            maskmappath, 
-                                                            jsonfile, 
-                                                            selectedcls_ratio,
-                                                            maskmapdownfactor=maskmap_downfactor,
-                                                            classnameaskey=classnames
-                                                            )
+        morph_inregion_dict = dict()
 
-        print('morph_inregion_dict generated!')
-        # a bit too large to pring: print('morph_inregion_dict generated as follow:', morph_inregion_dict)
-        
+        if calculate_morphologies:
+
+            if calculate_vicinity:
+                
+                morph_inregion_dict = analyser.morph_classandmargin_classjson(
+                                                                maskmappath, 
+                                                                jsonfile,
+                                                                selectedcls_ratio,
+                                                                selectedcls_ratiovic,
+                                                                maskmapdownfactor=maskmap_downfactor,
+                                                                classnameaskey=classnames,
+                                                                tumormargin=default_tumormargin
+                                                                )
+            
+            else:
+                morph_inregion_dict = analyser.morph_insidemask_classjson(
+                                                                maskmappath, 
+                                                                jsonfile, 
+                                                                selectedcls_ratio,
+                                                                maskmapdownfactor=maskmap_downfactor,
+                                                                classnameaskey=classnames
+                                                                )
+    
+            print('morph_inregion_dict generated!')
+            # a bit too large to pring: print('morph_inregion_dict generated as follow:', morph_inregion_dict)
+            
         
         # Distance calculation --------
         # Needs to create an empty dict even if the distances are not calculated

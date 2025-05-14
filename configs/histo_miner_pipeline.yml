@@ -63,6 +63,8 @@
 
     bool:                                        # --- parent key, DO NOT FILL this line.
  
+      calculate_morphologies: True               # Allow or not to calculate nucleus morphology related features while running tissue analyser. Default: True [bool]
+
       calculate_vicinity: True                   # Allow or not to calculate features for cells in the tumor vicinity while running tissue analyser. Default: True [bool]
 
       calculate_distances: False                 # Allow or not to calculate distance related features while running tissue analyser. If True, this will considerably increase the time to run main4_tissue_analyser.py. Default: False [bool]
