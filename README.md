@@ -56,7 +56,8 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 
 <center>
-SCC Hovernet and SCC Segmenter nucleus segmentation and classificationoutput visualization (step **(c)** from figure above).
+SCC Hovernet and SCC Segmenter nucleus segmentation and classification 
+output visualization (step **(c)** from figure above).
 </center>
 
 
