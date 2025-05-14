@@ -54,7 +54,7 @@ _Note:_ Use the slider to fully read the comments for each section.
 
 <div align="center">
 SCC Hovernet and SCC Segmenter nucleus segmentation and classification visualization 
-(step <b>(c)</b> from figure above) 
+<br> (step <b>(c)</b> from figure above) 
 </div>
 
 
