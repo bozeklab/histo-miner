@@ -7,8 +7,8 @@
 </div>
 
 
-
 <br>
+
 This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://www.arxiv.org/abs/2505.04672) paper.
 
 
@@ -103,14 +103,12 @@ These files are:
 
 ## Usage
 
-`Final version on 15/05/25`
-
 This section explains how to use the Histo-Miner code. **A complete end-to-end example is also included to help you get started.**
 
 
 ---
 
-### Quick Navigation
+### 🔗 Quick Navigation
 
 - [Usage](#Usage)
   - [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
@@ -177,7 +175,7 @@ Visualize the nucleus segmentation and classification as shown in the [Visualiza
 
 ### Tissue Analyser 
 
-This step computes tissue-relevant features based on previously obtained nucleus segmentations — corresponding to step **(d)** in the figure.
+This step computes tissue-relevant features based on previously obtained nucleus segmentations — corresponding to step **(d)** in the figure above.
 
 1. Complete the "Models inference" step.
 2. Update the following paths in `histo_miner_pipeline.yml`:
