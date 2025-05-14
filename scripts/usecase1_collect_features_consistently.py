@@ -32,7 +32,6 @@ cohortid_csv = config.paths.files.cohortid_csv
 patientid_csv = config.paths.files.patientid_csv
 cohortid_avail = config.parameters.bool.cohortid_avail
 patientid_avail = config.parameters.bool.patientid_avail
-perpatient_feat = config.parameters.bool.perpatient_feat
 calculate_vicinity = config.parameters.bool.calculate_vicinity
 redundant_feat_names = list(config.parameters.lists.redundant_feat_names)
 

@@ -105,7 +105,7 @@ These files are:
 
 ## Usage
 
--> Under construction: `Final version on 15/05/25 or before`
+`Final version on 15/05/25`
 
 Here we present how to use histo-miner code. **A complete end-to-end example is also included in next paragraph to facilitate usage.**
 
@@ -113,7 +113,9 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
   - [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
   - [Models inference visualization](#models-inference-visualization)
   - [Tissue Analyser](#tissue-analyser)
-  - [Classification cSCC response to immunotherapy](#classification-of-cscc-response-to-immunotherapy)
+  - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
+  - [Classification of cSCC response to immunotherapy with custom feature selection](#classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
+
 - [Examples](#examples)
 
 
@@ -122,11 +124,11 @@ Here we present how to use histo-miner code. **A complete end-to-end example is 
 Here we will described how to obtained nucleus segmentation and classification from your input WSI. It corresponds to steps **(a), (b), (c)** from the figure above. 
 
 - Download the SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets))
-- Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference
-- Run: `sh scripts/main1_hovernet_inference.sh`
-- Run: `sh scripts/main2_segmenter_inference.sh`
-- Put both inference outputs on the same folder, add the path of this folder to `histo_miner_pipeline.yml` config file on the _inferences_postproc_main_ setting
-- Run: `python scripts/main3_inferences_postproc.py`
+- Fill the models configs (`scc_hovernet.yml` and `scc_segmenter.yml`) to indicate the paths to the different files needed and the number of gpus used for inference,
+- Run: `sh scripts/main1_hovernet_inference.sh`,
+- Run: `sh scripts/main2_segmenter_inference.sh`,
+- Put both inference outputs on the same folder, add the path of this folder to `histo_miner_pipeline.yml` config file on the _inferences_postproc_main_ setting,
+- Run: `python scripts/main3_inferences_postproc.py`.
 
 The json files finally obtained contain the nucleus classified and segmented for all WSIs of the input folder. 
 
@@ -135,9 +137,9 @@ The json files finally obtained contain the nucleus classified and segmented for
 
 Here we will explain how to visualize the nucleus segmentation and classification as shown in [Visualization](#visualization). 
 
-- Put the json file of nucleus segmentation and classification obtained previsouly and the corresponding input WSI in the same folder, and rename if needed that they both have the same name (only extension change). You can use symbolic links to avoid copying
-- Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/)
-- Open the script editor (Automate menu on top), select the `/visualization/qupath_scripts/open_annotations_SCC_Classes.groovy` file and run it
+- Put the json file of nucleus segmentation and classification obtained previsouly and the corresponding input WSI in the same folder, and rename if needed that they both have the same name (only extension change). You can use symbolic links to avoid copying,
+- Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/),
+- Open the script editor (Automate menu on top), select the `/visualization/qupath_scripts/open_annotations_SCC_Classes.groovy` file and run it.
 
 You can use the 2 conversion scripts to make navigation easy. In fact, detections object are lighter than annotation in QuPath and `convert_annotation_to_detection.groovy` will allow for easier navigation. 
 
@@ -146,29 +148,38 @@ You can use the 2 conversion scripts to make navigation easy. In fact, detection
 
 Here we will described how to calculate tissue relevant features based on the previously obtained nucleus segmentation and classification. It corresponds to step **(d)** from the figure above.
 
-- First follow the steps from "Models inference: nucleus segmentation and classification"
-- Add the paths to the folder containing the segmentation jsons (_tissue_analyser_main_ setting) and the path the output folder (_tissue_analyser_output_ setting) in the  `histo_miner_pipeline.yml` config file
-- Decide wich features to compute based on the choice of _calculate_morphologies_ , _calculate_vicinity_ and _calculate_distances_ boolean parameters in  `histo_miner_pipeline.yml` config file
-- Run: 'python scripts/main4_tissue_analyser.py'
+- First follow the steps from "Models inference: nucleus segmentation and classification",
+- Add the paths to the folder containing the segmentation jsons (_tissue_analyser_main_ setting) and the path the output folder (_tissue_analyser_output_ setting) in the  `histo_miner_pipeline.yml` config file,
+- Decide wich features to compute based on the choice of _calculate_morphologies_ , _calculate_vicinity_ and _calculate_distances_ boolean parameters in  `histo_miner_pipeline.yml` config file,
+- Run: 'python scripts/main4_tissue_analyser.py'.
 
 The structured json files obtained contain the features values computed.
 
 
-### Classification of cSCC response to immunotherapy with paper feature selection   
+### Classification of cSCC response to immunotherapy with pre-defined feature selection   
 
-Here we perform binary classification of WSI with tumor region into responder and non-responder to a futur immunotherapy (CPI) treatment. We will use the same selected feature as in the paper. 
+Here we perform binary classification of WSI with tumor region into responder and non-responder to a futur immunotherapy (CPI) treatment. We will use the same selected feature as in the Histo-Miner paper. 
 
-- First follow the steps from "Models inference: nucleus segmentation and classification" and "Tissue Analyser"
-- Add the paths to the folder containing the features jsons (_tissue_analyser_output_ setting) and the path to the post-processed ffeatures output folder (_featarray_folder_ setting) in the  `histo_miner_pipeline.yml` config file
-- Run: ``
 
+- First follow the steps from "Models inference: nucleus segmentation and classification" and "Tissue Analyser",
+- Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)). We will use these selected features to do our classification later on,
+- Add the paths to the folder containing the features jsons (_tissue_analyser_output_ setting) and the path to the post-processed features output folder (_featarray_folder_ setting) in the  `histo_miner_pipeline.yml` config file,
+- Run: `python scripts/usecase1_collect_features_consistently.py` to create one matrix with all samples feature,
+- _Writting of next steps in progress_ 
 
 
 ### Classification of cSCC response to immunotherapy with custom feature selection
 
 Here we perform binary classification of WSI with tumor region into responder and non-responder to a futur immunotherapy (CPI) treatment. We will perform a new feature selection to fit more with our dataset.
 
-
+- First follow the steps from "Models inference: nucleus segmentation and classification" and "Tissue Analyser",
+- Add the paths to the folder containing the features jsons (_tissue_analyser_output_ setting) and the path to the post-processed features output folder (_featarray_folder_ setting) in the  `histo_miner_pipeline.yml` config file,
+- Run: `python scripts/usecase1_collect_features_consistently.py` to create one matrix with all samples feature,
+- Choose which feature selection method you want to compute based on the scripts in `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`,
+- Add the path to the folder to output cross-validation evaluation (_classification_evaluation_ setting) and choose its name (_eval_folder_ setting) in `histo_miner_pipeline.yml` config file. Optionnaly you can also modify `classification.yml` config file to add/modify any custom parameters,
+- Run 'python scripts/cross_validation/name_of_choosen_method.py',
+- In the folder `infofiles` newly created as output, you will find a .txt file with selected feature names.
+- _Writting of next steps in progress_ 
 
 
 

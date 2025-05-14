@@ -5,9 +5,9 @@
 # All parameters of string names
   names:
     # run_name: "nestedcross_rec_directmunich"
-    run_name: "preprint_CPI_defaultHPs"
+    run_name: "run_1"
 
-    trained_model: "35s_Bonn_nomorph"
+    trained_model: "model_1"
 
 # All not strings parameters
   parameters:
@@ -129,11 +129,9 @@
       n_estimators: 100
       # number of boosting iterations, should be = number of trees in the forest
       # default value: 100
-      # first test: 80
 
       learning_rate:  0.3
       # default value: 0.3
-      # first test: 0.1
 
       objective: 'binary:logistic'
       # choice to take for binary classification
@@ -164,19 +162,15 @@
       n_estimators: 100
       # number of boosting iterations, should be = number of trees in the forest
       # default value: 100
-      # first test: 120
 
       learning_rate: 0.1
       # default value: 0.1
-      # first test: 0.01
 
       objective: 'binary'
       # choice to take for binary classification
 
       num_leaves: 31
       # default value: 31
-      # second test: 20
-      # first test: 2
 
       grid_dict: 
             random_state: [0, 42, 84]
