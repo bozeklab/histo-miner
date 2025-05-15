@@ -28,18 +28,18 @@ Here is an explanation of the project structure:
 
 ```bash
 ├── configs                          # All configs file with explanations
-│   ├── models                       # example configs for both models inference
+│   ├── models                       # Configs for both models inference
 │   ├── classification_training      # Configs for classifier training 
-│   ├── histo_miner_pipeline         # Configs for the core code of histo-minerent
-├── docs                             # Documentation files (in addition to this main README.md)
-├── scripts                          # Main code for users to run Histo-Miner 
+│   ├── histo_miner_pipeline         # Configs for the core code of histo-miner
+├── docs                             # Images and Videos files
+├── scripts                          # Main code for users to run histo-miner 
 ├── src                              # Functions used for scripts
-│   ├── histo-miner                  # All functions from the core code (everything except deep learning)
+│   ├── histo-miner                  # All functions from the core code
 │   ├── models                       # Submodules of models for inference and training
-│   │   ├── hover-net                # hover-net submodule, simplification of original code to fit histo-miner needs
-│   │   ├── mmsegmentation           # segmenter submodule, simplification of original code to fit histo-miner needs
+│   │   ├── hover-net                # hover-net submodule
+│   │   ├── mmsegmentation           # segmenter submodule
 ├── supplements                      # Mathematica notebook for probability of distance overestimaiton calculation
-├── visualization                    # Both python and groovy scripts to either reproduce paper figures or to vizualize model inference with qupath   s
+├── visualization                    # Both python and groovy scripts to either reproduce paper figures or to vizualize model inference with qupath   
 ```
 
 _Note:_ Use the slider to fully read the comments for each section. 
@@ -204,12 +204,12 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)).
 3. Update the following paths in `histo_miner_pipeline.yml`:
-  - `tissue_analyser_output", folder containing the tissue analyser output JSONs with correct naming (see next point)
+  - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see next point)
   - `featarray_folder`, folder to the feature matrix output 
 4. Ensure to have "no_response" or "response" caracters in the name of the training json files. For instance 'sample_1_response_analysed.json'.
 5. To generate the combined feature matrix and class vectors, run:
   ```bash
-  python scripts/usecase1_collect_features_consistently.py` 
+  python scripts/usecase1_collect_features_consistently.py
   ```
 6. _Writting of next steps in progress, available within the week (13-17/05/25)_ 
 
@@ -226,17 +226,21 @@ This version performs classification using a new feature selection tailored to y
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Update the following paths in `histo_miner_pipeline.yml`:
-  - `tissue_analyser_output", folder containing the tissue analyser output JSONs with correct naming (see next point)
+  - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see next point)
   - `featarray_folder`, folder to the feature matrix output 
 3. Ensure to have "no_response" or "response" caracters in the name of the training json files. For instance 'sample_1_response_analysed.json'.
 4. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`
-5. Update `histo_miner_pipeline.yml` config:
+5. To generate the combined feature matrix and class vectors, run:
+  ```bash
+  python scripts/usecase1_collect_features_consistently.py
+  ```
+6. Update `histo_miner_pipeline.yml` config:
    - `classification_evaluation`, path to folder to output cross-validation evaluation
    - `eval_folder`, name of the folder 
    Optionally update `classification.yml` for custom parameters.
-6. Run the selected feature selection
-7. Find the selected feature names in the `.txt` file inside the generated `infofiles/` folder.
-8. _Writting of next steps in progress, available within the week (13-17/05/25)_  
+7. Run the selected feature selection
+8. Find the selected feature names in the `.txt` file inside the generated `infofiles/` folder.
+9. _Writting of next steps in progress, available within the week (13-17/05/25)_  
 
 **Output**: Prediction of responder bs non-responder class for each WSI. 
 

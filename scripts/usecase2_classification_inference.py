@@ -33,7 +33,6 @@ with open("./../configs/classification.yml", "r") as f:
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
 model_name = config.names.trained_model
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures #see if we remove it
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
@@ -190,26 +189,4 @@ else:
         ' Model path entered is {}. The feature selected folder entered is {}'
         .format(model_path, featsel_folder)
         )
-
-
-
-
-
-# DO in a second time
-#### Classification  with all features kept 
-
-# if classification_from_allfeatures:
-#     # Load test data (no feature selection)
-#     inf_globfeatarray = np.transpose(inf_featarray)
-
-#     # Predict the labels for new data
-#     ##### nameofmodel
-#     if os.path.exists(pathnameofmodel_vanilla):
-#         nameofmodel_vanilla = joblib.load(pathnameofmodel_vanilla)
-#         if displayclass_pred:
-#             nameofmodel_vanilla_pred = nameofmodel_vanilla.predict(inf_globfeatarray)
-#             print('nameofmodel_pred : {}'.format(nameofmodel_vanilla_pred))
-#         if displayclass_score:
-#             print("Accuracy of nameofmodel classifier:",
-#               nameofmodel_vanilla.score(inf_globfeatarray, inf_clarray))
 

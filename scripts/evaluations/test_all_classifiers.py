@@ -25,7 +25,6 @@ with open("./../configs/histo_miner_pipeline.yml", "r") as f:
 config = attributedict(config)
 pathtofolder = config.paths.folders.tissue_analyser_main
 nbr_keptfeat = config.parameters.int.nbr_keptfeat
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 
 
 ############################################################
@@ -107,49 +106,6 @@ print('Loading done.')
 ############ TO ADD
 # Add calculation of balanced accuracy to every inference
 ###################
-
-#### Classification training with all features kept 
-
-if classification_from_allfeatures:
-    # Load test data (no feature selection)
-    eval_globfeatarray = np.transpose(eval_featarray)
-
-    # Predict the labels for new data
-    ##### RIDGE CLASSIFIER
-    if os.path.exists(pathridge_vanilla):
-        ridge_vanilla = joblib.load(pathridge_vanilla)
-        # ridge_vanilla_pred = ridge_vanilla.predict(eval_globfeatarray)
-        # print('ridge_pred : {}'.format(ridge_vanilla_pred))
-        print("Accuracy of RIDGE classifier:",
-              ridge_vanilla.score(eval_globfeatarray, eval_clarray))
-    ##### LOGISTIC REGRESSION
-    if os.path.exists(pathlr_vanilla):
-        lr_vanilla = joblib.load(pathlr_vanilla)
-        # lr_vanilla_pred = lr_vanilla.predict(eval_globfeatarray)
-        # print('lr_pred : {}'.format(lr_vanilla_pred))
-        print("Accuracy of LOGISTIC classifier:",
-              lr_vanilla.score(eval_globfeatarray, eval_clarray))
-    ##### RANDOM FOREST
-    if os.path.exists(pathforest_vanilla):
-        forest_vanilla = joblib.load(pathforest_vanilla)
-        # forest_vanilla_pred = forest_vanilla.predict(eval_globfeatarray)
-        # print('forest_pred : {}'.format(forest_vanilla_pred))
-        print("Accuracy of RANDOM FOREST classifier:",
-              forest_vanilla.score(eval_globfeatarray, eval_clarray))
-    ##### XGBOOST
-    if os.path.exists(pathxgboost_vanilla):
-        xgboost_vanilla = joblib.load(pathxgboost_vanilla)
-        # xgboost_vanilla_pred = xgboost_vanilla.predict(eval_globfeatarray)
-        # print('xgboost_pred : {}'.format(xgboost_vanilla_pred))
-        print("Accuracy of XGBOOST classifier:",
-              xgboost_vanilla.score(eval_globfeatarray, eval_clarray))
-    ##### LIGHT GBM
-    if os.path.exists(pathlgbm_vanilla):
-        lgbm_vanilla = joblib.load(pathlgbm_vanilla)
-        # lgbm_vanilla_pred = lgbm_vanilla.predict(eval_globfeatarray)
-        # print('lgbm_pred : {}'.format(lgbm_vanilla_pred))
-        print("Accuracy of LIGHT GBM classifier:",
-              lgbm_vanilla.score(eval_globfeatarray, eval_clarray))
 
 
 #### Parse the featarray to the class SelectedFeaturesMatrix 

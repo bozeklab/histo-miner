@@ -1,91 +1,81 @@
 
-# Could be just classifiation the name of file becasue I think it is not 
-# used only for training (to check)
+# All path and names related parameters 
+  
+  paths:                                           # --- parent key, DO NOT FILL this line
 
-# All parameters of string names
-  names:
-    # run_name: "nestedcross_rec_directmunich"
-    run_name: "run_1"
+    folders:                                       # --- parent key, DO NOT FILL this line
 
-    trained_model: "model_1"
+      save_trained_model:                          # Path to the folder to save trained classification model [str]
 
-# All not strings parameters
-  parameters:
-    bool:
+      inference_input:                             # Path to the folder containing input WSI for classiciation inference [str]
+ 
+    files:                                         # --- parent key, DO NOT FILL this line
 
-      classification_from_allfeatures: True
+      feature_selection_file:                      # Path to the feature selection file, for either pre-defined or custom feature selection [str]                               
 
-      run_classifiers:
-        ridge: False
+  names:                                           # --- parent key, DO NOT FILL this line
 
-        logistic_regression: False
+    run_name: "run_1"                              # Name of the training run. Default: "run_1"  [str]
 
-        random_forest: False
+    trained_model: "model_1"                       # Name of the trained model: Default: "model_1"  [str]
 
-        xgboost: True 
+# All none strings parameters 
 
-        light_gbm: False                                                 
+  parameters:                                      # --- parent key, DO NOT FILL this line
 
-      save_evaluations: True
+    bool:                                          # --- parent key, DO NOT FILL this line
 
-      search_bestsplit: False
+      predefined_feature_selection: True           # Choose to use the same selected features as is in the paper (True) or to run a custom feature selection (False). Default: True [bool] 
 
-      display_classification_predictions: True 
+      display_classification_predictions: True     # Display or not the classification prediction in the terminal while running classification inference. Default: True [bool]                         
 
-      display_classification_scores: True
+      display_classification_scores: True          # Display or not the classification scores in the terminal while running classification inference. Default: True [bool]
 
+      run_classifiers:                             # --- parent key, DO NOT FILL this line
 
-    int:
-      nbr_of_splits: 3
+        xgboost: True                              # If True: choose xgboost as classifier model for training and inference. Then light_gbm needs to be set on False. Default: True [bool] 
 
-      nestedcross_inner_splits: 3
+        light_gbm: False                           # If True: choose light gbm as classifier model for training and inference. Then xgboost needs to be set on False. Default: False [bool]                         
 
+    int:                                           # --- parent key, DO NOT FILL this line
 
-# Classifiers parameters
+      nbr_of_splits: 3                             # Number of spits used to perform cross validation. Default: 3 [int]
+
+      nestedcross_inner_splits:                    # Number of nested splits used to perform nested cross validation (not used in the paper) [int]
+
+# Classifiers parameters in case of grid search (not performed in paper analyses) - Then no docstring added
 
   classifierparam:
+    
     ridge:
-      # For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
       
       random_state: 0
 
       alpha:  0
-      # for best split: 0.1
-      # for best mean: 0
 
       grid_dict: 
+
           random_state: [0, 42, 84]
-          # random_state: [0, 42, 84]
-          # for dev: random_state: [0]
 
           alpha: [0, 0.1, 0.5, 1, 2, 4, 8, 16]
-          # alpha: [0, 0.1, 0.5, 1, 2, 4, 8, 16]
-          # for dev: [0, 8]
 
     logistic_regression:
-      # For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
+
       random_state: 0
 
       penalty: 'l2'
 
       solver: 'liblinear'
-      # choice for binary classification
 
       multi_class: 'ovr'
-      # choice for binary classification
 
       class_weight: 'balanced'
 
       grid_dict: 
+
           random_state: [0, 42, 84]
-          # random_state: [0, 42, 84]
-          # for dev: [0]
 
           penalty: ['l1', 'l2']
-          # penalty: ['l1', 'l2']
-          # for dev: ['l1', 'l2']
 
           solver: ['liblinear']
 
@@ -93,122 +83,94 @@
 
           class_weight: ['balanced']
 
-
     random_forest:
-      # For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
-      # #https://scikit-learn.org/stable/modules/linear_model.html
-      
+
       random_state: 84
-      # For best split 84
 
       n_estimators: 10
-      # The number of trees in the forest.
-      # For best split: 100
 
       class_weight: 'balanced'
 
       grid_dict: 
           random_state:  [0, 42, 84]
-          # random_state: [0, 42, 84]
-          # for dev: [0, 84]
 
           n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
-          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
-          # for dev: [60, 180]
 
           class_weight: ['balanced']
 
     xgboost:
-      # For more information on xgboost parameters check the documentation here:
-      # #https://xgboost.readthedocs.io/en/stable/parameter.html
-      # and
-      # #https://xgboost.readthedocs.io/en/stable/get_started.html
       
       random_state: 0
 
       n_estimators: 100
-      # number of boosting iterations, should be = number of trees in the forest
-      # default value: 100
 
       learning_rate:  0.3
-      # default value: 0.3
 
       objective: 'binary:logistic'
-      # choice to take for binary classification
 
       grid_dict:
+
           random_state: [0, 42]
-          # random_state: [0, 42, 84]
-          # for dev: [0]
 
           n_estimators: [20, 40, 60, 80, 100, 120, 160, 200]
-          # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
-          # for dev: [20, 100]
-         
+
           learning_rate: [0.001, 0.01, 0.1, 0.8, 1]
-          # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2]  
-          # for dev: [0.1, 1.2]
 
           objective: ['binary:logistic']
 
     light_gbm:
-      # For more information on light_gbm parameters check the documentation here:
-      # #https://lightgbm.readthedocs.io/en/stable/Parameters.html
-      # and
-      # #https://lightgbm.readthedocs.io/en/stable/Python-Intro.html
       
       random_state: 42
 
       n_estimators: 100
-      # number of boosting iterations, should be = number of trees in the forest
-      # default value: 100
 
       learning_rate: 0.1
-      # default value: 0.1
 
       objective: 'binary'
-      # choice to take for binary classification
 
       num_leaves: 31
-      # default value: 31
 
       grid_dict: 
+
             random_state: [0, 42, 84]
-            # random_state: [0, 42, 84]
-            # for dev: [0]
 
             n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
-            # n_estimators: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
-            # for dev: [40, 100]
 
             learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2] 
-            # learning_rate: [0.001, 0.01, 0.1, 0.8, 1, 1.2] 
-            # for dev: [0.8, 1.2]
 
             objective: ['binary']
 
             num_leaves: [2, 5, 10, 15, 20, 40]
-            # num_leaves: [2, 5, 10, 15, 20, 40]
-            # for dev: [10]
  
-
 
 # Boruta parameters
 
   borutaparam:
     boruta_max_depth: 1 
-    # high depth can prevent feature selection and return no feature
-    # low depth can be detrimental and lead to too many features selected 
 
     boruta_random_state: 0
 
 
 
+# high depth for Boruta can prevent feature selection and return no feature
+# low depth can be detrimental and lead to too many features selected 
 
+# For more information on the parameters check sklearn.linear_model.RidgeClassifier documentation
+# #https://scikit-learn.org/stable/modules/linear_model.html
 
+# For more information on the parameters check sklearn.linear_model.LogisticRegression documentation
+# #https://scikit-learn.org/stable/modules/linear_model.html
 
+# For more information on the parameters check sklearn.linear_model.RandomForestClassifier documentation
+# #https://scikit-learn.org/stable/modules/linear_model.html
 
+# For more information on xgboost parameters check the documentation here:
+# #https://xgboost.readthedocs.io/en/stable/parameter.html
+# and
+# #https://xgboost.readthedocs.io/en/stable/get_started.html
 
-
-
+# For more information on light_gbm parameters check the documentation here:
+# #https://lightgbm.readthedocs.io/en/stable/Parameters.html
+# and
+# #https://lightgbm.readthedocs.io/en/stable/Python-Intro.html
 

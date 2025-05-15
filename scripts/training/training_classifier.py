@@ -47,12 +47,18 @@ with open("./../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures # see if we remove it
-nbr_of_splits = config.parameters.int.nbr_of_splits
-training_model_name = config.names.trained_model
-run_name = config.names.run_name
+
+predefined_feature_selection = config.parameters.bool.predefined_feature_selection
+
+folder_output = config.paths.folders.save_trained_model
+featsel = config.paths.files.feature_selection_file
+
 run_xgboost = config.parameters.bool.run_classifiers.xgboost
 run_lgbm = config.parameters.bool.run_classifiers.light_gbm 
+training_model_name = config.names.trained_model
+run_name = config.names.run_name
+
+nbr_of_splits = config.parameters.int.nbr_of_splits
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators
@@ -75,10 +81,13 @@ lgbm_numleaves = config.classifierparam.light_gbm.num_leaves
 
 # Folder name to save models (might not be used)
 # remove the last folder from pah 
-rootmodelfolder = os.path.dirname(classification_eval_folder.rstrip(os.path.sep))
+rootmodelfolder = os.path.dirname(folder_output.rstrip(os.path.sep))
 modelfolder = rootmodelfolder + '/classification_models/'
 modelext = '.joblib'
 
+# Create folder is it doesn't exist yet
+if not os.path.exists(modelfolder):
+    os.makedirs(modelfolder)
 
 if run_xgboost and not run_lgbm:
     classifier_name = 'xgboost'
@@ -95,48 +104,72 @@ path_to_model = [
 path_to_model = str(path_to_model[0])
 
 
-############################################################
-## Load feature selection numpy files
-############################################################
-
-print('Load feature selection numpy files...')
-
-featsel_folder = classification_eval_folder + eval_folder_name + '/'
-ext = '.npy'
-
-
-# Load feature selection numpy files
-
-name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
-name_boruta_output = '_ba_boruta_' + str(nbr_of_splits) + 'splits_' + run_name 
-name_mannwhitneyu_output = '_ba_mannwhitneyu_' + str(nbr_of_splits) + 'splits_' + run_name 
-
-path_selfeat_mrmr = featsel_folder + 'topselfeatid_' + classifier_name  + name_mrmr_output + ext
-path_selfeat_boruta =  featsel_folder + 'topselfeatid_' + classifier_name  + name_boruta_output + ext
-path_selfeat_mannwhitneyu = featsel_folder + 'topselfeatid_' + classifier_name  + name_mannwhitneyu_output + ext
-
-
-# load the indexes fo the top features
-if os.path.exists(path_selfeat_mrmr):
-    selfeat_mrmr = np.load(path_selfeat_mrmr, allow_pickle=True)
-
-if os.path.exists(path_selfeat_boruta):
-    selfeat_boruta = np.load(path_selfeat_boruta, allow_pickle=True)
-
-if os.path.exists(path_selfeat_mannwhitneyu):
-    selfeat_mannwhitneyu = np.load(path_selfeat_mannwhitneyu, allow_pickle=True)
-
-print('Loading feature selected indexes done.')
 
 
 
-# !!! Kept given number of features
 
-if os.path.exists(path_selfeat_mrmr):
-    selfeat_mrmr_idx = selfeat_mrmr[0:nbr_keptfeat]
-if os.path.exists(path_selfeat_mannwhitneyu):
-    selfeat_mannwhitneyu_idx = selfeat_mrmr[0:nbr_keptfeat]
-print('Refinement of feature selected indexes done.')
+
+###################################################################
+## Load feature selection numpy files - for pred-defined selection
+###################################################################
+
+
+if predefined_feature_selection:
+    pass 
+
+
+
+
+
+###################################################################
+## Load feature selection numpy files - if custom feat selection
+###################################################################
+
+
+
+
+else:
+
+
+
+    print('Load feature selection numpy files...')
+
+    featsel_folder = classification_eval_folder + eval_folder_name + '/'
+    ext = '.npy'
+
+
+    # Load feature selection numpy files
+
+    name_mrmr_output = '_ba_mrmr_' + str(nbr_of_splits) + 'splits_' + run_name
+    name_boruta_output = '_ba_boruta_' + str(nbr_of_splits) + 'splits_' + run_name 
+    name_mannwhitneyu_output = '_ba_mannwhitneyu_' + str(nbr_of_splits) + 'splits_' + run_name 
+
+    path_selfeat_mrmr = featsel_folder + 'topselfeatid_' + classifier_name  + name_mrmr_output + ext
+    path_selfeat_boruta =  featsel_folder + 'topselfeatid_' + classifier_name  + name_boruta_output + ext
+    path_selfeat_mannwhitneyu = featsel_folder + 'topselfeatid_' + classifier_name  + name_mannwhitneyu_output + ext
+
+
+    # load the indexes fo the top features
+    if os.path.exists(path_selfeat_mrmr):
+        selfeat_mrmr = np.load(path_selfeat_mrmr, allow_pickle=True)
+
+    if os.path.exists(path_selfeat_boruta):
+        selfeat_boruta = np.load(path_selfeat_boruta, allow_pickle=True)
+
+    if os.path.exists(path_selfeat_mannwhitneyu):
+        selfeat_mannwhitneyu = np.load(path_selfeat_mannwhitneyu, allow_pickle=True)
+
+    print('Loading feature selected indexes done.')
+
+
+
+    # !!! Kept given number of features
+
+    if os.path.exists(path_selfeat_mrmr):
+        selfeat_mrmr_idx = selfeat_mrmr[0:nbr_keptfeat]
+    if os.path.exists(path_selfeat_mannwhitneyu):
+        selfeat_mannwhitneyu_idx = selfeat_mrmr[0:nbr_keptfeat]
+    print('Refinement of feature selected indexes done.')
 
 
 
@@ -203,25 +236,6 @@ lightgbm_clf = lightgbm.LGBMClassifier(random_state= lgbm_random_state,
 #RMQ: Verbosity is set to 0 for XGBOOST to avoid printing WARNINGS (not wanted here for sake of
 #simplicity)/ In Light GBM, to avoid showing WARNINGS, the verbosity as to be set to -1.
 # See parameters documentation to learn about the other verbosity available. 
-
-# ##### RIDGE CLASSIFIER
-# ridge_clf = linear_model.RidgeClassifier(random_state= ridge_random_state,
-#                                      alpha=ridge_alpha)
-# ##### LOGISTIC REGRESSION
-# lr_clf = linear_model.LogisticRegression(random_state=lregression_random_state,
-#                                      penalty=lregression_penalty,
-#                                      solver=lregression_solver,
-#                                      multi_class=lregression_multi_class,
-#                                      class_weight=lregression_class_weight)
-# ##### RANDOM FOREST
-# forest_clf = ensemble.RandomForestClassifier(random_state= forest_random_state,
-#                                           n_estimators=forest_n_estimators,
-#                                          class_weight=forest_class_weight)
-
-# Create folder is it doesn't exist yet
-if not os.path.exists(modelfolder):
-    os.makedirs(modelfolder)
-
 
 
 

@@ -46,7 +46,6 @@ with open("./../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-classification_from_allfeatures = config.parameters.bool.classification_from_allfeatures
 nbr_of_splits = config.parameters.int.nbr_of_splits
 run_name = config.names.run_name
 
