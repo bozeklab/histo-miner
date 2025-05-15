@@ -95,9 +95,9 @@ for root, dirs, files in os.walk(pathto_sortedfolder):
                 and '.DS_S' not in namewoext    # in case of MACOS
             ):
                 if not 'response' in namewoext:
-                    raise ValueError('Some features are not associated to a recurrence  '
-                                     'or norecurrence  WSI classification. User must sort JSON and rename it'
-                                     ' with the corresponding recurrence  and no_recurrence  caracters')
+                    raise ValueError('Some features are not associated to a response  '
+                                     'or no response  WSI classification. User must sort JSON and rename it'
+                                     ' with the corresponding response  and no_response  caracters')
                 else:
                     jsonfiles.append(filepath)
 
