@@ -140,7 +140,9 @@ This step performs nucleus segmentation and classification from your input WSIs 
    - Add this path to the _inferences_postproc_main_ field in `histo_miner_pipeline.yml` config
 5. Run post-processing to correct tumor nuclei classification and reformat files for visualization:
    ```bash
+   conda activate histo-miner-env
    python scripts/main3_inferences_postproc.py
+   conda deactivate
    ```
 
 **Output**: One JSON file with segmented and classified nuclei for each input WSI.
@@ -187,7 +189,9 @@ This step computes tissue-relevant features based on previously obtained nucleus
    - `calculate_distances`, compute or not distance related features (False by default)
 4. Run:
    ```bash
+   conda activate histo-miner-env
    python scripts/main4_tissue_analyser.py
+   conda deactivate 
    ```
 
 **Output**: Structured JSON files with the computed features. 
@@ -208,6 +212,7 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 5. To generate the combined feature matrix and class vectors, run:
    ```bash
+   conda activate histo-miner-env
    python scripts/usecase1_collect_features_consistently.py
    ```
 6. Update the following parameters in `classification.yml` config:
@@ -226,6 +231,7 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 9. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
+   conda deactivate
    ```
 
 **Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
@@ -246,6 +252,7 @@ This version performs classification using a new feature selection tailored to y
 4. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`
 5. To generate the combined feature matrix and class vectors, run:
    ```bash
+   conda activate histo-miner-env
    python scripts/usecase1_collect_features_consistently.py
    ```
 6. Update `histo_miner_pipeline.yml` config:
@@ -269,6 +276,7 @@ This version performs classification using a new feature selection tailored to y
 11. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
+   conda deactivate
    ```
 
 **Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
@@ -280,7 +288,7 @@ This version performs classification using a new feature selection tailored to y
 
 ## Examples 
 
--> **Under construction** 🚧 'Available on 23/05/2025'
+-> **Under construction** 🚧 `Available on 23/05/2025`
 
 
 ## Datasets
