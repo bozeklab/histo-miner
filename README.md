@@ -204,8 +204,8 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)).
 3. Update the following paths in `histo_miner_pipeline.yml` config:
-  - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
-  - `featarray_folder`, folder to the feature matrix output 
+   - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
+   - `featarray_folder`, folder to the feature matrix output 
 4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 5. To generate the combined feature matrix and class vectors, run:
   ```bash
@@ -215,7 +215,7 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    - `predefined_feature_selection` must be set to **True**
    - `feature_selection_file', path to the `Ranking_of_features.json` file
    - `folders.save_trained_model`, folder to save the model
-   - 'names.trained_model', name choosen for the model
+   - `names.trained_model`, name choosen for the model
    Ensure that in `histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` is set to default value: **19**
 7. Run:
@@ -223,8 +223,8 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    python scripts/training/training_classifier.py
    ```
 8. Update the following parameters in `classification.yml` config:
-   -`inference_input`, path to the folder containing WSI to classify
-   -`display_classification_scores`, boolean
+   - `inference_input`, path to the folder containing WSI to classify
+   - `display_classification_scores`, boolean
 9. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
