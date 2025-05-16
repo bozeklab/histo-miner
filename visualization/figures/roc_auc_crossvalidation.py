@@ -48,8 +48,7 @@ with open("./../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
-nbr_of_splits = config.parameters.int.nbr_of_splits
-run_name = config.names.run_name
+nbr_of_splits = config.parameters.int.nbr_of_splitsme
 
 xgboost_random_state = config.classifierparam.xgboost.random_state
 xgboost_n_estimators = config.classifierparam.xgboost.n_estimators

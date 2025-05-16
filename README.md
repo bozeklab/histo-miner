@@ -180,7 +180,7 @@ This step computes tissue-relevant features based on previously obtained nucleus
 1. Complete the "Models inference" step.
 2. Update the following paths in `histo_miner_pipeline.yml`:
    - `tissue_analyser_main`, folder containing the inference output JSON files
-   - `tissue_analyser_output`
+   - `tissue_analyser_output`, path to saving folder 
 3. Choose which features to compute using boolean flags in `histo_miner_pipeline.yml`:
    - `calculate_morphologies`, compute or not morphology related features
    - `calculate_vicinity`, compute or not features specifically for cells in tumor vicinity
@@ -203,18 +203,34 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)).
-3. Update the following paths in `histo_miner_pipeline.yml`:
-  - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see next point)
+3. Update the following paths in `histo_miner_pipeline.yml` config:
+  - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
   - `featarray_folder`, folder to the feature matrix output 
-4. Ensure to have "no_response" or "response" caracters in the name of the training json files. For instance 'sample_1_response_analysed.json'.
+4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 5. To generate the combined feature matrix and class vectors, run:
   ```bash
   python scripts/usecase1_collect_features_consistently.py
   ```
-6. _Writting of next steps in progress, available within the week (13-17/05/25)_ 
+6. Update the following parameters in `classification.yml` config:
+   - `predefined_feature_selection` must be set to **True**
+   - `feature_selection_file', path to the `Ranking_of_features.json` file
+   - `folders.save_trained_model`, folder to save the model
+   - 'names.trained_model', name choosen for the model
+   Ensure that in `histo_miner_pipeline.yml` config:
+   - `nbr_keptfeat` is set to default value: **19**
+7. Run:
+   ```bash
+   python scripts/training/training_classifier.py
+   ```
+8. Update the following parameters in `classification.yml` config:
+   -`inference_input`, path to the folder containing WSI to classify
+   -`display_classification_scores`, boolean
+9. Run:
+   ```bash
+   python scripts/usecase2_classification_inference.py
+   ```
 
-
-**Output**: Prediction of responder bs non-responder class for each WSI. 
+**Output**: Prediction of responder vs non-responder class for each WSI. 
 
 
 ---
@@ -228,7 +244,7 @@ This version performs classification using a new feature selection tailored to y
 2. Update the following paths in `histo_miner_pipeline.yml`:
   - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see next point)
   - `featarray_folder`, folder to the feature matrix output 
-3. Ensure to have "no_response" or "response" caracters in the name of the training json files. For instance 'sample_1_response_analysed.json'.
+3. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 4. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`
 5. To generate the combined feature matrix and class vectors, run:
   ```bash
@@ -242,7 +258,7 @@ This version performs classification using a new feature selection tailored to y
 8. Find the selected feature names in the `.txt` file inside the generated `infofiles/` folder.
 9. _Writting of next steps in progress, available within the week (13-17/05/25)_  
 
-**Output**: Prediction of responder bs non-responder class for each WSI. 
+**Output**: Prediction of responder vs non-responder class for each WSI. 
 
 ---
 

@@ -27,8 +27,6 @@
 
       predefined_feature_selection: True           # Choose to use the same selected features as is in the paper (True) or to run a custom feature selection (False). Default: True [bool] 
 
-      display_classification_predictions: True     # Display or not the classification prediction in the terminal while running classification inference. Default: True [bool]                         
-
       display_classification_scores: True          # Display or not the classification scores in the terminal while running classification inference. Default: True [bool]
 
       run_classifiers:                             # --- parent key, DO NOT FILL this line
