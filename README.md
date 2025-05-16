@@ -122,7 +122,7 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 ---
 
 
-### Models inference: nucleus segmentation and classification 
+### 🔹 Models inference: nucleus segmentation and classification 
 
 This step performs nucleus segmentation and classification from your input WSIs — corresponding to steps **(a), (b), (c)** in the figure above.
 
@@ -149,11 +149,11 @@ This step performs nucleus segmentation and classification from your input WSIs 
 ---
 
 
-### Models inference visualization 
+### 🔹 Models inference visualization 
 
 Visualize the nucleus segmentation and classification as shown in the [Visualization](#visualization) section. 
 
-1. Put the JSON output and the corresponding input WSI in the same folder (you can use symbolic links if needed).
+1. Put the JSON output of "Models inference" step and the corresponding input WSI in the same folder (you can use symbolic links if needed).
 2. Ensure both files have the same basename name (excluding extenstion).
 3. Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/).
 4. In QuPath:
@@ -173,7 +173,7 @@ Visualize the nucleus segmentation and classification as shown in the [Visualiza
 ---
 
 
-### Tissue Analyser 
+### 🔹 Tissue Analyser 
 
 This step computes tissue-relevant features based on previously obtained nucleus segmentations — corresponding to step **(d)** in the figure above.
 
@@ -196,10 +196,9 @@ This step computes tissue-relevant features based on previously obtained nucleus
 ---
 
 
-### Classification of cSCC response to immunotherapy with pre-defined feature selection   
+### 🔹 Classification of cSCC response to immunotherapy with pre-defined feature selection   
 
 This step classifies WSIs with tumor regions into responder vs. non-responder for CPI treatment using features selected in the original Histo-Miner paper.
-
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)).
@@ -208,14 +207,14 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    - `featarray_folder`, folder to the feature matrix output 
 4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 5. To generate the combined feature matrix and class vectors, run:
-  ```bash
-  python scripts/usecase1_collect_features_consistently.py
-  ```
+   ```bash
+   python scripts/usecase1_collect_features_consistently.py
+   ```
 6. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **True**
    - `feature_selection_file', path to the `Ranking_of_features.json` file
    - `folders.save_trained_model`, folder to save the model
-   - `names.trained_model`, name choosen for the model
+   - `names.trained_model, name choosen for the model
    Ensure that in `histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` is set to default value: **19**
 7. Run:
@@ -224,19 +223,18 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    ```
 8. Update the following parameters in `classification.yml` config:
    - `inference_input`, path to the folder containing WSI to classify
-   - `display_classification_scores`, boolean
 9. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
    ```
 
-**Output**: Prediction of responder vs non-responder class for each WSI. 
+**Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
 
 
 ---
 
 
-### Classification of cSCC response to immunotherapy with custom feature selection
+### 🔹 Classification of cSCC response to immunotherapy with custom feature selection
 
 This version performs classification using a new feature selection tailored to your dataset.
 
@@ -247,26 +245,42 @@ This version performs classification using a new feature selection tailored to y
 3. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
 4. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`
 5. To generate the combined feature matrix and class vectors, run:
-  ```bash
-  python scripts/usecase1_collect_features_consistently.py
-  ```
+   ```bash
+   python scripts/usecase1_collect_features_consistently.py
+   ```
 6. Update `histo_miner_pipeline.yml` config:
    - `classification_evaluation`, path to folder to output cross-validation evaluation
    - `eval_folder`, name of the folder 
    Optionally update `classification.yml` for custom parameters.
 7. Run the selected feature selection
-8. Find the selected feature names in the `.txt` file inside the generated `infofiles/` folder.
-9. _Writting of next steps in progress, available within the week (13-17/05/25)_  
+8. Update the following parameters in `classification.yml` config:
+   - `predefined_feature_selection` must be set to **False**
+   - `feature_selection_file', path to the feature selection numpy file generated in 7. 
+   - `folders.save_trained_model`, folder to save the model
+   - `names.trained_model, name choosen for the model
+   Importantly update`histo_miner_pipeline.yml` config:
+   - `nbr_keptfeat` to the new number of kept features (see infofiles generated in 7. if needed)
+9. Run:
+   ```bash
+   python scripts/training/training_classifier.py
+   ```
+10. Update the following parameters in `classification.yml` config:
+   - `inference_input`, path to the folder containing WSI to classify
+11. Run:
+   ```bash
+   python scripts/usecase2_classification_inference.py
+   ```
 
-**Output**: Prediction of responder vs non-responder class for each WSI. 
+**Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
+
+
 
 ---
 
 
-
 ## Examples 
 
--> Under construction: `Available on 22/05/25 or before` 
+-> **Under construction** 🚧 'Available on 23/05/2025'
 
 
 ## Datasets
