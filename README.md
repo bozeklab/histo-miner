@@ -1,8 +1,11 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation) 
+
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)
+
 </div>
+
 
 
 
@@ -130,10 +133,10 @@ This step performs nucleus segmentation and classification from your input WSIs 
    - Set the input/output paths
    - Set the number of GPUs
 3. Run the inference:
-   ```bash
+```bash
    sh scripts/main1_hovernet_inference.sh
    sh scripts/main2_segmenter_inference.sh
-   ```
+```
 4. Combine the outputs:
    - Place both outputs in the same folder
    - Add this path to the _inferences_postproc_main_ field in `histo_miner_pipeline.yml` config
