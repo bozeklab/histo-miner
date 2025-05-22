@@ -1,10 +1,9 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)  
-
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation) 
 </div>
+
 
 
 <br>
@@ -288,7 +287,7 @@ This version performs classification using a new feature selection tailored to y
 
 ## Examples 
 
--> **Under construction** 🚧 `Available on 23/05/2025`
+-> **Under construction** 🚧  Available on ~~23/05/2025~~ `30/05/2025`
 
 
 ## Datasets
