@@ -23,7 +23,7 @@ from src.histo_miner.utils import cellclass_process
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner_pipeline.yml", "r") as f:
+with open("./../dev-configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
@@ -96,24 +96,72 @@ for root, dirs, files in os.walk(pathtofolder):
 
 ######## Process the files
 # The masks have to be updated BEFORE the json files
-print('Update of the mask files...')
-print('Mask files have to be in a pillow supported format (like .png)')
-for maskfile in tqdm(maskfiles):
-    segmenter_utils.change_pix_values(maskfile, values2change, newvalues)
+# print('Update of the mask files...')
+# print('Mask files have to be in a pillow supported format (like .png)')
+# for maskfile in tqdm(maskfiles):
+#     segmenter_utils.change_pix_values(maskfile, values2change, newvalues)
 
 #Update of the jsons
-print('Update of the json files...')
-print('Do not exit the process!!')
-for jsonfile in tqdm(jsonfiles):
-    hovernet_utils.replacestring_json(jsonfile, string2replace,
-                                  newstring, string2replace2,
-                                  newstring2)
-    maskmappath = jsonfile.replace('.json', '.png')
-    cellclass_process.update_cellclass(jsonfile, maskmappath,
-                                   maskmapdownfactor=maskmap_downfactor)
+# print('Update of the json files...')
+# print('Do not exit the process!!')
+# for jsonfile in tqdm(jsonfiles):
+#     print(jsonfile)
+#     hovernet_utils.replacestring_json(jsonfile, string2replace,
+#                                   newstring, string2replace2,
+#                                   newstring2)
+#     maskmappath = jsonfile.replace('.json', '.png')
+#     cellclass_process.update_cellclass(jsonfile, maskmappath,
+#                                    maskmapdownfactor=maskmap_downfactor)
 
-print('All mask files updated')
-print('All json files updated with mode {}'.format(hovernet_mode))
+# print('All mask files updated')
+# print('All json files updated with mode {}'.format(hovernet_mode))
+
+import traceback
+
+print("Update of the json files…")
+print("Do not exit the process!!")
+
+failed = []               # keep track of problem files (optional)
+
+for jsonfile in tqdm(jsonfiles):
+    print(jsonfile)
+
+    # Update strings in the JSON
+    hovernet_utils.replacestring_json(
+        jsonfile,
+        string2replace, newstring,
+        string2replace2, newstring2
+    )
+
+    # Update mask / cell-class
+    maskmappath = jsonfile.replace(".json", ".png")
+
+    try:
+        cellclass_process.update_cellclass(
+            jsonfile,
+            maskmappath,
+            maskmapdownfactor=maskmap_downfactor
+        )
+    except Exception as e:
+        # record the problem
+        failed.append(jsonfile)
+
+        # minimal message…
+        print(f"[ERROR] while processing {jsonfile}: {e}")
+
+        # …or full traceback if you prefer:
+        # traceback.print_exc()
+
+        # then continue with the next file
+        continue
+
+print("All mask files updated")
+print("All json files updated with mode {}".format(hovernet_mode))
+
+if failed:
+    print("\n The following files could not be processed:")
+    for f in failed:
+        print("   •", f)
 
 
 
