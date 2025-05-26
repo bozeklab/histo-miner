@@ -14,7 +14,7 @@ config_path=../configs/models/scc_hovernet.yml
 
 # We need yaml lib so we reactivate histo-miner env if it was not done befre
 conda deactivate
-conda activate histo-miner-env-2
+conda activate histo-miner-env
 
 # We extract all parameters now:
 yaml() {
