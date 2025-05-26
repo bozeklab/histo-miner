@@ -80,5 +80,5 @@ fi
 
 # return to previous path and reeactivate histo-miner env for following steps
 conda deactivate
-conda activate histo-miner-env-2
+conda activate histo-miner-env
 cd "$OLDPWD"
