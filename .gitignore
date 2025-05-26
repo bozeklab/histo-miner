@@ -15,10 +15,13 @@ dev-configs
 
 *.DS_Store
 *._.DS_Store
-*._.gitignore
+
 *._
+._*
+._.gitignore
 ._README.md
 ._supplements
-._*
+
 archive-env.yml
 temp.py
+test.pdf
