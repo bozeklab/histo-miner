@@ -95,74 +95,26 @@ for root, dirs, files in os.walk(pathtofolder):
 
 
 ######## Process the files
-# The masks have to be updated BEFORE the json files
-# print('Update of the mask files...')
-# print('Mask files have to be in a pillow supported format (like .png)')
-# for maskfile in tqdm(maskfiles):
-#     segmenter_utils.change_pix_values(maskfile, values2change, newvalues)
+The masks have to be updated BEFORE the json files
+print('Update of the mask files...')
+print('Mask files have to be in a pillow supported format (like .png)')
+for maskfile in tqdm(maskfiles):
+    segmenter_utils.change_pix_values(maskfile, values2change, newvalues)
 
 #Update of the jsons
-# print('Update of the json files...')
-# print('Do not exit the process!!')
-# for jsonfile in tqdm(jsonfiles):
-#     print(jsonfile)
-#     hovernet_utils.replacestring_json(jsonfile, string2replace,
-#                                   newstring, string2replace2,
-#                                   newstring2)
-#     maskmappath = jsonfile.replace('.json', '.png')
-#     cellclass_process.update_cellclass(jsonfile, maskmappath,
-#                                    maskmapdownfactor=maskmap_downfactor)
-
-# print('All mask files updated')
-# print('All json files updated with mode {}'.format(hovernet_mode))
-
-import traceback
-
-print("Update of the json files…")
-print("Do not exit the process!!")
-
-failed = []               # keep track of problem files (optional)
-
+print('Update of the json files...')
+print('Do not exit the process!!')
 for jsonfile in tqdm(jsonfiles):
     print(jsonfile)
+    hovernet_utils.replacestring_json(jsonfile, string2replace,
+                                  newstring, string2replace2,
+                                  newstring2)
+    maskmappath = jsonfile.replace('.json', '.png')
+    cellclass_process.update_cellclass(jsonfile, maskmappath,
+                                   maskmapdownfactor=maskmap_downfactor)
 
-    # Update strings in the JSON
-    hovernet_utils.replacestring_json(
-        jsonfile,
-        string2replace, newstring,
-        string2replace2, newstring2
-    )
-
-    # Update mask / cell-class
-    maskmappath = jsonfile.replace(".json", ".png")
-
-    try:
-        cellclass_process.update_cellclass(
-            jsonfile,
-            maskmappath,
-            maskmapdownfactor=maskmap_downfactor
-        )
-    except Exception as e:
-        # record the problem
-        failed.append(jsonfile)
-
-        # minimal message…
-        print(f"[ERROR] while processing {jsonfile}: {e}")
-
-        # …or full traceback if you prefer:
-        # traceback.print_exc()
-
-        # then continue with the next file
-        continue
-
-print("All mask files updated")
-print("All json files updated with mode {}".format(hovernet_mode))
-
-if failed:
-    print("\n The following files could not be processed:")
-    for f in failed:
-        print("   •", f)
-
+print('All mask files updated')
+print('All json files updated with mode {}'.format(hovernet_mode))
 
 
 
