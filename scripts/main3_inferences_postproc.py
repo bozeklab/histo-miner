@@ -95,7 +95,7 @@ for root, dirs, files in os.walk(pathtofolder):
 
 
 ######## Process the files
-The masks have to be updated BEFORE the json files
+# The masks have to be updated BEFORE the json files
 print('Update of the mask files...')
 print('Mask files have to be in a pillow supported format (like .png)')
 for maskfile in tqdm(maskfiles):
