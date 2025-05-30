@@ -1,0 +1,172 @@
+
+# All path and names related parameters
+
+  paths:                                         # --- parent key, DO NOT FILL this line
+
+    folders:                                     # --- parent key, DO NOT FILL this line
+
+      inferences_postproc_main:                  # Path to the folder containing output of SCC Hovernet and SCC Segmenter. Ex: "/data/inference/results/" [str]
+
+      tissue_analyser_main:                      # Path to the folder containing the processed inference output (main3_inferences_postproc.py output). Ex: "/data/postprocess/" [str] 
+
+      tissue_analyser_output:                    # Path to the folder to save tissue analyser json outputs. Ex: "/data/postprocess/tissue_analyser_output/" [str] 
+ 
+      featarray_folder:                          # Path to the folder containing the classification vector and the feature matrix of the dataset. It is a (N x M) matrix, with N = number of samples, M = number of features per sample. 
+
+      classification_evaluation:                 # Path to the image classification evaluation parent folder. Ex: "/data/classification_evaluation/" [str] 
+
+      visualizations:                            # Path to the analyses visualization output. Ex: "/data/samples/visualization/" [str]
+        
+    files:                                       # --- parent key, DO NOT FILL this line
+
+      example_json:                              # Path to any json file output of tissue analyser. Ex: "/data/postprocess/tissue_analyser_output/wsi_sample1.json" [str]
+
+      cohortid_csv:                              # In a case of a dataset with several cohort: Path to the csv with cohort ID for each sample. Ex: "/data/datasets/dataset1/cohortid.csv" [str]
+
+      patientid_csv:                             # In case of a dataset with more than 1 sample per patient: Path to the csv with patient ID for each sample. Ex: "/data/datasets/dataset1/patientid.csv" [str]
+
+  names:                                         # --- parent key, DO NOT FILL this line
+
+      hovernet_mode: wsi                         # Options: [wsi, tile]. If the inference run for full WSIs, choose wsi. If it runs for patches, choose tile. Default: wsi [str]
+
+      eval_folder: results                       # Name of the folder containing classification evalutation. Default: results [str]
+
+      managment:                                 # NOT TO CHANGE. Used to adapt json files to SCC Hovernet and to visualization scripts.
+        
+        str2replace_tilemode: >-
+           {"mag": null, "nuc": {
+
+        newstr_tilemode: >-
+           {
+
+        str2replace2_tilemode: >-
+           }}}
+
+        newstr2_tilemode: >-
+           }}
+
+        str2replace_wsimode: >-
+          {"mag": 40, "nuc": {
+
+        newstr_wsimode: >-
+          {
+
+        str2replace2_wsimode: >-
+          }}}
+
+        newstr2_wsimode: >-
+          }}
+
+# All none strings parameters (except maskmap_ext that is also str)
+
+  parameters:                                    # --- parent key, DO NOT FILL this line. All none string parameters
+
+    bool:                                        # --- parent key, DO NOT FILL this line.
+ 
+      calculate_morphologies: True               # Allow or not to calculate nucleus morphology related features while running tissue analyser. Default: True [bool]
+
+      calculate_vicinity: True                   # Allow or not to calculate features for cells in the tumor vicinity while running tissue analyser. Default: True [bool]
+
+      calculate_distances: False                 # Allow or not to calculate distance related features while running tissue analyser. If True, this will considerably increase the time to run main4_tissue_analyser.py. Default: False [bool]
+
+      cohortid_avail: False                      # In a case of a dataset with several cohort, if cohort information is used for classification/evaluation and if cohortid_csv exists (see above), select True. Default: False [bool]
+
+      patientid_avail: False                     # In case of a dataset with more than 1 sample per patient, if patient information is used for classification/evaluation and if patientid_csv exists (see above), select True. Default: False [bool]
+
+      plot:                                      # --- parent key, DO NOT FILL this line
+
+        boxplots: True                           # Allow or not computing of boxplots while running python scripts from /visualization/figures/. Default: True [bool] 
+
+        distributions: True                      # Allow or not computing distribution curves while running python scripts from /visualization/figures/. Default: True [bool] 
+
+        violinplots: False                       # Allow or not computing violinplots while running python scripts from /visualization/figures/. Default: False [bool] 
+
+        pca: True                                # Allow or not computing PCA while running python scripts from /visualization/figures/. Default: True [bool]
+
+        tsne: True                               # Allow or not computing t-SNE while running python scripts from /visualization/figures/. Default: True [bool]
+
+        delete_outliers: False                   # Delete sample outliers for visualization purposes only. Default: False [bool]
+        
+    int:
+
+      nbr_keptfeat: 19                           # Number of best feature kept. In Histo-Miner paper case it is 19. IF number kept is higher than total number of feat then the total number of feat is kept. Default: 19. [int]
+
+      maskmap_downfactor: 32                     # NOT TO CHANGE. Downsample factor of the SCC Segmenter tumor segmentation map compated to original size WSI. In the original work this is fixed to 32 with no changes.
+
+      default_tumormargin: 4338                  # NOT TO CHANGE. More information below. 
+
+      # --- More details ---
+
+      # It corresponds to 1000 micro meters for the 40x WSIs. This is the margin considered in: 
+      # "Assessing Tumor-infiltrating Lymphocytes in Solid Tumors: 
+      # A Practical Review for Pathologists and Proposal for a Standardized Method 
+      # From the International Immunooncology Biomarkers Working Group"
+
+    lists:
+
+      selectedcls_dist: [1, 2, 3, 5]             # Selected classes for the distance related features (average closest distance between cells of given class). More information below. Default: [1, 2, 3, 5] [list] 
+
+      # --- More details ---
+
+      # For a very comprehensive (but very long) analysis we can keep all classes:
+      # [1, 2, 3, 4, 5, 6]
+      # For a realistic analysis speed, avoid including stroma cells and epithelial cells
+      # in the distance calculation and then keep:
+      # [1, 2, 3, 5]
+
+      selectedcls_ratio: [1, 2, 3, 4, 5]         # Selected classes for ratio calculcations inside tumor regions. Default option is the one including all cells except none-neoplastic epithelial cells that are already all outside of tumor regions Default: [1, 2, 3, 4, 5] [list]
+
+      selectedcls_ratiovic: [1, 2, 3, 4, 6]      # Selected classes for ratio calculcations inside vicinity of tumor regions. Default option is the one including all cells except tumor cells Default: [1, 2, 3, 4, 6] [list]
+
+      values2change: [1, 2]                      #  NOT TO CHANGE
+
+      newvalues: [0, 255]                        #  NOT TO CHANGE
+
+      redundant_feat_names: [                    #  NOT TO CHANGE
+                'areas_mean',
+                'areas_std',
+                'areas_median',
+                'areas_MAD',
+                'areas_skewness',
+                'areas_kurt',
+                'areas_iqr',
+                'circularities_mean',
+                'circularities_std',
+                'circularities_median',
+                'circularities_MAD',
+                'circularities_skewness',
+                'circularities_kurt',
+                'circularities_iqr',
+                'aspectratios_mean',
+                'aspectratios_std',
+                'aspectratios_median',
+                'aspectratios_MAD',
+                'aspectratios_skewness',
+                'aspectratios_kurt',
+                'aspectratios_iqr',
+                'dist_mean',
+                'dist_std',
+                'dist_median',
+                'dist_MAD',
+                'dist_skewness',
+                'dist_kurt',
+                'dist_iqr'
+                ]
+
+      classnames: ['Granulocyte', 'Lymphocyte' , 'Plasma', 'Stroma', 'Tumor', 'Epithelial']    
+
+      classnames_injson:  ['"type": 0', '"type": 1', '"type": 2', '"type": 3', '"type": 4', '"type": 5', '"type": 6']
+
+    str:
+      maskmap_ext: .png                          # Extension of tumor segmentation maps. Default .png [str] 
+
+
+
+
+
+
+
+
+
+
+

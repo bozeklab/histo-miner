@@ -1,0 +1,22 @@
+
+# Parameters for inference:
+
+  inference:                # --- parent key, DO NOT FILL this line 
+
+    hovernet_mode: wsi      # Options: [wsi, tile]. If the inference run for full WSIs, choose wsi. If it runs for patches, choose tile. Default: wsi [str]
+
+    gpulist:                # GPU ID list used to run the script. Ex: "0, 1" for 2 GPUs [str]    
+
+    paths:                  # --- parent key, DO NOT FILL this line
+      
+      checkpoints:          # Path to the downloaded scchovernet_bestweights.tar checkpoint file. Ex: "/data/checkpoints/scchovernet_bestweights.tar" [str] 
+
+      input_dir :           # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str] 
+
+      output_dir:           # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str]
+      
+      cache_path:           # Path to the folder used as cache. Ex:  "~/.cache" [str]
+      
+ 
+
+# If new training script, possible parameters could be added here

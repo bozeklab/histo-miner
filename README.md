@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Examples](#examples) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)
+[Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)
 
 </div>
 
@@ -21,7 +21,7 @@ This repository contains the code for ["Histo-Miner: Tissue Features Extraction 
 </p>
 
 
-Histo-Miner employs convolutional neural networks and vision transformers models for nucleus segmentation and classification as well as tumor region segmentation **(a), (b), (c)**. From these predictions, it generates a compact feature vector summarizing tissue morphology and cellular interactions. **(d)** We used such generated features to classify cSCC patient response to immunotherapy. 
+Histo-Miner employs convolutional neural networks and vision transformers models for nucleus segmentation and classification as well as tumor region segmentation **(a), (b), (c)**. From these predictions, it generates a compact feature vector summarizing tissue morphology and cellular interactions **(d)**. We used such generated features to classify cSCC patient response to immunotherapy. 
 
 
 ## Project structure 
@@ -118,7 +118,7 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
   - [Tissue Analyser](#tissue-analyser)
   - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
   - [Classification of cSCC response to immunotherapy with custom feature selection](#classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
-- [Examples](#examples)
+- [Example](#example)
 
 
 ---
@@ -288,9 +288,10 @@ This version performs classification using a new feature selection tailored to y
 ---
 
 
-## Examples 
+## Example
 
--> **Under construction** 🚧  Available on ~~23/05/2025~~ `30/05/2025`
+An end to end example on how to run the code on one provided WSI is availble in [/example](#example) folder. 
+
 
 
 ## Datasets

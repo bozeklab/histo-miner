@@ -1,0 +1,39 @@
+
+# Parameters for inference:
+
+  inference:                     # --- parent key, DO NOT FILL this line 
+
+    downsample_needed: "true"    # Options: ["true", "false"]. If the input slides 40x resolution are already downsampled 32 times choose "fase". !boolean in bash is without capital. Default: "true" [str]
+
+    gpu:                         # Number of GPU in use [int]
+
+    samples_per_gpu: 1           # Number of sample per GPU. Default: 1 [int]
+    
+    workers_per_gpu: 8           # Number of worker per GOPU. Default: 8 [int]
+
+    paths:                       # --- parent key, DO NOT FILL this line  
+
+      checkpoints:               # Path to the downloaded sccsegmenter_bestweights.pth checkpoint file. Ex: "/data/checkpoints/sccsegmenter_bestweights.pth" [str] 
+
+      input_dir:                 # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str]
+
+      output_dir:                # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str] 
+
+
+
+ # Other possible parameters
+     
+    # SLURM PARAMETERS 
+    # run_on_slurm: "true" 
+    # boolean in bash is without capital
+
+    # slurm_param:
+    #   # to know name of partititon and have more info run:
+    #   # sinfo -N -r -l
+    #   # on SLURM
+    #   partition: debug
+
+    #   job_name: seginf
+
+
+ # If new training script, possible parameters could be added here
