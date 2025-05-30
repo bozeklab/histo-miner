@@ -114,11 +114,11 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 ### 🔗 Quick Navigation
 
 - [Usage](#Usage)
-  - [Models inference: nucleus segmentation and classification](#---models-inference-nucleus-segmentation-and-classification)
-  - [Models inference visualization](#🔹-models-inference-visualization)
-  - [Tissue Analyser](#🔹-tissue-analyser)
-  - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#🔹-classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
-  - [Classification of cSCC response to immunotherapy with custom feature selection](#🔹-classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
+  - [Models inference: nucleus segmentation and classification](#--models-inference-nucleus-segmentation-and-classification)
+  - [Models inference visualization](#--models-inference-visualization)
+  - [Tissue Analyser](#--tissue-analyser)
+  - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#--classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
+  - [Classification of cSCC response to immunotherapy with custom feature selection](#--classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
 - [Example](#example)
 
 
