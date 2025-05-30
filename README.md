@@ -34,6 +34,7 @@ Here is an explanation of the project structure:
 │   ├── classification_training      # Configs for classifier training 
 │   ├── histo_miner_pipeline         # Configs for the core code of histo-miner
 ├── docs                             # Images and Videos files
+├── example                          # End to end example to run histo-miner
 ├── scripts                          # Main code for users to run histo-miner 
 ├── src                              # Functions used for scripts
 │   ├── histo-miner                  # All functions from the core code
@@ -114,10 +115,10 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 
 - [Usage](#Usage)
   - [Models inference: nucleus segmentation and classification](#---models-inference-nucleus-segmentation-and-classification)
-  - [Models inference visualization](#---models-inference-visualization)
-  - [Tissue Analyser](#---tissue-analyser)
-  - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#---classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
-  - [Classification of cSCC response to immunotherapy with custom feature selection](---#classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
+  - [Models inference visualization](#🔹-models-inference-visualization)
+  - [Tissue Analyser](#🔹-tissue-analyser)
+  - [Classification of cSCC response to immunotherapy with pre-defined feature selection](#🔹-classification-of-cscc-response-to-immunotherapy-with-pre-defined-feature-selection)
+  - [Classification of cSCC response to immunotherapy with custom feature selection](#🔹-classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
 - [Example](#example)
 
 
