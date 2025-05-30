@@ -33,7 +33,7 @@ cache_path=$(yaml $config_path "['inference']['paths']['cache_path']")
 ############### SCRIPT
 
 conda deactivate
-conda activate hovernet_submodule_archive
+conda activate hovernet_submodule
 
 cd ../src/models/hover_net/
 

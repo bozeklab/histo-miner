@@ -135,8 +135,9 @@ This step performs nucleus segmentation and classification from your input WSIs 
    - Set the number of GPUs
 3. Run the inference:
 ```bash
-   sh scripts/main1_hovernet_inference.sh
-   sh scripts/main2_segmenter_inference.sh
+   cd scripts
+   source main1_hovernet_inference.sh
+   source main2_segmenter_inference.sh
 ```
 4. Combine the outputs:
    - Place both outputs in the same folder
