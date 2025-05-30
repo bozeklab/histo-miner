@@ -10,7 +10,7 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 - `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environment are installed as described in **Installation commands** section. 
 
 
-## Set-up the example
+## Set up the example
 
 
 - Download the example slide [here](https://uni-koeln.sciebo.de/s/m7Ko2UyL6Qo4bdM)
