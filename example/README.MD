@@ -7,7 +7,7 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 ## Prerequisite
 
 - The user is running the code on MAC or Linux OS or on Windows Subsystem for Linux (WSL) if the user is under Windows OS. 
-- `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environment are installed as described in **Installation commands** section of the README. 
+- `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environment are installed as described in **Installation commands** section. 
 
 
 ## Set-up the example

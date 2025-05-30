@@ -290,7 +290,7 @@ This version performs classification using a new feature selection tailored to y
 
 ## Example
 
-An end to end example on how to run the code on one provided WSI is availble in [/example](#example) folder. 
+An end to end example on how to run the code on one provided WSI is availble in [example](example/) folder. 
 
 
 
