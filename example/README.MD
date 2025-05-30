@@ -25,11 +25,9 @@ mkdir ./example/data/
 
 ```bash
 conda activate histo-miner-env
-python ./examples/setup_example.py
+python ./example/setup_example.py
 ```
-- Don't forget to run the unset_example.py script once you are done with testing the example!
-
-
+- Don't forget to run the `unset_example.py` script once you are done with testing the example!
 
 
 ## Models inference: nucleus segmentation and classification
@@ -38,9 +36,20 @@ python ./examples/setup_example.py
 Our config files are already written so lets put all the files we will need accordingly. Don't forget that we are still using the same terminal and still inside **histo-miner folder**. 
 
 
-1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets)). Then run:
+1. Download SCC Segmenter and SCC Hovernet trained weights ([SCC Hovernet and SCC Segmenter models weights](https://doi.org/10.5281/zenodo.13970198)). Then run:
 ```bash
 mkdir ./example/checkpoints/  
 ```
 Put all the checkpoints inside that `\checkpoint\` folder. 
-2.  
+2.  Create folders that we will need to run inference:
+```bash
+mkdir ./example/results/scchovernet_output/
+mkdir ./example/results/sccsegmenter_output/
+mkdir ./example/cache/
+```
+3. Run both inference:
+```bash
+   sh scripts/main1_hovernet_inference.sh
+   sh scripts/main2_segmenter_inference.sh
+```
+

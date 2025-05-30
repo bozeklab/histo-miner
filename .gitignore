@@ -25,3 +25,12 @@ dev-configs
 archive-env.yml
 temp.py
 test.pdf
+
+
+# In case user run example
+
+example/data
+example/checkpoints
+example/processing
+example/cache
+

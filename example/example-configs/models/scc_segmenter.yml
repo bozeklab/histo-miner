@@ -5,7 +5,7 @@
 
     downsample_needed: "true"    # Options: ["true", "false"]. If the input slides 40x resolution are already downsampled 32 times choose "fase". !boolean in bash is without capital. Default: "true" [str]
 
-    gpu:                         # Number of GPU in use [int]
+    gpu: 1                       # Number of GPU in use [int]
 
     samples_per_gpu: 1           # Number of sample per GPU. Default: 1 [int]
     
@@ -13,11 +13,11 @@
 
     paths:                       # --- parent key, DO NOT FILL this line  
 
-      checkpoints:               # Path to the downloaded sccsegmenter_bestweights.pth checkpoint file. Ex: "/data/checkpoints/sccsegmenter_bestweights.pth" [str] 
+      checkpoints: "./example/checkpoints/sccsegmenter_bestweights.pth"    # Path to the downloaded sccsegmenter_bestweights.pth checkpoint file. Ex: "/data/checkpoints/sccsegmenter_bestweights.pth" [str] 
 
-      input_dir:                 # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str]
+      input_dir: "./example/data/"                                         # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str]
 
-      output_dir:                # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str] 
+      output_dir: "./example/results/sccsegmenter_output/"                 # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str] 
 
 
 
