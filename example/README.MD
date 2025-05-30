@@ -7,7 +7,8 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 ## Prerequisite
 
 - The user is running the code on MAC or Linux OS or on Windows Subsystem for Linux (WSL) if the user is under Windows OS. 
-- `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environment are installed as described in **Installation commands** section. 
+- `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environment are installed as described in **Installation** section. 
+- GPU compatible with CUDA
 
 
 ## Set up the example
@@ -21,13 +22,16 @@ mkdir ./example/data/
 ```
 
 - Put the example slide inside that `/data/` folder 
-- Now we have to set all the scripts to load the configs file that are in the example folder instead of the main configs. These specific configs will be the only difference than running the code outside this example case. Run:
+- Now we have to set all the scripts to load the example-configs files instead of the main configs. Also, we will add the current path to the example-configs parameters. These changes will be the only difference with running the code normally (outside example case) . Run:
 
 ```bash
 conda activate histo-miner-env
-python ./example/setup_example.py
+cd example
+python setup_example.py
+cd .. 
 ```
-- Don't forget to run the `unset_example.py` script once you are done with testing the example!
+
+It is important to run the script from the example folder. Also don't forget to run the `unset_example.py` script once you are fully done with the example!
 
 
 ## Models inference: nucleus segmentation and classification
@@ -40,16 +44,20 @@ Our config files are already written so lets put all the files we will need acco
 ```bash
 mkdir ./example/checkpoints/  
 ```
-Put all the checkpoints inside that `\checkpoint\` folder. 
+Put all the checkpoints inside that `\checkpoint\` folder.
+
 2.  Create folders that we will need to run inference:
 ```bash
+mkdir ./example/results/
 mkdir ./example/results/scchovernet_output/
 mkdir ./example/results/sccsegmenter_output/
+mkdir ./example/results/post-processing/
 mkdir ./example/cache/
 ```
 3. Run both inference:
 ```bash
-   sh scripts/main1_hovernet_inference.sh
-   sh scripts/main2_segmenter_inference.sh
+cd scripts
+source main1_hovernet_inference.sh
+source main2_segmenter_inference.sh
 ```
 

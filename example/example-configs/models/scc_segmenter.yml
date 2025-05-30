@@ -13,11 +13,11 @@
 
     paths:                       # --- parent key, DO NOT FILL this line  
 
-      checkpoints: "./example/checkpoints/sccsegmenter_bestweights.pth"    # Path to the downloaded sccsegmenter_bestweights.pth checkpoint file. Ex: "/data/checkpoints/sccsegmenter_bestweights.pth" [str] 
+      checkpoints: "/user_histominer_path/example/checkpoints/sccsegmenter_bestweights.pth"    # Path to the downloaded sccsegmenter_bestweights.pth checkpoint file. Ex: "/data/checkpoints/sccsegmenter_bestweights.pth" [str] 
 
-      input_dir: "./example/data/"                                         # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str]
+      input_dir: "/user_histominer_path/example/data/"                                         # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str]
 
-      output_dir: "./example/results/sccsegmenter_output/"                 # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str] 
+      output_dir: "/user_histominer_path/example/results/sccsegmenter_output/"                 # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str] 
 
 
 

@@ -9,13 +9,13 @@
 
     paths:                  # --- parent key, DO NOT FILL this line
       
-      checkpoints: "./example/checkpoints/scchovernet_bestweights.tar"  # Path to the downloaded scchovernet_bestweights.tar checkpoint file. Ex: "/data/checkpoints/scchovernet_bestweights.tar" [str] 
+      checkpoints: "/user_histominer_path/example/checkpoints/scchovernet_bestweights.tar"  # Path to the downloaded scchovernet_bestweights.tar checkpoint file. Ex: "/data/checkpoints/scchovernet_bestweights.tar" [str] 
 
-      input_dir : "./example/data/"                                     # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str] 
+      input_dir : "/user_histominer_path/example/data/"                                     # Path to the folder of WSIs (or patches) to infer from. Ex: "/data/slides_to_infer/" [str] 
 
-      output_dir: "./example/results/scchovernet_output/"            # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str]
+      output_dir: "/user_histominer_path/example/results/scchovernet_output/"               # Path to the folder inside which the inference output will be save. Needs to be different than input_dir. Ex: "/data/models_predictions" [str]
       
-      cache_path: "./example/cache/"                                    # Path to the folder used as cache. Ex:  "~/.cache" [str]
+      cache_path: "/user_histominer_path/example/cache/"                                    # Path to the folder used as cache. Ex:  "~/.cache" [str]
       
  
 

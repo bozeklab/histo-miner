@@ -18,7 +18,7 @@ def batch_replace(folder, old, new, extensions=('.py', '.sh')):
             replace_in_file(filepath, old, new)
 
 if __name__ == "__main__":
-    target_folder = "./scripts/"
+    target_folder = "../scripts/"
     batch_replace(
         folder=target_folder,
         old="/example/example-configs/",
