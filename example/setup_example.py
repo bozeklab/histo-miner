@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 
 def get_parent_path():
     """Get current directory path minus the last folder."""
@@ -8,10 +9,12 @@ def get_parent_path():
 def replace_in_file(path, old, new):
     with open(path, 'r', encoding='utf-8') as f:
         text = f.read()
-    if old in text:
-        text = text.replace(old, new)
+    # Use regular expression to replace '/configs/' not followed by '_'
+    pattern = re.compile(re.escape(old) + r'(?!_)')
+    new_text = pattern.sub(new, text)
+    if text != new_text:
         with open(path, 'w', encoding='utf-8') as f:
-            f.write(text)
+            f.write(new_text)
         print(f"Updated: {path}")
 
 def batch_replace(folder, old, new, extensions=('.py', '.sh')):

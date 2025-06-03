@@ -69,6 +69,11 @@ The full pipeline requires 3 environments to work, one for each git submodule an
 
 ### Installation commands
 
+First clone the repository: 
+```bash
+git clone git@github.com:bozeklab/histo-miner.git
+```
+
 The easiest way to install all these environments is from the yml files of the submodules conda envs and the requirement file of the core histo-miner code:
 
 ```bash
@@ -87,9 +92,14 @@ pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/w
 conda deactivate
 
 # mmsegmentation submodule env
-conda env create -f src/models/mmsegmentation/mmsegmentation_submodule.yml
+conda create --name mmsegmentation_submodule python=3.8 -y
 conda activate mmsegmentation_submodule
 pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
+pip install -U openmim
+mim install mmengine
+mim install mmcv==2.2.0
+mim install mmcv-full==1.7.2
+pip install mmsegmentation==1.2.2
 conda deactivate
 ```
 

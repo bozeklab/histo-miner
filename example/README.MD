@@ -54,6 +54,7 @@ mkdir ./example/results/
 mkdir ./example/results/scchovernet_output/
 mkdir ./example/results/sccsegmenter_output/
 mkdir ./example/results/post-processing/
+mkdir ./example/downsampling/
 mkdir ./example/cache/
 ```
 3. Run both inference:
