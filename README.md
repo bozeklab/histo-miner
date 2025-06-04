@@ -104,9 +104,6 @@ conda deactivate
 ```
 
 
-If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. 
-
-
 ### Installation details and alternatives 
 
 
@@ -154,7 +151,7 @@ You can create environments from scratch instead of using yaml files.
 </details>
 
 
-Further details as well as alternative installation methods are available in the README files of each git submodule.
+Further details  are available in the README files of each git submodule.
 These files are: 
 - For hovernet submodule: `/src/models/hover_net/README.md`
 - For mmsegmentation submodule: `/src/models/mmsegmentation/README.md`
