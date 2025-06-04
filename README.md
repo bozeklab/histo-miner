@@ -74,7 +74,7 @@ First clone the repository **including its submodules**:
 git clone --recurse-submodules git@github.com:bozeklab/histo-miner.git
 ```
 
-To use histo-miner you need hardware with CUDA-enable GPUs (NVIDIA GPUs). CPU-only compatible env are not supported yet. 
+To use histo-miner you need hardware with CUDA-enable GPUs (NVIDIA GPUs). CPU-only compatible environment are not supported yet. 
 
 
 ```bash
@@ -99,7 +99,6 @@ pip install mmsegmentation==1.2.2
 conda env create -f hovernet_submodule.yml
 conda activate hovernet_submodule
 pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
-
 
 conda deactivate
 ```
@@ -144,7 +143,6 @@ You can create environments from scratch instead of using yaml files.
    chmod +x src/models/hover_net/setup_condainstall.sh
    yes | ./src/models/hover_net/setup_condainstall.sh
    pip install -r src/models/hover_net/requirements.txt
-
 
    conda deactivate
    ```
