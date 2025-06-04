@@ -69,27 +69,21 @@ The full pipeline requires 3 environments to work, one for each git submodule an
 
 ### Installation commands
 
-First clone the repository: 
+First clone the repository **including its submodules**:
 ```bash
-git clone git@github.com:bozeklab/histo-miner.git
+git clone --recurse-submodules git@github.com:bozeklab/histo-miner.git
 ```
 
-The easiest way to install all these environments is from the yml files of the submodules conda envs and the requirement file of the core histo-miner code:
+To use histo-miner you need hardware with CUDA-enable GPUs (NVIDIA GPUs). CPU-only compatible env are not supported yet. 
+
 
 ```bash
-# histo-miner env
-conda create -n histo-miner-env python=3.10
-conda activate histo-miner-env
-conda install -c conda-forge openslide=3.4.1
-pip install -r ./requirements.txt
-pip install --no-dependencies mrmr-selection==0.2.5
-conda deactivate
+cd histo-miner
 
-# hovernet submodule env
-conda env create -f src/models/hover_net/hovernet_submodule.yml
-conda activate hovernet_submodule
-pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
-conda deactivate
+# histo-miner env
+conda env create -f histo-miner-env.yml
+conda activate histo-miner-env
+pip install --no-dependencies mrmr-selection==0.2.5
 
 # mmsegmentation submodule env
 conda create --name mmsegmentation_submodule python=3.8 -y
@@ -100,13 +94,67 @@ mim install mmengine
 mim install mmcv==2.2.0
 mim install mmcv-full==1.7.2
 pip install mmsegmentation==1.2.2
+
+# hovernet submodule env
+conda env create -f hovernet_submodule.yml
+conda activate hovernet_submodule
+pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
+
+
 conda deactivate
 ```
 
-If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. The installation can take some time, especially for `conda install -c conda-forge openslide` and `pip install torch` commands.
+
+If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. 
 
 
 ### Installation details and alternatives 
+
+
+You can create environments from scratch instead of using yaml files.
+
+
+<details>
+  <summary>Alternative commands: </summary>
+
+   ```bash
+   cd histo-miner
+
+   # histo-miner env
+   conda create -n histo-miner-env-nomrmr python=3.10 -y
+   conda activate histo-miner-env-nomrmr
+   conda install -c conda-forge openslide=3.4.1
+   pip install -r ./requirements.txt
+   pip install --no-dependencies mrmr-selection==0.2.5
+
+   # mmsegmentation submodule env
+   conda create --name mmsegmentation_submodule python=3.8 -y
+   conda activate mmsegmentation_submodule
+   pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
+   pip install -U openmim
+   mim install mmengine
+   mim install mmcv==2.2.0
+   mim install mmcv-full==1.7.2
+   pip install mmsegmentation==1.2.2
+
+   # hovernet submodule env
+   conda create -n hovernet_submodule python==3.6.12 -y
+   conda activate hovernet_submodule
+   pip install torch==1.10.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
+   chmod +x src/models/hover_net/setup_condainstall.sh
+   yes | ./src/models/hover_net/setup_condainstall.sh
+   pip install -r src/models/hover_net/requirements.txt
+
+
+   conda deactivate
+   ```
+
+   The installation can take some time, especially for `conda install -c conda-forge openslide`, `pip install torch` and `yes | ./src/models/hover_net/setup_condainstall.sh` commands.
+
+   If you face problems installing pytorch, check next section. It is also possible to install pytorch no-gpu versions. 
+
+</details>
+
 
 Further details as well as alternative installation methods are available in the README files of each git submodule.
 These files are: 
