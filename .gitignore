@@ -1,5 +1,5 @@
-#Folders
 
+#Folders
 scripts/multi_launch
 scripts/archive
 scripts/training-tests
@@ -12,11 +12,7 @@ dev-configs
 .idea
 
 #Files
-
 *.DS_Store
-*._.DS_Store
-
-*._
 ._*
 ._.gitignore
 ._README.md
@@ -26,9 +22,7 @@ archive-env.yml
 temp.py
 test.pdf
 
-
 # In case user run example
-
 example/data
 example/checkpoints
 example/processing
