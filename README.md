@@ -318,9 +318,9 @@ This version performs classification using a new feature selection tailored to y
 6. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`. Run the selected feature method.
 7. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **False**
-   - `feature_selection_file', path to the feature selection numpy file generated in 7. 
+   - `feature_selection_file`, path to the feature selection numpy file generated in 7. 
    - `folders.save_trained_model`, folder to save the model
-   - `names.trained_model, name choosen for the model
+   - `names.trained_model`, name choosen for the model
    Importantly update`histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` to the new number of kept features (see infofiles generated in 7. if needed)
 8. Run:
