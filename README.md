@@ -262,11 +262,11 @@ This step computes tissue-relevant features based on previously obtained nucleus
 This step classifies WSIs with tumor regions into responder vs. non-responder for CPI treatment using features selected in the original Histo-Miner paper.
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
-2. Download `Ranking_of_features.json` file from CPI dataset (see [Datasets](#datasets)).
+2. Download `Ranking_of_features.json` file from [here](https://uni-koeln.sciebo.de/s/IgiRNgNaAbez9ob).
 3. Update the following paths in `histo_miner_pipeline.yml` config:
    - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
    - `featarray_folder`, folder to the feature matrix output 
-4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
+4. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance `sample_1_response_analysed.json`.
 5. To generate the combined feature matrix and class vectors, run:
    ```bash
    conda activate histo-miner-env
@@ -274,9 +274,9 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    ```
 6. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **True**
-   - `feature_selection_file', path to the `Ranking_of_features.json` file
+   - `feature_selection_file`, path to the `Ranking_of_features.json` file
    - `folders.save_trained_model`, folder to save the model
-   - `names.trained_model, name choosen for the model
+   - `names.trained_model`, name choosen for the model
    Ensure that in `histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` is set to default value: **19**
 7. Run:
@@ -305,32 +305,31 @@ This version performs classification using a new feature selection tailored to y
 2. Update the following paths in `histo_miner_pipeline.yml`:
   - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see next point)
   - `featarray_folder`, folder to the feature matrix output 
-3. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance 'sample_1_response_analysed.json'.
-4. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`
-5. To generate the combined feature matrix and class vectors, run:
+3. Ensure to have "no_response" or "response" caracters in the name of the training json files (depending on the file class). For instance `sample_1_response_analysed.json`.
+4. To generate the combined feature matrix and class vectors, run:
    ```bash
    conda activate histo-miner-env
    python scripts/usecase1_collect_features_consistently.py
    ```
-6. Update `histo_miner_pipeline.yml` config:
+5. Update `histo_miner_pipeline.yml` config:
    - `classification_evaluation`, path to folder to output cross-validation evaluation
-   - `eval_folder`, name of the folder 
+   - `eval_folder`, name of the folder
    Optionally update `classification.yml` for custom parameters.
-7. Run the selected feature selection
-8. Update the following parameters in `classification.yml` config:
+6. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`. Run the selected feature method.
+7. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **False**
    - `feature_selection_file', path to the feature selection numpy file generated in 7. 
    - `folders.save_trained_model`, folder to save the model
    - `names.trained_model, name choosen for the model
    Importantly update`histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` to the new number of kept features (see infofiles generated in 7. if needed)
-9. Run:
+8. Run:
    ```bash
    python scripts/training/training_classifier.py
    ```
-10. Update the following parameters in `classification.yml` config:
+9. Update the following parameters in `classification.yml` config:
    - `inference_input`, path to the folder containing WSI to classify
-11. Run:
+10. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
    conda deactivate
