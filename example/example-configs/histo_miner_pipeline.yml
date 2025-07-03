@@ -5,11 +5,11 @@
 
     folders:                                     # --- parent key, DO NOT FILL this line
 
-      inferences_postproc_main:                  # Path to the folder containing output of SCC Hovernet and SCC Segmenter. Ex: "/data/inference/results/" [str]
+      inferences_postproc_main: "/user_histominer_path/example/results/post-processing/"    # Path to the folder containing output of SCC Hovernet and SCC Segmenter. Ex: "/data/inference/results/" [str]
 
-      tissue_analyser_main:                      # Path to the folder containing the processed inference output (main3_inferences_postproc.py output). Ex: "/data/postprocess/" [str] 
+      tissue_analyser_main: "/user_histominer_path/example/results/post-processing/"        # Path to the folder containing the processed inference output (main3_inferences_postproc.py output). Ex: "/data/postprocess/" [str] 
 
-      tissue_analyser_output:                    # Path to the folder to save tissue analyser json outputs. Ex: "/data/postprocess/tissue_analyser_output/" [str] 
+      tissue_analyser_output: "/user_histominer_path/example/results/tissue_analyser/"      # Path to the folder to save tissue analyser json outputs. Ex: "/data/postprocess/tissue_analyser_output/" [str] 
  
       featarray_folder:                          # Path to the folder containing the classification vector and the feature matrix of the dataset. It is a (N x M) matrix, with N = number of samples, M = number of features per sample. 
 

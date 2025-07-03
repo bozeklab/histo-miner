@@ -65,3 +65,6 @@ source main2_segmenter_inference.sh
 ```
 
 
+## Models inference visualization 
+
+**Coming soon**
