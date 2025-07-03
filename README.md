@@ -277,6 +277,7 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    - `feature_selection_file`, path to the `Ranking_of_features.json` file
    - `folders.save_trained_model`, folder to save the model
    - `names.trained_model`, name choosen for the model
+   
    Ensure that in `histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` is set to default value: **19**
 7. Run:
@@ -321,6 +322,7 @@ This version performs classification using a new feature selection tailored to y
    - `feature_selection_file`, path to the feature selection numpy file generated in 7. 
    - `folders.save_trained_model`, folder to save the model
    - `names.trained_model`, name choosen for the model
+
    Importantly update`histo_miner_pipeline.yml` config:
    - `nbr_keptfeat` to the new number of kept features (see infofiles generated in 7. if needed)
 8. Run:
