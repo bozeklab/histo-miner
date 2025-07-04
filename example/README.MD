@@ -166,9 +166,20 @@ Now that you got the features vector for the WSI, you can use it for different d
 
 
 <p align="center">
-  <img src="../docs/images/figure-use-case.png">
+  <img src="../docs/images/figure-use-case.png", width="750">
 </p>
 
+<div align="center">
+**Fig. 4: Histo-Miner tested in a clinical scenario: prediction of CPI
+treatment response.** **(a)** To test the clinical utility of Histo-Miner we assembled and
+processed WSIs from in total n=45 cSCC patients before checkpoint inhibition (CPI) therapy.
+**(b)** Mean ROC curve for the classifier keeping 19 best features and its standard error. The
+classifier cross-validation folds ROC curves as well as the standard deviation of the mean
+ROC curve are shown in Supplementary Fig. 5. **(c)** On the left, box plots of the 4 best
+features, p-value was calculated using Mann-Whitney U test. On the right, visualization of
+representative cases for each of the best features. For distance visualization we hide cell
+classes other than plasma cells and granulocytes.
+</div>
 
 
 
