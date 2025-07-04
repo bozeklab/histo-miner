@@ -11,6 +11,7 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 - [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
 - [Models inference visualization](#models-inference-visualization)
 - [Tissue Analyser](#tissue-analyser)
+- [Unset example](#unset-example)
 - [Downstream Analyses](#downstream-analyses)
 
 
@@ -95,7 +96,7 @@ Visualize the inference in QuPath.
 ```bash
 ln -s ./example/results/post-processing/wsi_example.json   ./example/data/wsi_example.json
 ```
-_Note: If you work from a remote cluster and want to visualize from your local machine, do not create such a symbolic link but copy paste the json file in the data folder directly_
+_Note: If you work from a remote cluster and want to visualize from your local machine, do not create such a symbolic link but copy paste the post-processing json file in the data folder directly_
 
 2. Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/).
 
@@ -119,7 +120,7 @@ Original slide (left side) without prediction:
 
 
 <p align="center">
-  <img src="../docs/images/example-image1.png", width="1000">
+  <img src="../docs/images/example-image1.png", width="800">
 </p>
 
 
@@ -127,7 +128,7 @@ With the predictions:
 
 
 <p align="center">
-  <img src="../docs/images/example-image2.png",  width="1000">
+  <img src="../docs/images/example-image2.png",  width="800">
 </p>
 
 
@@ -158,11 +159,22 @@ python scripts/main4_tissue_analyser.py
 **Output**: Structured JSON files with the computed features in the results folder. The distance calculation was skipped but can be activated in the example-config. 
 
 
+## Unset example
+
+This step is needed if you want to go back using histo-miner from the main folder. Indeed, setting the example changed the pointing of configs to `example/example-configs` instead of the regular use  `configs`. To restablished the original pointing run:
+```bash
+conda activate histo-miner-env
+cd example
+python unset_example.py
+cd .. 
+```
+
+
 ## Downstream Analyses
 
 Now that you got the features vector for the WSI, you can use it for different downstream analyses, such as WSI classification with intrepretability, WSI self-supervised learning, WSI metadata exploration and so on. 
 
-- In the [paper](https://www.arxiv.org/abs/2505.04672) we used these vectors to perform  Classification of cSCC response to immunotherapy and described which features are the most important for the classification using feature selection, 
+- In the [paper](https://www.arxiv.org/abs/2505.04672) we used these vectors to perform  classification of cSCC response to immunotherapy and described which features are the most important for the classification using feature selection, 
 
 
 <p align="center">
@@ -171,14 +183,14 @@ Now that you got the features vector for the WSI, you can use it for different d
 
 <div align="center">
 <b>Fig. 4: Histo-Miner tested in a clinical scenario: prediction of CPI
-treatment response.</b> <sup><b>(a)</b> To test the clinical utility of Histo-Miner we assembled and
+treatment response.</b> <sub><b>(a)</b> To test the clinical utility of Histo-Miner we assembled and
 processed WSIs from in total n=45 cSCC patients before checkpoint inhibition (CPI) therapy.
 <b>(b)</b> Mean ROC curve for the classifier keeping 19 best features and its standard error. The
 classifier cross-validation folds ROC curves as well as the standard deviation of the mean
 ROC curve are shown in Supplementary Fig. 5. <b>(c)</b> On the left, box plots of the 4 best
 features, p-value was calculated using Mann-Whitney U test. On the right, visualization of
 representative cases for each of the best features. For distance visualization we hide cell
-classes other than plasma cells and granulocytes.</sup>
+classes other than plasma cells and granulocytes.</sub>
 </div>
 
 
