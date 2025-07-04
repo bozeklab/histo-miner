@@ -6,7 +6,12 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 
 ## Table of contents
 
-
+- [Prerequisite](#prerequisite)
+- [Set up the example](#set-up-the-example)
+- [Models inference: nucleus segmentation and classification](#models-inference-nucleus-segmentation-and-classification)
+- [Models inference visualization](#models-inference-visualization)
+- [Tissue Analyser](#tissue-analyser)
+- [Downstream Analyses](#downstream-analyses)
 
 
 ## Prerequisite
@@ -67,6 +72,7 @@ mkdir ./example/cache/
 cd scripts
 source main1_hovernet_inference.sh
 source main2_segmenter_inference.sh
+cd ..
 ```
 
 4. Copy the .json and .png output (inside `scchovernet_output` and `sccsegmenter_output`) inside `post-processing` folder
@@ -130,6 +136,47 @@ Zoomed on cells:
 <p align="center">
   <img src="../docs/images/example-image3.png",  width="333">
 </p>
+
+
+## Tissue Analyser 
+
+This step computes tissue-relevant features based on previously obtained nucleus segmentations. 
+
+All the steps before should be done (models inference visualization is only optional).
+
+1.  Create folders for tissue analyser output:
+```bash
+mkdir ./example/results/tissue_analyser/
+```
+
+2. Run:
+```bash
+conda activate histo-miner-env
+python scripts/main4_tissue_analyser.py
+```
+
+**Output**: Structured JSON files with the computed features in the results folder. The distance calculation was skipped but can be activated in the example-config. 
+
+
+## Downstream Analyses
+
+Now that you got the features vector for the WSI, you can use it for different downstream analyses, such as WSI classification with intrepretability, WSI self-supervised learning, WSI metadata exploration and so on. 
+
+- In the [paper](https://www.arxiv.org/abs/2505.04672) we used these vectors to perform  Classification of cSCC response to immunotherapy and described which features are the most important for the classification using feature selection, 
+
+
+<p align="center">
+  <img src="../docs/images/example-image4.png">
+</p>
+
+
+
+
+- You can run the classification with your own dataset following the **Usage** section ( _Classification of cSCC response to immunotherapy with pre-defined feature selection_ ) of the main README,
+
+
+- To reproduce results from the paper, you can download CPI dataset and apply the **Usage** section ( _Classification of cSCC response to immunotherapy with pre-defined feature selection_ ) of the main README to this dataset. CPI dataset is/will be available publicly only after publication of the paper (contrary to the other datasets of this repository).
+
 
 
 
