@@ -199,7 +199,6 @@ This step performs nucleus segmentation and classification from your input WSIs 
    ```bash
    conda activate histo-miner-env
    python scripts/main3_inferences_postproc.py
-   conda deactivate
    ```
 
 **Output**: One JSON file with segmented and classified nuclei for each input WSI.
@@ -248,7 +247,6 @@ This step computes tissue-relevant features based on previously obtained nucleus
    ```bash
    conda activate histo-miner-env
    python scripts/main4_tissue_analyser.py
-   conda deactivate 
    ```
 
 **Output**: Structured JSON files with the computed features. 
@@ -289,7 +287,6 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 9. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
-   conda deactivate
    ```
 
 **Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
@@ -334,7 +331,6 @@ This version performs classification using a new feature selection tailored to y
 10. Run:
    ```bash
    python scripts/usecase2_classification_inference.py
-   conda deactivate
    ```
 
 **Output**: Prediction of responder vs non-responder class for each WSI displayed in terminal. 
