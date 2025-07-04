@@ -11,9 +11,9 @@
 
       tissue_analyser_output: "/user_histominer_path/example/results/tissue_analyser/"      # Path to the folder to save tissue analyser json outputs. Ex: "/data/postprocess/tissue_analyser_output/" [str] 
  
-      featarray_folder:                          # Path to the folder containing the classification vector and the feature matrix of the dataset. It is a (N x M) matrix, with N = number of samples, M = number of features per sample. 
+      featarray_folder: "/user_histominer_path/example/results/featarray/"            # Path to the folder containing the classification vector and the feature matrix of the dataset. It is a (N x M) matrix, with N = number of samples, M = number of features per sample. 
 
-      classification_evaluation:                 # Path to the image classification evaluation parent folder. Ex: "/data/classification_evaluation/" [str] 
+      classification_evaluation:                                                            # Path to the image classification evaluation parent folder. Ex: "/data/classification_evaluation/" [str] 
 
       visualizations:                            # Path to the analyses visualization output. Ex: "/data/samples/visualization/" [str]
         

@@ -1,11 +1,14 @@
 #Lucas Sancéré -
 
 import sys
-sys.path.append('../')  # Only for Remote use on Clusters
-
-import json
 import os
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
+sys.path.append(script_dir)   # subdir/
+sys.path.append(parent_dir)   # project/
+
+import json
 import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
@@ -20,9 +23,12 @@ from src.histo_miner.utils.filemanagment import anaylser2featselect
 ## Load configs parameters
 #####################################################################
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner_pipeline.yml", "r") as f:
+with open(script_dir + "/../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)

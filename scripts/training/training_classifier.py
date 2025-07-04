@@ -1,10 +1,16 @@
 #Lucas Sancéré -
 
 import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
+grandparent_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(script_dir)
+sys.path.append(parent_dir)
+sys.path.append(grandparent_dir)
 
 import os.path
-
 from tqdm import tqdm
 import numpy as np
 import time
@@ -15,12 +21,12 @@ from attrdictionary import AttrDict as attributedict
 from sklearn import linear_model, ensemble, metrics
 from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
 cross_validate, cross_val_score, GroupKFold, StratifiedGroupKFold
+import joblib
+import json
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import src.histo_miner.utils.misc as utils_misc
-import joblib
 
-import json
 
 
 
@@ -28,10 +34,12 @@ import json
 ## Load configs parameter
 #############################################################
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../../configs/histo_miner_pipeline.yml", "r") as f:
+with open(script_dir + "/../../configs/histo_miner_pipeline.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(config)
@@ -41,7 +49,7 @@ patientid_avail = confighm.parameters.bool.patientid_avail
 
 
 
-with open("./../../configs/classification.yml", "r") as f:
+with open(script_dir + "/../../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)

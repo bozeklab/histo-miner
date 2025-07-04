@@ -1,17 +1,18 @@
 #Lucas Sancéré -
 
 import sys
-sys.path.append('../')  # Only for Remote use on Clusters
-
 import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
+sys.path.append(script_dir)   # subdir/
+sys.path.append(parent_dir)   # project/
+
 import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
-
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix
 import joblib
-
-
 import json
 
 
@@ -19,9 +20,12 @@ import json
 ## Load configs parameter
 #############################################################
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
-with open("./../configs/histo_miner_pipeline.yml", "r") as f:
+with open(script_dir + "/../configs/histo_miner_pipeline.yml", "r") as f:
     confighm = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 confighm = attributedict(confighm)
@@ -29,7 +33,7 @@ featarray_folder = confighm.paths.folders.featarray_folder
 nbr_keptfeat = confighm.parameters.int.nbr_keptfeat
 
 
-with open("./../configs/classification.yml", "r") as f:
+with open(script_dir + "/../configs/classification.yml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 # Create a config dict from which we can access the keys with dot syntax
 config = attributedict(config)
