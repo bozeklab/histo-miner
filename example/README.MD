@@ -166,7 +166,7 @@ Now that you got the features vector for the WSI, you can use it for different d
 
 
 <p align="center">
-  <img src="../docs/images/example-image4.png">
+  <img src="../docs/images/figure-use-case.png">
 </p>
 
 
