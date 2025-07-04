@@ -120,7 +120,7 @@ Original slide (left side) without prediction:
 
 
 <p align="center">
-  <img src="../docs/images/example-image1.png", width="800">
+  <img src="../docs/images/example-image1.png", width="850">
 </p>
 
 
@@ -128,7 +128,7 @@ With the predictions:
 
 
 <p align="center">
-  <img src="../docs/images/example-image2.png",  width="800">
+  <img src="../docs/images/example-image2.png",  width="850">
 </p>
 
 
