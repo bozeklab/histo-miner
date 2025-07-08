@@ -21,8 +21,8 @@ def download_from_zenodo(url: str, output_path: str):
 
 def create_folders():  
     dirs = [
-        script_dir + "../../data/",
-        script_dir + "../../data/feature_rank/"
+        script_dir + "/../../data/",
+        script_dir + "/../../data/feature_rank/"
     ]
 
     for d in dirs:
@@ -34,17 +34,17 @@ def create_folders():
 if __name__ == "__main__":
 
     # Create all the needed folders
-    create_example_folders()
+    create_folders()
 
     # Download tcheckpoints from Zenodo 
-    zenodo_links = [,
-        "https://zenodo.org/records/15836085/files/Ranking_of_features.json?download=1",
+    zenodo_links = [
+        "https://zenodo.org/records/15836085/files/Ranking_of_features.json?download=1"
     ]
     file_size = [
-        "",
+        ""
     ]
     output_folder_name = [
-        "../../data/feature_rank/",
+        "/../../data/feature_rank/"
     ]
 
 

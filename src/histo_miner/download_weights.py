@@ -21,8 +21,8 @@ def download_from_zenodo(url: str, output_path: str):
 
 def create_folders():  
     dirs = [
-        script_dir + "../../data/",
-        script_dir + "../../data/checkpoints/",
+        script_dir + "/../../data/",
+        script_dir + "/../../data/checkpoints/",
     ]
 
     for d in dirs:
@@ -34,7 +34,7 @@ def create_folders():
 if __name__ == "__main__":
 
     # Create all the needed folders
-    create_example_folders()
+    create_folders()
 
     # Download tcheckpoints from Zenodo 
     zenodo_links = [
@@ -46,8 +46,8 @@ if __name__ == "__main__":
         "2.7 GB",
     ]
     output_folder_name = [
-        "../../data/checkpoints/",
-        "../../data/checkpoints/",
+        "/../../data/checkpoints/",
+        "/../../data/checkpoints/",
     ]
 
 
@@ -64,5 +64,7 @@ if __name__ == "__main__":
         else:
             print("{} already downloaded".format(filename))
        
+        k += 1
+
 
     print("Model weights downloaded!")

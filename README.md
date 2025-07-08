@@ -182,14 +182,17 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 
 This step performs nucleus segmentation and classification from your input WSIs — corresponding to steps **(a), (b), (c)** in the figure above.
 
-1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets)):
+1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets) for manual download):
 ```bash
    conda activate histo-miner-env
    python src/histo_miner/download_weights.py
 ```
+They are now in `/data/checkpoints/`
 2. Configure the files `scc_hovernet.yml` and `scc_segmenter.yml`:
    - Set the input/output paths
    - Set the number of GPUs
+   - Set the checkpoints paths (in `./data/checkpoints/`if automatic download)
+   - Choose a cache folder 
 3. Run the inference:
 ```bash
    cd scripts
@@ -264,7 +267,11 @@ This step computes tissue-relevant features based on previously obtained nucleus
 This step classifies WSIs with tumor regions into responder vs. non-responder for CPI treatment using features selected in the original Histo-Miner paper.
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
-2. Download `Ranking_of_features.json` file from [here](https://uni-koeln.sciebo.de/s/IgiRNgNaAbez9ob).
+2. Download `Ranking_of_features.json` file ([here](https://uni-koeln.sciebo.de/s/IgiRNgNaAbez9ob) for manual download):
+```bash
+   conda activate histo-miner-env
+   python src/histo_miner/download_rank.py
+```
 3. Update the following paths in `histo_miner_pipeline.yml` config:
    - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
    - `featarray_folder`, folder to the feature matrix output 
@@ -276,7 +283,7 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
    ```
 6. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **True**
-   - `feature_selection_file`, path to the `Ranking_of_features.json` file
+   - `feature_selection_file`, path to the `Ranking_of_features.json` file (in `./data/feature_rank/`if automatic download)
    - `folders.save_trained_model`, folder to save the model
    - `names.trained_model`, name choosen for the model
    
