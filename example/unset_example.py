@@ -24,3 +24,5 @@ if __name__ == "__main__":
         old="/example/example-configs/",
         new="/configs/"
     )
+
+    print("Example unset. You can now use histo-miner from the main folder.")

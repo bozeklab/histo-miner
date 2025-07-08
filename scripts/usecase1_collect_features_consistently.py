@@ -23,8 +23,6 @@ from src.histo_miner.utils.filemanagment import anaylser2featselect
 ## Load configs parameters
 #####################################################################
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.

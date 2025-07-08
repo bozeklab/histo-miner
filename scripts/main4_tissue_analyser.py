@@ -21,9 +21,6 @@ from src.histo_miner.utils.misc import NpEncoder
 ## Load configs parameter
 ###################################################################
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
 with open(script_dir + "/../configs/histo_miner_pipeline.yml", "r") as f:
