@@ -174,6 +174,7 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
   - [Classification of cSCC response to immunotherapy with custom feature selection](#-classification-of-cscc-response-to-immunotherapy-with-custom-feature-selection)
 - [Example](#example)
 
+**Remark:** You can check how the config files are filled in `example/example-configs/` if you have issues filling configs.  
 
 ---
 
