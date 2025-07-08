@@ -182,7 +182,11 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 
 This step performs nucleus segmentation and classification from your input WSIs — corresponding to steps **(a), (b), (c)** in the figure above.
 
-1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets)).
+1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets)):
+```bash
+   conda activate histo-miner-env
+   python src/histo_miner/download_weights.py
+```
 2. Configure the files `scc_hovernet.yml` and `scc_segmenter.yml`:
    - Set the input/output paths
    - Set the number of GPUs
@@ -193,8 +197,8 @@ This step performs nucleus segmentation and classification from your input WSIs 
    source main2_segmenter_inference.sh
 ```
 4. Combine the outputs:
-   - Place both outputs in the same folder
-   - Add this path to the _inferences_postproc_main_ field in `histo_miner_pipeline.yml` config
+   - Copy both outputs in a folder
+   - Add the path to this folder to the _inferences_postproc_main_ field in `histo_miner_pipeline.yml` config
 5. Run post-processing to correct tumor nuclei classification and reformat files for visualization:
    ```bash
    conda activate histo-miner-env
