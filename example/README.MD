@@ -26,8 +26,9 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 
 These steps are specific to the example. For regular use, they are not needed. 
 
-We have to set all the scripts to load the example-configs files instead of the main configs, to create all needed folders, and to download needed data. Also, we will add the current path to the example-configs parameters. These changes will be the only difference with running the code for regular use (outside example case). Run:
+We have to set all the scripts to load the example-configs files instead of the main configs, to create all needed folders, and to download needed data.
 
+Run:
 ```bash
 conda activate histo-miner-env
 cd example
@@ -37,7 +38,7 @@ cd ..
 
 Now we have:
 - The example WSI in the `data` folder 
-- The SCC Hovernet and SCC Segmenter `checkpoints` folder
+- The SCC Hovernet and SCC Segmenter in the `checkpoints` folder
 - Scripts loading parameters from the example conifgs instead of the main config 
 
 
@@ -77,7 +78,7 @@ Visualize the inference in QuPath.
 ```bash
 ln -s ./example/results/post-processing/wsi_example.json   ./example/data/wsi_example.json
 ```
-_Note: If you work from a remote cluster and want to visualize from your local machine, do not create such a symbolic link but copy paste the post-processing json file in the data folder directly_
+_Note_: If you work from a remote cluster and want to visualize from your local machine, do not create such a symbolic link but copy paste the post-processing json file in the data folder directly
 
 2. Open QuPath and open the input WSI inside QuPath. To download QuPath go to: [QuPath website](https://qupath.github.io/).
 
