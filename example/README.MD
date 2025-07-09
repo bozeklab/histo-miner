@@ -50,7 +50,7 @@ restore loading parameters from the main configs instand of the example one.**
 ## Models inference: nucleus segmentation and classification
 
 
-1. Run both inference:
+1. Run both inference (it includes pre-processing of the slides):
 ```bash
 cd scripts
 bash -l main1_hovernet_inference.sh
