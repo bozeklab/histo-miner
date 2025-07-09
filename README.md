@@ -89,6 +89,7 @@ pip install --no-dependencies mrmr-selection==0.2.5
 conda create --name mmsegmentation_submodule python=3.8 -y
 conda activate mmsegmentation_submodule
 pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
+pip install click==8.2.1
 pip install -U openmim
 mim install mmengine
 mim install mmcv==2.2.0
@@ -127,6 +128,7 @@ You can create environments from scratch instead of using yaml files.
    conda create --name mmsegmentation_submodule python=3.8 -y
    conda activate mmsegmentation_submodule
    pip install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
+   pip install click==8.2.1
    pip install -U openmim
    mim install mmengine
    mim install mmcv==2.2.0
