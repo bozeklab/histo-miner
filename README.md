@@ -186,10 +186,10 @@ This section explains how to use the Histo-Miner code. **A complete end-to-end e
 This step performs nucleus segmentation and classification from your input WSIs — corresponding to steps **(a), (b), (c)** in the figure above.
 
 1. Download SCC Segmenter and SCC Hovernet trained weights (see [Datasets](#datasets) for manual download):
-```bash
+   ```bash
    conda activate histo-miner-env
    python src/histo_miner/download_weights.py
-```
+   ```
 They are now in `/data/checkpoints/`
 2. Configure the files `scc_hovernet.yml` and `scc_segmenter.yml`:
    - Set the input/output paths
@@ -197,11 +197,12 @@ They are now in `/data/checkpoints/`
    - Set the checkpoints paths (in `./data/checkpoints/`if automatic download)
    - Choose a cache folder 
 3. Run the inference (it includes pre-processing of the slides):
-```bash
+   ```bash
    cd scripts
-   source main1_hovernet_inference.sh
-   source main2_segmenter_inference.sh
-```
+   bash -l main1_hovernet_inference.sh
+   bash -l main2_segmenter_inference.sh
+   cd ..
+   ```
 4. Combine the outputs:
    - Copy both outputs in a folder
    - Add the path to this folder to the _inferences_postproc_main_ field in `histo_miner_pipeline.yml` config
@@ -271,10 +272,10 @@ This step classifies WSIs with tumor regions into responder vs. non-responder fo
 
 1. Complete the "Models inference" and "Tissue Analyser" steps.
 2. Download `Ranking_of_features.json` file ([here](https://uni-koeln.sciebo.de/s/IgiRNgNaAbez9ob) for manual download):
-```bash
+   ```bash
    conda activate histo-miner-env
    python src/histo_miner/download_rank.py
-```
+   ```
 3. Update the following paths in `histo_miner_pipeline.yml` config:
    - `tissue_analyser_output`, folder containing the tissue analyser output JSONs with correct naming (see 4.)
    - `featarray_folder`, folder to the feature matrix output 

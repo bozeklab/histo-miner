@@ -53,8 +53,8 @@ restore loading parameters from the main configs instand of the example one.**
 1. Run both inference:
 ```bash
 cd scripts
-source main1_hovernet_inference.sh
-source main2_segmenter_inference.sh
+bash -l main1_hovernet_inference.sh
+bash -l main2_segmenter_inference.sh
 cd ..
 ```
 
