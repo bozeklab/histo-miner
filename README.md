@@ -194,7 +194,7 @@ They are now in `/data/checkpoints/`
    - Set the number of GPUs
    - Set the checkpoints paths (in `./data/checkpoints/`if automatic download)
    - Choose a cache folder 
-3. Run the inference:
+3. Run the inference (it includes pre-processing of the slides):
 ```bash
    cd scripts
    source main1_hovernet_inference.sh
