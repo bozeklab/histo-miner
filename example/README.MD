@@ -115,7 +115,7 @@ With the predictions:
 
 
 <p align="center">
-  <img src="../docs/images/cell_legend.png" width="400">
+  <img src="../docs/images/cell_legend.png" width="700">
 </p>
 
 
