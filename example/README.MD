@@ -114,6 +114,11 @@ With the predictions:
 </p>
 
 
+<p align="center">
+  <img src="../docs/images/cell_legend.png" width="400">
+</p>
+
+
 Zoomed on cells:
 
 <p align="center">
