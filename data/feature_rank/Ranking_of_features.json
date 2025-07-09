@@ -1,0 +1,162 @@
+{
+	"Percentage_Lymphocytes_allcellsinTumorVicinity": {
+		"count": 3,
+		"score": 19.00043841606386
+	},
+	"LogRatio_Granulocytes_Lymphocytes_inTumorVicinity": {
+		"count": 3,
+		"score": 19.000000000438636
+	},
+	"Percentage_Lymphocytes_allcellsinTumor": {
+		"count": 3,
+		"score": 17.000000000043435
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_mean": {
+		"count": 3,
+		"score": 9.000434511339723
+	},
+	"Lymphocytes_Percentage": {
+		"count": 2,
+		"score": 19.000000000434294
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_TumorCells_inTumor_dist_std": {
+		"count": 2,
+		"score": 18.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_iqr": {
+		"count": 2,
+		"score": 16.000000043429445
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Lymphocytes_TumorCells_inTumor_dist_kurt": {
+		"count": 2,
+		"score": 14.041392685158225
+	},
+	"LogRatio_Granulocytes_PlasmaCells": {
+		"count": 2,
+		"score": 13.000000000000433
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_median": {
+		"count": 2,
+		"score": 11.000000434294265
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_kurt": {
+		"count": 2,
+		"score": 10.000043427276863
+	},
+	"LogRatio_StromaCells_Lymphocytes_inTumorVicinity": {
+		"count": 2,
+		"score": 9.000004342923104
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_mean": {
+		"count": 2,
+		"score": 5.004321373782642
+	},
+	"Percentage_StromaCells_allcellsinTumor": {
+		"count": 1,
+		"score": 18.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_std": {
+		"count": 1,
+		"score": 18.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Lymphocytes_TumorCells_inTumor_dist_skewness": {
+		"count": 1,
+		"score": 17.0
+	},
+	"LogRatio_Granulocytes_TumorCells_inTumor": {
+		"count": 1,
+		"score": 17.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_MAD": {
+		"count": 1,
+		"score": 16.0
+	},
+	"LymphocytesDensity_insideTumorarea": {
+		"count": 1,
+		"score": 15.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_skewness": {
+		"count": 1,
+		"score": 15.0
+	},
+	"LogRatio_PlasmaCells_TumorCells": {
+		"count": 1,
+		"score": 15.0
+	},
+	"Percentage_Granulocytes_allcellsinTumorVicinity": {
+		"count": 1,
+		"score": 14.0
+	},
+	"Lymphocytes_perTumorarea": {
+		"count": 1,
+		"score": 13.0
+	},
+	"LogRatio_StromaCells_Lymphocytes_inTumor": {
+		"count": 1,
+		"score": 12.0
+	},
+	"Granulocytes_Percentage": {
+		"count": 1,
+		"score": 12.0
+	},
+	"Percentage_Granulocytes_insideTumor": {
+		"count": 1,
+		"score": 12.0
+	},
+	"LogRatio_StromaCells_Lymphocytes": {
+		"count": 1,
+		"score": 11.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_std": {
+		"count": 1,
+		"score": 11.0
+	},
+	"LogRatio_Lymphocytes_TumorCells_inTumor": {
+		"count": 1,
+		"score": 8.0
+	},
+	"LogRatio_EpithelialCells_Granulocytes": {
+		"count": 1,
+		"score": 8.0
+	},
+	"LogRatio_Lymphocytes_TumorCells": {
+		"count": 1,
+		"score": 7.0
+	},
+	"LogRatio_Granulocytes_Lymphocytes": {
+		"count": 1,
+		"score": 7.0
+	},
+	"LogRatio_Granulocytes_PlasmaCells_inTumor": {
+		"count": 1,
+		"score": 6.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_TumorCells_inTumor_dist_median": {
+		"count": 1,
+		"score": 5.0
+	},
+	"Granulocytes_perTumorarea": {
+		"count": 1,
+		"score": 4.0
+	},
+	"LogRatio_Lymphocytes_EpithelialCells_inTumorVicinity": {
+		"count": 1,
+		"score": 4.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_PlasmaCells_inTumor_dist_MAD": {
+		"count": 1,
+		"score": 2.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_TumorCells_inTumor_dist_kurt": {
+		"count": 1,
+		"score": 2.0
+	},
+	"Distances_of_cells_in_Tumor_Regions_DistClosest_Granulocytes_Lymphocytes_inTumor_dist_median": {
+		"count": 1,
+		"score": 1.0
+	},
+	"Percentage_Granulocytes_allcellsinTumor": {
+		"count": 1,
+		"score": 1.0
+	}
+}
