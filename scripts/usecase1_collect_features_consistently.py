@@ -14,7 +14,7 @@ import yaml
 from attrdictionary import AttrDict as attributedict
 
 from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict, \
-                                       convert_names_to_orderedint, get_indices_by_value, rename_with_ancestors
+                                       rename_with_ancestors
 from src.histo_miner.utils.filemanagment import anaylser2featselect
 
 

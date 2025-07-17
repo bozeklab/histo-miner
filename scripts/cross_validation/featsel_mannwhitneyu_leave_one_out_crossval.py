@@ -10,24 +10,20 @@ sys.path.append(script_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
 
-import random
 import math
 from tqdm import tqdm
-import random
 import numpy as np
 import yaml
 import xgboost 
 import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn.model_selection import ParameterGrid, cross_val_score, LeaveOneGroupOut
-from sklearn.metrics import balanced_accuracy_score, roc_curve
+from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.metrics import balanced_accuracy_score
 from sklearn.preprocessing import StandardScaler 
-from scipy.cluster.hierarchy import linkage, fcluster
-from scipy.spatial.distance import squareform
 from collections import Counter, defaultdict
 
 from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSelector
-import src.histo_miner.utils.misc as utils_misc
+
 
 
 # RUN LEAVE ONE COHORT OUT CROSS VAL
@@ -36,9 +32,6 @@ import src.histo_miner.utils.misc as utils_misc
 #############################################################
 ## Load configs parameter
 #############################################################
-
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.
