@@ -369,7 +369,7 @@ An end to end example on how to run the code on one provided WSI is availble in 
 
 ## Datasets
 
-* [NucSeg and TumSeg datasets](https://doi.org/10.5281/zenodo.8362593)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8362593.svg)](https://doi.org/10.5281/zenodo.8362593)
+* [NucSeg and TumSeg datasets](https://doi.org/10.5281/zenodo.8362592)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8362592.svg)](https://doi.org/10.5281/zenodo.8362592)
 * [CPI dataset](https://doi.org/10.5281/zenodo.13986860)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13986860.svg)](https://doi.org/10.5281/zenodo.13986860) 
 
 🔸 Contrary to NucSeg, TumSeg, SCC Hovernet and SCC Segmenter weights, **CPI dataset remains restricted until the paper is published in a journal**. The dataset was publicly available few days after publication of the preprint but was unfortunately made private again after discussion and agreement with co-authors.
