@@ -1,7 +1,6 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints)  • [Q&A](#models-checkpoints) • [Citation](#citation)
 
 </div>
@@ -196,7 +195,7 @@ This step performs nucleus segmentation and classification from your input WSIs 
    conda activate histo-miner-env
    python src/histo_miner/download_weights.py
    ```
-They are now in `/data/checkpoints/`
+   They are now in `/data/checkpoints/`
 2. Configure the files `scc_hovernet.yml` and `scc_segmenter.yml`:
    - Set the input/output paths
    - Set the number of GPUs
@@ -374,7 +373,7 @@ An end to end example on how to run the code on one provided WSI is availble in 
 
 🔸 Contrary to NucSeg, TumSeg, SCC Hovernet and SCC Segmenter weights, **CPI dataset remains restricted until the paper is published in a journal**. The dataset was publicly available few days after publication of the preprint but was unfortunately made private again after discussion and agreement with co-authors.
 
-* [List of features](https://uni-koeln.sciebo.de/s/IgiRNgNaAbez9ob) 
+* [List of features](https://zenodo.org/records/15836085?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjlkZGI1MmI1LWY3OTQtNGMyZS05M2I4LTllY2IzOWNlYzQzMyIsImRhdGEiOnt9LCJyYW5kb20iOiJmNzhkZmZkNmI4MTJhYTExZWIwOWQ5ZTI1OTgyNTJmYSJ9.LYZLjjfWx8RAz_JZnGcNjiUVPU4FWdiUOLqSPxnAULPhw_rRAwBPzRHaMIDH_oAc9P8p4Qx4AwVNEM2QuuECww) 
 
 
 
