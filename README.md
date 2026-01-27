@@ -1,7 +1,6 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints) • [Q&A](#models-checkpoints) • [Citation](#citation)
 
 </div>
@@ -369,7 +368,7 @@ An end to end example on how to run the code on one provided WSI is availble in 
 ## Datasets
 
 * [NucSeg and TumSeg datasets](https://doi.org/10.5281/zenodo.8362592)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8362592.svg)](https://doi.org/10.5281/zenodo.8362592)
-* [CPI dataset](https://doi.org/10.5281/zenodo.13986860)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13986860.svg)](https://doi.org/10.5281/zenodo.13986860) .
+* [CPI dataset](https://doi.org/10.5281/zenodo.13986860)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13986860.svg)](https://doi.org/10.5281/zenodo.13986860) 
 
 * [List of features](https://zenodo.org/records/15836085?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjlkZGI1MmI1LWY3OTQtNGMyZS05M2I4LTllY2IzOWNlYzQzMyIsImRhdGEiOnt9LCJyYW5kb20iOiJmNzhkZmZkNmI4MTJhYTExZWIwOWQ5ZTI1OTgyNTJmYSJ9.LYZLjjfWx8RAz_JZnGcNjiUVPU4FWdiUOLqSPxnAULPhw_rRAwBPzRHaMIDH_oAc9P8p4Qx4AwVNEM2QuuECww) 
 
