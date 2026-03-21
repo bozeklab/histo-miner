@@ -14,6 +14,13 @@
 This repository contains the code for ["Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer"](https://arxiv.org/abs/2505.04672) paper.
 
 
+**Very Imporant Note:**
+The published work is missing 7 paragraphs from accepted manuscript that were lost during formatting. As of 16.03.2026, we are contacting the editorial office to include these paragraphs in the published work.
+
+I would recommend to refer to the last pre-print version of the manuscript on ArXiv, that is up to date, in the meantime (see link above). 
+
+
+
 ## Presentation of the pipeline
 
 <p align="center">
