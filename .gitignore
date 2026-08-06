@@ -23,6 +23,18 @@ archive-env.yml
 temp.py
 test.pdf
 
+#gitclean
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+
 # In case user run example
 example/data
 example/checkpoints
