@@ -1,4 +1,4 @@
-name: histo-miner-env-test
+name: histo-miner-env
 channels:
   - conda-forge
   - bioconda
