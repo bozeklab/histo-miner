@@ -10,7 +10,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   test:
