@@ -34,7 +34,7 @@ class FeatureSelector:
         self.classification_array = classification_array
 
 
-    def reset_attributes(self, new_feature_array: np.ndarray, 
+    def reset_attributes(self, new_feature_array: np.ndarray,
                          new_classification_array: np.ndarray):
         """
         Same as __init__ except that if call in a loop you can use the same instance of the class
@@ -63,8 +63,8 @@ class FeatureSelector:
             Array containing the index of the selected features
             (the index correspond to the index of the features in the feature array, starts at 0)
         """
-        import mrmr #lazy import to only load if fct run
-        
+        import mrmr  #lazy import to only load if fct run
+
         try:
             X = pd.DataFrame(self.feature_array)
             X = np.transpose(X)
@@ -122,7 +122,7 @@ class FeatureSelector:
             List containing the index of the selected features
             (the index correspond to the index of the features in the feature array)
         """
-        import boruta #lazy import to only load if fct run
+        import boruta  #lazy import to only load if fct run
 
         rf = RandomForestClassifier(n_jobs=-1, class_weight=class_weight, max_depth=max_depth)
         # Define Boruta feature selection method
@@ -131,12 +131,12 @@ class FeatureSelector:
         # https://github.com/scikit-learn-contrib/boruta_py/commit/e04d1a17de142679eabebebd8cedde202587fbf1
         # BorutaPy accepts nupy arrays only, maybe not the same as for mrmr
         # Use already generated numpy vectors instead of pandas dataframe
-       
+
         X = np.transpose(self.feature_array)  # need to have X transposed to have correct Boruta input
         # X = self.feature_array  # need to have X transposed to have correct Boruta input
         y = self.classification_array
         method_boruta.fit(X, y)
-        # Calculate index of Selected Featurs 
+        # Calculate index of Selected Featurs
         print('Selected Feature are:', method_boruta.support_)
         selfeat_boruta_index = [i for i, val in enumerate( method_boruta.support_) if val.any() == True]
         # Check selected features

@@ -40,7 +40,7 @@ def replacestring_json(file: str,
     Returns:
     --------
     """
-    with open(file, 'r') as filename:
+    with open(file) as filename:
         # try:
         content = filename.read()
         clean = content.replace(string2replace, newstring)  # cleanup here
@@ -336,4 +336,3 @@ def gen_hvn_training_patches(rawimage_folder: str,
         else:
             print('Warning: You tried to generate a training patch that was already generated previously'
                   ', skipping...')
-            

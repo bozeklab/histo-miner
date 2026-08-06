@@ -8,9 +8,7 @@ from Misc_Utils othat are needed (probably downsampling code and so on) and are 
 import glob
 import os
 
-import imagesize
 import PIL
-from openslide import OpenSlide
 from PIL import Image
 from tqdm import tqdm
 
@@ -20,7 +18,7 @@ PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
 
 ## Functions
 
-def downsample_image(imagepath: str, downfactor: int, 
+def downsample_image(imagepath: str, downfactor: int,
                      savename: str = '_downsampled',
                      savefolder: str= '') -> None:
     """
@@ -101,6 +99,8 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') 
     Returns
     -------
     """
+    import imagesize
+
     # Resizing
     imagetoresize = Image.open(image)
     # No need to open the image, just use get package working for most of image extensions
@@ -119,8 +119,8 @@ def resize_accordingly(image: str, modelimage: str, savename: str = '_resized') 
 
 
 
-def downsample_wsi(filename, 
-                   output_path,  
+def downsample_wsi(filename,
+                   output_path,
                    target_downsample,
                    thumbnail_extension):
     """ 
@@ -133,6 +133,8 @@ def downsample_wsi(filename,
     Returns:
         tuple: The input filename and a boolean indicating success.
     """
+    from openslide import OpenSlide
+    
     input_path, wsi_fn = os.path.split(filename)[0], os.path.split(filename)[1]
     thumbnail_extension = '.' + thumbnail_extension
 
@@ -142,7 +144,7 @@ def downsample_wsi(filename,
         return wsi_fn, True
     try:
         slide = OpenSlide(os.path.join(input_path, wsi_fn))
-    except BaseException as err:
+    except BaseException:
         return wsi_fn, False
 
 
@@ -159,8 +161,8 @@ def downsample_wsi(filename,
 
 def downsample_image_segmenter(pathtofolder: str,
                                fileext: str = 'ndpi',
-                               outputext: str = 'tif', 
-                               downfactor: int = 32, 
+                               outputext: str = 'tif',
+                               downfactor: int = 32,
                                savefolder: str = 'downsampling/',
                                savename: str = '') -> None:
     """
@@ -190,7 +192,7 @@ def downsample_image_segmenter(pathtofolder: str,
     output_path = pathtofolder + '/' + savefolder
     for fname in tqdm(files):
         if os.path.exists(fname):
-            downsample_wsi(filename = fname, 
+            downsample_wsi(filename = fname,
                            output_path=output_path,
                            target_downsample=downfactor,
                            thumbnail_extension=outputext)

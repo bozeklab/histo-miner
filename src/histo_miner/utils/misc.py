@@ -9,7 +9,6 @@ import os
 import random
 from collections.abc import MutableMapping
 
-import imagesize
 import numpy as np
 from tqdm import tqdm
 
@@ -31,8 +30,9 @@ def checkdownsampling(originalimagepath: str, downsampleimagepath: str, downfact
     Returns
     -------
     """
+    import imagesize
     from openslide import OpenSlide
-    
+
     originalimage = OpenSlide(originalimagepath)
     originalwidth = originalimage.dimensions[0]
     originalheight = originalimage.dimensions[1]
@@ -46,7 +46,7 @@ def checkdownsampling(originalimagepath: str, downsampleimagepath: str, downfact
               "is exactly downsampled by a factor", downfactor,
               "from", os.path.split(originalimagepath)[1])
     else:
-        print("/!\ WARNING /!\ ",
+        print(r"/!\ WARNING /!\ ",
               os.path.split(downsampleimagepath)[1],
               "is not downsampled by a factor", downfactor,
               "from", os.path.split(originalimagepath)[1])
@@ -257,7 +257,7 @@ def rename_with_ancestors(nested_dict: dict, key_list: list) -> dict:
     return recurse(nested_dict)
 
 
-def split_featclarrays(pathtofolder: str, splitpourcent: float = 15., 
+def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
                        clarrayname: str = 'clarray',
                        featarrayname: str = 'featarray') -> list:
     """
@@ -288,13 +288,13 @@ def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
     # Load data
     ext = '.npy'
     clarray = np.load(pathtofolder  + clarrayname + ext)
-    featarray = np.load(pathtofolder + featarrayname + ext) 
+    featarray = np.load(pathtofolder + featarrayname + ext)
     # Define number of WSI represented by the arrays and how much to split (splitpourcent)
     totnbr_wsi = len(clarray)
     nbrwsi2split = int(totnbr_wsi * (splitpourcent/100))
     # Next step, create a list with  the indexes to remove from clarray and featarray
-    # Avoid list comprehension in the next line as we need to check the list itself 
-    # (. The issue here is that indexlist is not defined yet when you use it within the list comprehension. 
+    # Avoid list comprehension in the next line as we need to check the list itself
+    # (. The issue here is that indexlist is not defined yet when you use it within the list comprehension.
     # Therefore, you cannot check for membership in indexlist at that point.)
     indexlist = []
     while len(indexlist) < nbrwsi2split:
@@ -305,7 +305,7 @@ def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
     # VERY IMPORTATNT Remark!:
     # Sort the indices in descending order so that you remove elements from the end to avoid index shifting
     indexlist.sort(reverse=True)
-    
+
     ## Now split clarray into a test and train clarrays
     cllist = list(clarray)
     testcllist = list()
@@ -334,7 +334,7 @@ def split_featclarrays(pathtofolder: str, splitpourcent: float = 15.,
     #Generate the test classifications array from the list:
     #Don't forget to transpose it is necessary here!!!
     testfeatarray = np.transpose(np.asarray(testfeatlist))
-    #Create one list for training data and one list for test data 
+    #Create one list for training data and one list for test data
     list_test_arrays = [testfeatarray, testclarray]
     list_train_arrays = [trainfeatarray, trainclarray]
 
@@ -353,10 +353,10 @@ def noheadercsv_to_dict(file_path: str):
         Path to the csv file to process.
     """
     data_dict = {}
-    with open(file_path, 'r') as file:
+    with open(file_path) as file:
         reader = csv.reader(file)
         for row in reader:
-            data_dict[row[0]] = row[1]  
+            data_dict[row[0]] = row[1]
     return data_dict
 
 
@@ -462,4 +462,4 @@ class NpEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
-        return super(NpEncoder, self).default(obj)
+        return super().default(obj)

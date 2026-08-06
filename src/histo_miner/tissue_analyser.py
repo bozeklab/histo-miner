@@ -70,7 +70,7 @@ def countjson(file: str, searchedwords: list) -> dict:
         key word
     """
     wordcountsdict = dict()
-    with open(file, 'r') as filename:
+    with open(file) as filename:
         data = filename.read()
         for word in tqdm(searchedwords):
             wordcount = data.count(word)
@@ -99,12 +99,12 @@ def counthvnjson(file: str, searchedwords: list, classnameaskey: list = None) ->
         key word
     """
     wordcountsdict = dict()
-    with open(file, 'r') as filename:
+    with open(file) as filename:
         data = filename.read()
         for word in tqdm(searchedwords):
             wordcount = data.count(word)
             wordcountsdict[word] = wordcount
-    if not classnameaskey: 
+    if not classnameaskey:
         return wordcountsdict
     else:
         wordcountvalues = list(wordcountsdict.values())
@@ -112,10 +112,10 @@ def counthvnjson(file: str, searchedwords: list, classnameaskey: list = None) ->
         return wordcountsdict
 
 
-def cells_insidemask_classjson(maskmap: str, 
-                               classjson: str, 
+def cells_insidemask_classjson(maskmap: str,
+                               classjson: str,
                                selectedclasses: list,
-                               maskmapdownfactor: int = 1, 
+                               maskmapdownfactor: int = 1,
                                classnameaskey: list = None) -> dict:
     """
     Calculate number of instances from each class contained in "selectedclasses", that are inside the mask from maskmap.
@@ -148,7 +148,7 @@ def cells_insidemask_classjson(maskmap: str,
         - "dict_numinstanceperclass": number of instances per class dict
         - "dict_totareainstanceperclass": sum of areas of instances per class dict
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     # Loading of mask map is really heavy (local ressources might be not enough)
     maskmap = Image.open(maskmap)
@@ -203,7 +203,7 @@ def cells_insidemask_classjson(maskmap: str,
     else:
         #update classnames with the selectedclasses
         updateclassnameaskey = [classnameaskey[index-1] for index in selectedclasses]
-        #now we use zip method to match class number with its name 
+        #now we use zip method to match class number with its name
         numinstanceperclass_dict = dict(zip(updateclassnameaskey, numinstanceperclass))
         totareainstanceperclass_dict = dict(zip(updateclassnameaskey, totareainstanceperclass))
         outputdictdict = {"dict_numinstanceperclass": numinstanceperclass_dict,
@@ -211,11 +211,11 @@ def cells_insidemask_classjson(maskmap: str,
         return outputdictdict
 
 
-def cells_classandmargin_classjson(maskmap: str, 
-                                   classjson: str, 
+def cells_classandmargin_classjson(maskmap: str,
+                                   classjson: str,
                                    selectedclassestum: list,
                                    selectedclassesvic: list,
-                                   maskmapdownfactor: int = 1, 
+                                   maskmapdownfactor: int = 1,
                                    classnameaskey: list = None,
                                    tumormargin: int = None) -> dict:
     """
@@ -256,7 +256,7 @@ def cells_classandmargin_classjson(maskmap: str,
         - "dict_numinstanceperclass_vicinity": number of instances per class, in the vicinity of the tumor, dict
         - "dict_totareainstanceperclass_vicinity": sum of areas of instances, in the vicinity of the tumor, per class dict 
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     # Loading of mask map is really heavy (local ressources might be not enough)
     maskmap = Image.open(maskmap)
@@ -298,11 +298,11 @@ def cells_classandmargin_classjson(maskmap: str,
 
     # Map of where the cells in the vicinity od the tumor region are
     vicinity_maskmap = extended_maskmap - diminuted_maskmap
-    
+
     for count, nucl_info in tqdm(enumerate(allnucl_info)):
-        
-        if vicinity_maskmap[int(nucl_info[1] / maskmapdownfactor), 
-                            int(nucl_info[0] / maskmapdownfactor)] == 255:  
+
+        if vicinity_maskmap[int(nucl_info[1] / maskmapdownfactor),
+                            int(nucl_info[0] / maskmapdownfactor)] == 255:
             #Here we are in the case of the cell beeing in the vicinity of the tumor
             if nucl_info[2] in selectedclassesvic:  # Chech the class of the nucleus
                 indexclass = selectedclassesvic.index(nucl_info[2])
@@ -312,8 +312,8 @@ def cells_classandmargin_classjson(maskmap: str,
                 instancearea = polygoninfo.area
                 totareainstanceperclass_vicinity[indexclass] += instancearea
 
-        if maskmap[int(nucl_info[1] / maskmapdownfactor), 
-                     int(nucl_info[0] / maskmapdownfactor)] == 255:  
+        if maskmap[int(nucl_info[1] / maskmapdownfactor),
+                     int(nucl_info[0] / maskmapdownfactor)] == 255:
             # cells in the tumor region, including part of the vicinity (the one inside the tumor region)
             if nucl_info[2] in selectedclassestum:  # Chech the class of the nucleus
                 indexclass = selectedclassestum.index(nucl_info[2])
@@ -344,10 +344,10 @@ def cells_classandmargin_classjson(maskmap: str,
         #update classnames with the selectedclasses
         updateclassnameaskey_mask = [classnameaskey[index-1] for index in selectedclassestum]
         updateclassnameaskey_vicinity = [classnameaskey[index-1] for index in selectedclassesvic]
-        #now we use zip method to match class number with its name 
-        numinstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask, 
+        #now we use zip method to match class number with its name
+        numinstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask,
                                                  numinstanceperclass_mask))
-        totareainstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask, 
+        totareainstanceperclass_dict_mask = dict(zip(updateclassnameaskey_mask,
                                                      totareainstanceperclass_mask))
         numinstanceperclass_dict_vicinity = dict(zip(updateclassnameaskey_vicinity,
                                                      numinstanceperclass_vicinity))
@@ -362,10 +362,10 @@ def cells_classandmargin_classjson(maskmap: str,
         return outputdictdict
 
 
-def morph_insidemask_classjson(maskmap: str, 
-                               classjson: str, 
+def morph_insidemask_classjson(maskmap: str,
+                               classjson: str,
                                selectedclasses: list,
-                               maskmapdownfactor: int = 1, 
+                               maskmapdownfactor: int = 1,
                                classnameaskey: list = None) -> dict:
     """
     Calculate morphology features area, circularity and aspect ratio of all instances from each class contained in "selectedclasses",
@@ -400,7 +400,7 @@ def morph_insidemask_classjson(maskmap: str,
         - "dict_morphologyfeatperclass" : Dict of areas, circularities and aspect ratios features (std, mean ...)
         for each class
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     # Loading of mask map is really heavy (local ressources might be not enough)
     maskmap = Image.open(maskmap)
@@ -435,7 +435,7 @@ def morph_insidemask_classjson(maskmap: str,
             if nucl_info[2] in selectedclasses:  # Chech the class of the nucleus
                 valueclass = nucl_info[2]
 
-                # Retrieve all information about the object polygon 
+                # Retrieve all information about the object polygon
                 polygoninfo = shapely.geometry.Polygon(nucl_info[3])
 
                 # Calculation of morphology features
@@ -481,11 +481,11 @@ def morph_insidemask_classjson(maskmap: str,
             # Areas distribution - choose value if no distribution (0 or infinity)
             areas_mean = 0
             areas_std = 0
-            areas_median = 0 
+            areas_median = 0
             areas_mad = 0
-            areas_skewness = 0 
+            areas_skewness = 0
             areas_kurt = 0
-            areas_iqr_value = 0 
+            areas_iqr_value = 0
             # circularities distribution - choose value if no distribution
             circularities_mean = 0
             circularities_std = 0
@@ -493,10 +493,10 @@ def morph_insidemask_classjson(maskmap: str,
             circularities_mad = 0
             circularities_skewness = 0
             circularities_kurt = 0
-            circularities_iqr_value = 0 
+            circularities_iqr_value = 0
             # aspectratios distribution - choose value if no distribution
             aspectratios_mean = 0
-            aspectratios_std = 0 
+            aspectratios_std = 0
             aspectratios_median = 0
             aspectratios_mad = 0
             aspectratios_skewness = 0
@@ -533,10 +533,10 @@ def morph_insidemask_classjson(maskmap: str,
 
         #Create a list of features in a list of classes
         areas_thisclass = [
-            areas_mean, 
-            areas_std, 
-            areas_median, 
-            areas_mad, 
+            areas_mean,
+            areas_std,
+            areas_median,
+            areas_mad,
             areas_skewness,
             areas_kurt,
             areas_iqr_value
@@ -544,30 +544,30 @@ def morph_insidemask_classjson(maskmap: str,
         areas_perclass.append(areas_thisclass)
 
         circularities_thisclass = [
-                    circularities_mean, 
-                    circularities_std, 
-                    circularities_median, 
-                    circularities_mad, 
+                    circularities_mean,
+                    circularities_std,
+                    circularities_median,
+                    circularities_mad,
                     circularities_skewness,
                     circularities_kurt,
                     circularities_iqr_value
                     ]
-        circularities_perclass.append(circularities_thisclass) 
+        circularities_perclass.append(circularities_thisclass)
 
         aspectratios_thisclass= [
-                    aspectratios_mean, 
-                    aspectratios_std, 
-                    aspectratios_median, 
-                    aspectratios_mad, 
+                    aspectratios_mean,
+                    aspectratios_std,
+                    aspectratios_median,
+                    aspectratios_mad,
                     aspectratios_skewness,
                     aspectratios_kurt,
                     aspectratios_iqr_value
                     ]
-        aspectratios_perclass.append(aspectratios_thisclass) 
+        aspectratios_perclass.append(aspectratios_thisclass)
 
-        allfeat_perclass.append(areas_thisclass + circularities_thisclass + aspectratios_thisclass) 
+        allfeat_perclass.append(areas_thisclass + circularities_thisclass + aspectratios_thisclass)
 
-    # Define features name for further dictionnary    
+    # Define features name for further dictionnary
     featurenames = [
                 'areas_mean',
                 'areas_std',
@@ -613,11 +613,11 @@ def morph_insidemask_classjson(maskmap: str,
         return outputdictdict
 
 
-def morph_classandmargin_classjson(maskmap: str, 
-                                   classjson: str, 
+def morph_classandmargin_classjson(maskmap: str,
+                                   classjson: str,
                                    selectedclassestum: list,
                                    selectedclassesvic: list,
-                                   maskmapdownfactor: int = 1, 
+                                   maskmapdownfactor: int = 1,
                                    classnameaskey: list = None,
                                    tumormargin: int = None) -> dict:
     """
@@ -657,7 +657,7 @@ def morph_classandmargin_classjson(maskmap: str,
         - "dict_morphologyfeatperclass_vicinity" : Dict of areas, circularities and aspect ratios features (std, mean ...)
         for the instances, in the vicintiy of the tumor regions, of each class 
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     # Loading of mask map is really heavy (local ressources might be not enough)
     maskmap = Image.open(maskmap)
@@ -700,12 +700,12 @@ def morph_classandmargin_classjson(maskmap: str,
 
     for count, nucl_info in tqdm(enumerate(allnucl_info)):
         # Check if cell is inside the vicnity of mask region
-        if vicinity_maskmap[int(nucl_info[1] / maskmapdownfactor), 
+        if vicinity_maskmap[int(nucl_info[1] / maskmapdownfactor),
                             int(nucl_info[0] / maskmapdownfactor)] == 255:
             if nucl_info[2] in selectedclassesvic:  # Chech the class of the nucleus
                 valueclass = nucl_info[2]
 
-                # Retrieve all information about the object polygon 
+                # Retrieve all information about the object polygon
                 polygoninfo = shapely.geometry.Polygon(nucl_info[3])
 
                 # Calculation of morphology features
@@ -733,7 +733,7 @@ def morph_classandmargin_classjson(maskmap: str,
             if nucl_info[2] in selectedclassestum:  # Chech the class of the nucleus
                 valueclass = nucl_info[2]
 
-                # Retrieve all information about the object polygon 
+                # Retrieve all information about the object polygon
                 polygoninfo = shapely.geometry.Polygon(nucl_info[3])
 
                 # Calculation of morphology features
@@ -775,9 +775,9 @@ def morph_classandmargin_classjson(maskmap: str,
     for valueclass in selectedclassesvic:
         # Keep in the list only features of the given class
         areas_class = [area[0] for area in areas_vicinity if area[1] == valueclass]
-        circularities_class = [circularity[0] for circularity in circularities_vicintiy 
+        circularities_class = [circularity[0] for circularity in circularities_vicintiy
                             if circularity[1] == valueclass]
-        aspectratios_class = [aspectratio[0] for aspectratio in aspectratios_vicinity 
+        aspectratios_class = [aspectratio[0] for aspectratio in aspectratios_vicinity
                             if aspectratio[1] == valueclass]
         # Convert list into npy
         npyareas_class = np.asarray(areas_class)
@@ -789,11 +789,11 @@ def morph_classandmargin_classjson(maskmap: str,
             # Areas distribution - choose value if no distribution (0 or infinity)
             areas_mean = 0
             areas_std = 0
-            areas_median = 0 
+            areas_median = 0
             areas_mad = 0
-            areas_skewness = 0 
+            areas_skewness = 0
             areas_kurt = 0
-            areas_iqr_value = 0 
+            areas_iqr_value = 0
             # circularities distribution - choose value if no distribution
             circularities_mean = 0
             circularities_std = 0
@@ -801,10 +801,10 @@ def morph_classandmargin_classjson(maskmap: str,
             circularities_mad = 0
             circularities_skewness = 0
             circularities_kurt = 0
-            circularities_iqr_value = 0 
+            circularities_iqr_value = 0
             # aspectratios distribution - choose value if no distribution
             aspectratios_mean = 0
-            aspectratios_std = 0 
+            aspectratios_std = 0
             aspectratios_median = 0
             aspectratios_mad = 0
             aspectratios_skewness = 0
@@ -841,10 +841,10 @@ def morph_classandmargin_classjson(maskmap: str,
 
         #Create a list of features in a list of classes
         areasvic_thisclass = [
-            areas_vic_mean, 
-            areas_vic_std, 
-            areas_vic_median, 
-            areas_vic_mad, 
+            areas_vic_mean,
+            areas_vic_std,
+            areas_vic_median,
+            areas_vic_mad,
             areas_vic_skewness,
             areas_vic_kurt,
             areas_vic_iqr_value
@@ -852,39 +852,39 @@ def morph_classandmargin_classjson(maskmap: str,
         areas_vic_perclass.append(areasvic_thisclass)
 
         circularitiesvic_thisclass = [
-                    circularities_vic_mean, 
-                    circularities_vic_std, 
-                    circularities_vic_median, 
-                    circularities_vic_mad, 
+                    circularities_vic_mean,
+                    circularities_vic_std,
+                    circularities_vic_median,
+                    circularities_vic_mad,
                     circularities_vic_skewness,
                     circularities_vic_kurt,
                     circularities_vic_iqr_value
                     ]
-        circularities_vic_perclass.append(circularitiesvic_thisclass) 
+        circularities_vic_perclass.append(circularitiesvic_thisclass)
 
         aspectratiosvic_thisclass= [
-                    aspectratios_vic_mean, 
-                    aspectratios_vic_std, 
-                    aspectratios_vic_median, 
-                    aspectratios_vic_mad, 
+                    aspectratios_vic_mean,
+                    aspectratios_vic_std,
+                    aspectratios_vic_median,
+                    aspectratios_vic_mad,
                     aspectratios_vic_skewness,
                     aspectratios_vic_kurt,
                     aspectratios_vic_iqr_value
                     ]
-        aspectratios_vic_perclass.append(aspectratiosvic_thisclass) 
+        aspectratios_vic_perclass.append(aspectratiosvic_thisclass)
 
-        allfeat_vic_perclass.append(areasvic_thisclass + 
-            circularitiesvic_thisclass + 
-            aspectratiosvic_thisclass) 
+        allfeat_vic_perclass.append(areasvic_thisclass +
+            circularitiesvic_thisclass +
+            aspectratiosvic_thisclass)
 
 
     # Calculate features for cells in the tumor
     for valueclass in selectedclassestum:
         # Keep in the list only features of the given class
         areas_class = [area[0] for area in areas_mask if area[1] == valueclass]
-        circularities_class = [circularity[0] for circularity in circularities_mask 
+        circularities_class = [circularity[0] for circularity in circularities_mask
                             if circularity[1] == valueclass]
-        aspectratios_class = [aspectratio[0] for aspectratio in aspectratios_mask 
+        aspectratios_class = [aspectratio[0] for aspectratio in aspectratios_mask
                             if aspectratio[1] == valueclass]
         # Convert list into npy
         npyareas_class = np.asarray(areas_class)
@@ -896,11 +896,11 @@ def morph_classandmargin_classjson(maskmap: str,
             # Areas distribution - choose value if no distribution (0 or infinity)
             areas_mean = 0
             areas_std = 0
-            areas_median = 0 
+            areas_median = 0
             areas_mad = 0
-            areas_skewness = 0 
+            areas_skewness = 0
             areas_kurt = 0
-            areas_iqr_value = 0 
+            areas_iqr_value = 0
             # circularities distribution - choose value if no distribution
             circularities_mean = 0
             circularities_std = 0
@@ -908,10 +908,10 @@ def morph_classandmargin_classjson(maskmap: str,
             circularities_mad = 0
             circularities_skewness = 0
             circularities_kurt = 0
-            circularities_iqr_value = 0 
+            circularities_iqr_value = 0
             # aspectratios distribution - choose value if no distribution
             aspectratios_mean = 0
-            aspectratios_std = 0 
+            aspectratios_std = 0
             aspectratios_median = 0
             aspectratios_mad = 0
             aspectratios_skewness = 0
@@ -948,10 +948,10 @@ def morph_classandmargin_classjson(maskmap: str,
 
         #Create a list of features in a list of classes
         areasmask_thisclass = [
-            areas_mask_mean, 
-            areas_mask_std, 
-            areas_mask_median, 
-            areas_mask_mad, 
+            areas_mask_mean,
+            areas_mask_std,
+            areas_mask_median,
+            areas_mask_mad,
             areas_mask_skewness,
             areas_mask_kurt,
             areas_mask_iqr_value
@@ -959,32 +959,32 @@ def morph_classandmargin_classjson(maskmap: str,
         areas_mask_perclass.append(areasmask_thisclass)
 
         circularitiesmask_thisclass = [
-                    circularities_mask_mean, 
-                    circularities_mask_std, 
-                    circularities_mask_median, 
-                    circularities_mask_mad, 
+                    circularities_mask_mean,
+                    circularities_mask_std,
+                    circularities_mask_median,
+                    circularities_mask_mad,
                     circularities_mask_skewness,
                     circularities_mask_kurt,
                     circularities_mask_iqr_value
                     ]
-        circularities_mask_perclass.append(circularitiesmask_thisclass) 
+        circularities_mask_perclass.append(circularitiesmask_thisclass)
 
         aspectratiosmask_thisclass= [
-                    aspectratios_mask_mean, 
-                    aspectratios_mask_std, 
-                    aspectratios_mask_median, 
-                    aspectratios_mask_mad, 
+                    aspectratios_mask_mean,
+                    aspectratios_mask_std,
+                    aspectratios_mask_median,
+                    aspectratios_mask_mad,
                     aspectratios_mask_skewness,
                     aspectratios_mask_kurt,
                     aspectratios_mask_iqr_value
                     ]
-        aspectratios_mask_perclass.append(aspectratiosmask_thisclass) 
+        aspectratios_mask_perclass.append(aspectratiosmask_thisclass)
 
-        allfeat_mask_perclass.append(areasmask_thisclass + 
-            circularitiesmask_thisclass + 
-            aspectratiosmask_thisclass) 
+        allfeat_mask_perclass.append(areasmask_thisclass +
+            circularitiesmask_thisclass +
+            aspectratiosmask_thisclass)
 
-    # Define features name for further dictionnary    
+    # Define features name for further dictionnary
     featurenames = [
                 'areas_mean',
                 'areas_std',
@@ -1023,7 +1023,7 @@ def morph_classandmargin_classjson(maskmap: str,
         updateclassnameaskey_vicinity = [classnameaskey[index-1] for index in selectedclassesvic]
         # Create a dict with classnames and list of features
         dictfeatures_perclass_mask = dict(zip(updateclassnameaskey_mask, allfeat_mask_perclass))
-        dictfeatures_perclass_vicinity = dict(zip(updateclassnameaskey_vicinity, allfeat_vic_perclass))        
+        dictfeatures_perclass_vicinity = dict(zip(updateclassnameaskey_vicinity, allfeat_vic_perclass))
         # Create a nested dict with feature names as key and replace the value list of feat with this
         for idx in range(0,len(selectedclassestum)):
             newdict_mask = dict(zip(featurenames, allfeat_mask_perclass[idx]))
@@ -1037,7 +1037,7 @@ def morph_classandmargin_classjson(maskmap: str,
         return outputdictdict
 
 
-def cell2celldist_classjson(classjson: str, 
+def cell2celldist_classjson(classjson: str,
                             selectedclasses: list,
                             cellfilter: str = 'Tumor',
                             maskmap: str = '',
@@ -1084,7 +1084,7 @@ def cell2celldist_classjson(classjson: str,
           [ [dist class 1 to class 2] [dist class 1 to class 3] [dist class 1 to class 4] ] ,
           [ [dist class 2 to class 3] [dist class 2 to class 4] ],  [ [dist class 3 to class 4] ]]
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     if cellfilter == 'Tumor':
         maskmap = Image.open(maskmap)
@@ -1143,7 +1143,7 @@ def cell2celldist_classjson(classjson: str,
 
             else:
                 print("Currently processing distance calculation "
-                      "between cells of Source Class {} and cells of Target Class {}".format(sourceclass, targetclass))
+                      f"between cells of Source Class {sourceclass} and cells of Target Class {targetclass}")
                 # In the case we take all the cells inside the tumor region only
                 # or we take all the cells inside the tumor region + a margin
                 # Keep in mind that the maskmap (tumormap) is a downsampled version of the WSI
@@ -1152,7 +1152,7 @@ def cell2celldist_classjson(classjson: str,
                         print('Keeping the cells inside Tumor regions only.')
                     if cellfilter == 'TumorMargin':
                         print('Keeping the cells inside Tumor regions '
-                              '(including a Margin of {} selected by the user only.'.format(tumormargin))
+                              f'(including a Margin of {tumormargin} selected by the user only.')
                     # keep only the nucleus of source class inside the tumor region:
                     sourceclass_list = [nucl_info for nucl_info in allnucl_info
                                         if nucl_info[2] == sourceclass and
@@ -1252,7 +1252,7 @@ def cell2celldist_classjson(classjson: str,
                 del targetclass_list
                 if min_dist:
                     avgdist = sum(allmindist) / len(allmindist)  # take the average of all closest neighbour distance
-            
+
             # In sourceclass_allavgdist
             if min_dist:
                 sourceclass_allavgdist.append(avgdist)
@@ -1271,7 +1271,7 @@ def cell2celldist_classjson(classjson: str,
     # corresponding keys!
 
 
-def mpcell2celldist_classjson(classjson: str, 
+def mpcell2celldist_classjson(classjson: str,
                               selectedclasses: list,
                               cellfilter: str = 'Tumor',
                               maskmap: str = '',
@@ -1320,7 +1320,7 @@ def mpcell2celldist_classjson(classjson: str,
           [ [dist class 2 to class 3 features dict] [dist class 2 to class 4 features dict] ],  
           [ [dist class 3 to class 4 features dict] ]]
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjson = json.load(filename)  # data must be a dictionnary
     if cellfilter == 'Tumor':
         maskmap = Image.open(maskmap)
@@ -1374,8 +1374,7 @@ def mpcell2celldist_classjson(classjson: str,
     print("All the distance calculations will run in parallel...")
     print("One progress bar per _COMPLETED_ process (one process = calculation of distances between 2 cell classes)")
     print("Number of needed CPU is (number-of-selectedclass * (number-of-selectedclass - 1)) / 2 ")
-    print("In this run, the number of needed CPU is {}".format(
-        int((len(selectedclasses) * (len(selectedclasses) - 1)) / 2)))
+    print(f"In this run, the number of needed CPU is {int((len(selectedclasses) * (len(selectedclasses) - 1)) / 2)}")
     for sourceclass in selectedclasses:
         # sourceclass_allavgdist = list()
         for targetclass in selectedclasses:
@@ -1416,7 +1415,7 @@ def mpcell2celldist_classjson(classjson: str,
         dist_nestedlist.append(dist_lists[0:len(selectedclasses) - k])
         del dist_lists[0:len(selectedclasses) - k]
 
-    
+
     print(dist_nestedlist)
     return dist_nestedlist
 
@@ -1560,7 +1559,7 @@ def multipro_distc2c(allnucl_info,
             mindist_iqr_value
             ]
 
-        # Define features name for further dictionnary    
+        # Define features name for further dictionnary
         featurenames = [
                     'dist_mean',
                     'dist_std',
@@ -1578,17 +1577,15 @@ def multipro_distc2c(allnucl_info,
 
         #queue.put(avgdist)
 
-    else: 
+    else:
 
         # If there is no source cell or no target cell
 
         # Warning message
         if len(sourceclass_list) == 0:
-            warnings.warn('No cell of class {}, so corresponding min distance calculation are skipped'.format(
-                sourceclass))
+            warnings.warn(f'No cell of class {sourceclass}, so corresponding min distance calculation are skipped')
         if len(targetclass_list) == 0:
-            warnings.warn('No cell of class {} , so corresponding min distance calculation are skipped'.format(
-                targetclass))
+            warnings.warn(f'No cell of class {targetclass} , so corresponding min distance calculation are skipped')
 
         # Calculations
         mindist_mean = 0
@@ -1609,7 +1606,7 @@ def multipro_distc2c(allnucl_info,
             mindist_iqr_value
             ]
 
-        # Define features name for further dictionnary    
+        # Define features name for further dictionnary
         featurenames = [
                     'dist_mean',
                     'dist_std',
@@ -1639,7 +1636,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                          cellsdist_inmask_dict: dict = None,
                          masktype: str = 'Tumor',
                          calculate_vicinity: bool = False,
-                         areaofmask: int = None, 
+                         areaofmask: int = None,
                          selectedcls_ratio: list = None,
                          selectedcls_ratiovicinity: list = None,
                          selectedcls_dist: list = None) -> dict:
@@ -1709,9 +1706,9 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
 
 
 
-    #We need to define a very small value for a varibale epsilon 
+    #We need to define a very small value for a varibale epsilon
     # that insure no division by 0 or no log(0)
-    #Value less than 1 are fine as it worth less than 1 cell 
+    #Value less than 1 are fine as it worth less than 1 cell
     # among the hundreds of thousands (if not millions) of cells
     eps = 0.001 #eps for epsilon
 
@@ -1749,35 +1746,35 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
         ratio_wsi_dict["LogRatio_Lymphocytes_TumorCells"] =  np.log(
-                (allcells_in_wsi_dict["Lymphocyte"] + eps) 
+                (allcells_in_wsi_dict["Lymphocyte"] + eps)
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
         ratio_wsi_dict["LogRatio_PlasmaCells_TumorCells"] =  np.log(
-                (allcells_in_wsi_dict["Plasma"] + eps) 
+                (allcells_in_wsi_dict["Plasma"] + eps)
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
         ratio_wsi_dict["LogRatio_StromaCells_TumorCells"] =  np.log(
-                (allcells_in_wsi_dict["Stroma"] + eps) 
+                (allcells_in_wsi_dict["Stroma"] + eps)
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
         ratio_wsi_dict["LogRatio_EpithelialCells_TumorCells"] =  np.log(
-                (allcells_in_wsi_dict["Epithelial"] + eps) 
+                (allcells_in_wsi_dict["Epithelial"] + eps)
                 / (allcells_in_wsi_dict["Tumor"] + eps)
         )
         ratio_wsi_dict["LogRatio_Granulocytes_Lymphocytes"] =  np.log(
-                (allcells_in_wsi_dict["Granulocyte"] + eps) 
+                (allcells_in_wsi_dict["Granulocyte"] + eps)
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_PlasmaCells_Lymphocytes"] =  np.log(
-                (allcells_in_wsi_dict["Plasma"] + eps) 
+                (allcells_in_wsi_dict["Plasma"] + eps)
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_StromaCells_Lymphocytes"] =  np.log(
-                (allcells_in_wsi_dict["Stroma"] + eps) 
+                (allcells_in_wsi_dict["Stroma"] + eps)
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_EpithelialCells_Lymphocytes"] =  np.log(
-                (allcells_in_wsi_dict["Epithelial"] + eps) 
+                (allcells_in_wsi_dict["Epithelial"] + eps)
                 / (allcells_in_wsi_dict["Lymphocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_Granulocytes_PlasmaCells"] =  np.log(
@@ -1789,15 +1786,15 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                 / (allcells_in_wsi_dict["Plasma"] + eps)
         )
         ratio_wsi_dict["LogRatio_EpithelialCells_PlasmaCells"] =  np.log(
-                (allcells_in_wsi_dict["Epithelial"] + eps) 
+                (allcells_in_wsi_dict["Epithelial"] + eps)
                 / (allcells_in_wsi_dict["Plasma"] + eps)
         )
         ratio_wsi_dict["LogRatio_StromaCells_Granulocytes"] =  np.log(
-                (allcells_in_wsi_dict["Stroma"] + eps) 
+                (allcells_in_wsi_dict["Stroma"] + eps)
                 / (allcells_in_wsi_dict["Granulocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_EpithelialCells_Granulocytes"] =  np.log(
-                (allcells_in_wsi_dict["Epithelial"] + eps) 
+                (allcells_in_wsi_dict["Epithelial"] + eps)
                 / (allcells_in_wsi_dict["Granulocyte"] + eps)
         )
         ratio_wsi_dict["LogRatio_EpithelialCells_StromalCells"] =  np.log(
@@ -1816,7 +1813,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     # Already calculated, it is an input of the function (cellsratio_inmask_dict)
 
     ### Calculations linked to ratio of cells inside tumor regions
-    # Here we have 2 different cases, one where we consider only the rumor region (output number of cells inside tumor) 
+    # Here we have 2 different cases, one where we consider only the rumor region (output number of cells inside tumor)
     # and one when we also consider the vicinity of the tumor (output number of cells inside tumor and number of cells
     # in the vicnity of the tumor - vicinity to set)
     if cells_inregion_dict:
@@ -1829,8 +1826,8 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             numcells = sum(
                 nummcellsdict.values()
             )  # No background cell class inside  instmaskdict
-                    
-            if selectedcls_ratio == [1, 2, 3, 4, 5]:    
+
+            if selectedcls_ratio == [1, 2, 3, 4, 5]:
                 fractions_tumor_dict["Percentage_Granulocytes_allcellsinTumor"] = (
                         cells_inregion_dict["dict_numinstanceperclass"]["Granulocyte"]
                         / numcells
@@ -1934,13 +1931,13 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                             cells_inregion_dict["dict_totareainstanceperclass"]["Tumor"]
                             / areaofmask
                     )
-    
- 
+
+
             else:
-                raise ValueError('hvn_outputproperties cannot run with selectedcls_ratio as {}.'
+                raise ValueError(f'hvn_outputproperties cannot run with selectedcls_ratio as {selectedcls_ratio}.'
                     'This is a custom class selection for ratio calculations iniside tumors.'
                     'hvn_outputproperties function needs to be updated to fit this selection.'
-                    .format(selectedcls_ratio)) 
+                    )
 
 
             if calculate_vicinity:
@@ -1962,15 +1959,15 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                             / numcells_vicinity
                     )
                     fractions_tumor_dict["Percentage_PlasmaCells_allcellsinTumorVicinity"] = (
-                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Plasma"] 
+                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Plasma"]
                             / numcells_vicinity
                     )
                     fractions_tumor_dict["Percentage_StromaCells_allcellsinTumorVicinity"] = (
-                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Stroma"] 
+                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Stroma"]
                             / numcells_vicinity
                     )
                     fractions_tumor_dict["Percentage_EpithelialCells_allcellsinTumorVicinity"] = (
-                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Epithelial"] 
+                            cells_inregion_dict["dict_numinstanceperclass_vicinity"]["Epithelial"]
                             / numcells_vicinity
                             )
                     # Cell Type ratios (LogRatioTumorDict)
@@ -2016,13 +2013,13 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                     )
 
                 else:
-                    raise ValueError('hvn_outputproperties cannot run with selectedcls_ratiovicinity as {}.'
+                    raise ValueError(f'hvn_outputproperties cannot run with selectedcls_ratiovicinity as {selectedcls_ratiovicinity}.'
                         'This is a custom class selection for ratio calculations iniside vicinity of tumors.'
                         'hvn_outputproperties function needs to be updated to fit this selection.'
-                        .format(selectedcls_ratiovicinity))
+                        )
 
 
-            
+
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions ratios
     calculations_ratio_tumor_dict = {
@@ -2052,7 +2049,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
                     cells_inregion_dict["dict_numinstanceperclass"]["Stroma"]
                     / allcells_in_wsi_dict["Stroma"]
             )
-            
+
 
     # Create dictionnary for the whole section of calculations linked to cells inside and outside tumor regions
     calculations_mixed_dict = {
@@ -2065,26 +2062,26 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
     if morph_inregion_dict:
                 # Fraction of cell types taking into account only cells inside tumor regions (FractionsTumorDict)
         if masktype == "Tumor":
-            if selectedcls_ratio == [1, 2, 3, 4, 5]:     
+            if selectedcls_ratio == [1, 2, 3, 4, 5]:
                 morph_tumor_dict['Morphology_insideTumor'] =  morph_inregion_dict[
                 'dict_morphologyfeatperclass'
                 ]
             else:
-                raise ValueError('hvn_outputproperties cannot run with selectedcls_ratio as {}.'
+                raise ValueError(f'hvn_outputproperties cannot run with selectedcls_ratio as {selectedcls_ratio}.'
                     'This is a custom class selection for morphology calculations iniside tumors.'
                     'hvn_outputproperties function needs to be updated to fit this selection.'
-                    .format(selectedcls_ratio)) 
+                    )
 
         if calculate_vicinity:
             if selectedcls_ratiovicinity == [1, 2, 3, 4, 6]:
                 morph_tumor_dict['Morphology_insideTumorVicinity'] =  morph_inregion_dict[
                 'dict_morphologyfeatperclass_vicinity'
-                ] 
+                ]
             else:
-                raise ValueError('hvn_outputproperties cannot run with selectedcls_ratiovicinity as {}.'
+                raise ValueError(f'hvn_outputproperties cannot run with selectedcls_ratiovicinity as {selectedcls_ratiovicinity}.'
                     'This is a custom class selection for morphology calculations iniside vicinity of tumors.'
                     'hvn_outputproperties function needs to be updated to fit this selection.'
-                    .format(selectedcls_ratiovicinity))
+                    )
 
 
     #Put all morphology calculation in a dictionnary
@@ -2098,7 +2095,7 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
         # Average Distance to closest neighboor
         # What to look for in cellsdist_in_mask is not obvious at all !!! Look doc string of cell2celldist_classjson
         if selectedcls_dist == [1, 2, 3, 4, 5]:
-            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]    
+            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]
             dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
             dist_tumor_dict["DistClosest_Granulocytes_StromaCells_inTumor"] = cellsdist_inmask_dict[0][2]
             dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][3]
@@ -2108,9 +2105,9 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             dist_tumor_dict["DistClosest_StromaCells_PlasmaCells_inTumor"] = cellsdist_inmask_dict[2][0]
             dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][1]
             dist_tumor_dict["DistClosest_StromaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[3][0]
-        
+
         elif selectedcls_dist == [1, 2, 3, 5]:
-            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]    
+            dist_tumor_dict["DistClosest_Granulocytes_Lymphocytes_inTumor"] = cellsdist_inmask_dict[0][0]
             dist_tumor_dict["DistClosest_Granulocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[0][1]
             dist_tumor_dict["DistClosest_Granulocytes_TumorCells_inTumor"] = cellsdist_inmask_dict[0][2]
             dist_tumor_dict["DistClosest_Lymphocytes_PlasmaCells_inTumor"] = cellsdist_inmask_dict[1][0]
@@ -2118,10 +2115,10 @@ def hvn_outputproperties(allcells_in_wsi_dict: dict = None,
             dist_tumor_dict["DistClosest_PlasmaCells_TumorCells_inTumor"] = cellsdist_inmask_dict[2][0]
 
         else:
-            raise ValueError('hvn_outputproperties cannot run with selectedcls_dist as {}.'
+            raise ValueError(f'hvn_outputproperties cannot run with selectedcls_dist as {selectedcls_dist}.'
                 'This is a custom class selection for distance calculations.'
                 'hvn_outputproperties function needs to be updated to fit this selection.'
-                .format(selectedcls_dist)) 
+                )
 
     # Create dictionnary for the whole section of calculations linked to cells inside tumor regions distances
     calculations_dist_tumor_dict = {"Distances_of_cells_in_Tumor_Regions": dist_tumor_dict}

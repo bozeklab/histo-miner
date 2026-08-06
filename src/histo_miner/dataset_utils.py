@@ -2,16 +2,15 @@
 
 import glob
 import os
-from typing import Tuple
 
 import numpy as np
 from skimage.measure import regionprops
 from tqdm import tqdm
 
 
-def count_cells(classmap_folder: str, 
-                instancemap_folder: str) -> Tuple[int, list, np.ndarray]:
-        
+def count_cells(classmap_folder: str,
+                instancemap_folder: str) -> tuple[int, list, np.ndarray]:
+
     """
     Count number of cells for each class, for each classmap in a folder. It also needs the corresponding
     instance map. It returns:
@@ -61,13 +60,13 @@ def count_cells(classmap_folder: str,
             if class_map[int(coordinates[0]), int(coordinates[1])] != 0: #Don't keep backround values
                 class_values.append(class_map[int(coordinates[0]), int(coordinates[1])])
         class_values = np.asarray(class_values)
- 
+
         # Count the number of each number in a new vector and start the vector by the name of the image
         cell_count = [0 for _ in range(6)]
         cell_count[0] = instancemapname + '.png'
         unique, counts = np.unique(class_values, return_counts=True)
         string_unique = unique.astype(str)
-        class_count_dict = dict(zip(string_unique, counts)) 
+        class_count_dict = dict(zip(string_unique, counts))
 
         for index in range(1,len(cell_count)):
             if str(index) in class_count_dict:
@@ -81,7 +80,7 @@ def count_cells(classmap_folder: str,
     cell_count_matrix = np.row_stack(count_per_file)
 
     # this vectors exclude the name of the files, it is just the total per class
-    total_count_vect = [np.sum(cell_count_matrix[:, column_index].astype(int)) 
+    total_count_vect = [np.sum(cell_count_matrix[:, column_index].astype(int))
                         for column_index in range(1,len(cell_count))]
     print('Number of cells for each class in the folder:', total_count_vect)
     nbr_cells = np.sum(total_count_vect)
@@ -90,8 +89,8 @@ def count_cells(classmap_folder: str,
     return nbr_cells, total_count_vect, cell_count_matrix
 
 
-def count_cells_csv(classmap_folder: str, 
-                    instancemap_folder: str, 
+def count_cells_csv(classmap_folder: str,
+                    instancemap_folder: str,
                     pathtosave: str) -> None:
 
     """
@@ -119,30 +118,30 @@ def count_cells_csv(classmap_folder: str,
     headers = ["Image", "Granulocyte", "Lymphocyte", "Plasma", "Stromal", "Tumor"]
     # Save data to CSV with headers
     csvname_cellcnt = pathtosave + 'cell_count.csv'
-    np.savetxt(csvname_cellcnt, 
-               cell_count_matrix, 
-               delimiter=",", 
-               header=",".join(headers), 
-               comments='', 
+    np.savetxt(csvname_cellcnt,
+               cell_count_matrix,
+               delimiter=",",
+               header=",".join(headers),
+               comments='',
                fmt='%s')
     # Headers name for the cancer type names csv
     headers2 = ["img","type"]
     # Save data to CSV with headers
-    csvname_cancertype = pathtosave + 'types.csv' 
+    csvname_cancertype = pathtosave + 'types.csv'
     column_skin_vector = np.full(((cell_count_matrix[:,0]).shape[0], 1), "Skin")
-    #q column_skin_vector = column_skin_vector.astype(str)  
+    #q column_skin_vector = column_skin_vector.astype(str)
     cancertype_vect = np.vstack((cell_count_matrix[:,0] , column_skin_vector[:,0]))
     cancertype_vect = np.transpose(cancertype_vect)
-    np.savetxt(csvname_cancertype, 
-               cancertype_vect, 
-               delimiter=",", 
-               header=",".join(headers2), 
+    np.savetxt(csvname_cancertype,
+               cancertype_vect,
+               delimiter=",",
+               header=",".join(headers2),
                comments='',
                fmt='%s')
 
 
-def cellVIT_format(classmap_folder: str, 
-                   instancemap_folder: str, 
+def cellVIT_format(classmap_folder: str,
+                   instancemap_folder: str,
                    pathtosave: str) -> None:
     """
     Create a file "label" that contains both class maps and instance maps as dictionnary keys inside np file/
@@ -213,7 +212,7 @@ def cellVIT_format(classmap_folder: str,
 #     #         maxval = np.max(type_map)
 
 #     #         if maxval > 5:
-                
+
 #     #             print("finame",filename)
 #     #             print("max value", maxval)
 
@@ -291,7 +290,7 @@ def main():
     pathtosave = '/data/lsancere/Data_General/Predictions/HE-ICH-external-validation-inference/4811_18_HE/cellcount/'
 
     count_cells_csv(classmap_folder, instancemap_folder, pathtosave)
-    
+
     print('Done')
 
 

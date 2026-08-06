@@ -42,7 +42,7 @@ def anaylser2featselect(folderpath: str, recnaming: list = ('no_recurrence','rec
     rec_analyse_folder = tissueanalyser_folder + '/' + 'recurrence'
     if not os.path.exists(rec_analyse_folder):
         os.makedirs(rec_analyse_folder)
-    
+
     norecurrencestr = str(recnaming[0])
     recurrencestr = str(recnaming[1])
     for root, dirs, files in os.walk(folderpath):
@@ -57,14 +57,14 @@ def anaylser2featselect(folderpath: str, recnaming: list = ('no_recurrence','rec
                         # no_recurrence strings appear in the name
                         shutil.move(filepath, norec_analyse_folder + '/' + file.replace('analysed', 'no_recurrence_analysed'))
                     # Be careful if one of the two string is also included in the other one. So to avoid issue we do:
-                    elif not norecurrencestr in filepath and recurrencestr in filepath: 
+                    elif norecurrencestr not in filepath and recurrencestr in filepath:
                         shutil.move(filepath, rec_analyse_folder + '/' + file.replace('analysed', 'recurrence_analysed'))
-                    else: 
+                    else:
                         raise ValueError('Some features are not associated to a recurrence or norecurrence WSI classification.'
                                           'User need a way to discriminate between the two cases, using folder naming.'
-                                          'For now, the strings choosen in recnaming argument are: {}'
+                                          f'For now, the strings choosen in recnaming argument are: {recnaming}'
                                           'User can change this argument and check recnaming docstring to have more information'
-                                          .format(recnaming))
+                                          )
 
 
 def savenpy_2txt(file: str, savename: str) -> None:
@@ -110,7 +110,7 @@ def save2dnpy_2png(file: str, savename: str, more_than_8bits: bool = False) -> N
         npyarray = npyarray.astype('uint8')
     data = im.fromarray(npyarray)
     pathtofolder, filename = os.path.split(file)
-    data.save((pathtofolder + '/' + savename + '.png'))
+    data.save(pathtofolder + '/' + savename + '.png')
 
 
 def save3dnpy_2png(file: str,
@@ -149,12 +149,12 @@ def save3dnpy_2png(file: str,
             npyarray = npyarray.astype('uint8')
         data = im.fromarray(npyarray[:, :, indextoextract])  # Choose what to extract accordingly
         pathtofolder, filename = os.path.split(file)
-        data.save((pathtofolder + '/' + savename + '_' + str(indextoextract) + '.png'))
+        data.save(pathtofolder + '/' + savename + '_' + str(indextoextract) + '.png')
     else:
         npyarray = npyarray.astype('uint8')
         data = im.fromarray(npyarray) #We want all the dimension for a PNG RGB image
         pathtofolder, filename = os.path.split(file)
-        data.save((pathtofolder + '/' + savename + '.png'))
+        data.save(pathtofolder + '/' + savename + '.png')
 
 
 def save4dnpy_2png(file: str,
@@ -195,7 +195,7 @@ def save4dnpy_2png(file: str,
     # to the parameter indexestoextract, in the context of a 4D matrix. Of course to end up with a PNG, 2 dimension has
     #to be set
     pathtofolder, filename = os.path.split(file)
-    data.save((pathtofolder + '/' + savename + '.png'))
+    data.save(pathtofolder + '/' + savename + '.png')
 
 
 

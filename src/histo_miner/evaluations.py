@@ -154,7 +154,7 @@ def remap_label(pred, by_size=False):
     new_pred = np.zeros(pred.shape, np.int32)
     for idx, inst_id in enumerate(pred_id):
         new_pred[pred == inst_id] = idx + 1
-        maxpred = np.max(new_pred) # for debug purposes 
+        maxpred = np.max(new_pred) # for debug purposes
     return new_pred
 
 
@@ -232,7 +232,7 @@ def pairing_cells(true, pred, match_iou=0.5):
 ######################
 
 
-def plot_conf_matrix(conf_matrix: np.ndarray, 
+def plot_conf_matrix(conf_matrix: np.ndarray,
                      conf_matrix_normalized: np.ndarray,
                      conf_matrix_normalized_algpred: np.ndarray,
                      savefolder: str) -> None:
@@ -276,7 +276,7 @@ def plot_conf_matrix(conf_matrix: np.ndarray,
     plt.yticks(ticks=selectedclass, labels=my_yticks)
     plt.savefig(savefolder + '/' + 'conf_mat_truenorm.png', dpi=1000, bbox_inches='tight')
     #plt.show()
-    
+
     # Generate third plot, the confusion matrix with Prediction normalization
     _, ax = plt.subplots(figsize=(9, 6))
     heatmap(conf_matrix_normalized_algpred, annot=True, linewidths=0.5, ax=ax, fmt='.2g', cmap='YlGnBu')
@@ -295,7 +295,7 @@ def plot_conf_matrix(conf_matrix: np.ndarray,
 
 
 
-def plot_conf_matrix_doublevalues(conf_matrix: np.ndarray, 
+def plot_conf_matrix_doublevalues(conf_matrix: np.ndarray,
                      conf_matrix_normalized: np.ndarray,
                      savefolder: str) -> None:
     """
@@ -311,7 +311,7 @@ def plot_conf_matrix_doublevalues(conf_matrix: np.ndarray,
     selectedclass = [1, 2, 3, 4, 5]
 
     # Build an annotation array of strings combining raw count + normalized value
-    # If you prefer showing percentages, multiply conf_matrix_normalized * 100 
+    # If you prefer showing percentages, multiply conf_matrix_normalized * 100
     # and adapt the format string accordingly.
     annot_recall = np.empty_like(conf_matrix, dtype=object)
     for i in range(conf_matrix.shape[0]):
@@ -324,10 +324,10 @@ def plot_conf_matrix_doublevalues(conf_matrix: np.ndarray,
     _, ax = plt.subplots(figsize=(9, 6))
     # We pass conf_matrix_normalized for the color scale,
     # and 'annot_recall' as the string annotation
-    heatmap(conf_matrix_normalized, 
-            annot=annot_recall, 
-            linewidths=.5, 
-            ax=ax, 
+    heatmap(conf_matrix_normalized,
+            annot=annot_recall,
+            linewidths=.5,
+            ax=ax,
             fmt='s',   # 's' to display custom string annotations
             cmap='YlGnBu',
             annot_kws={"ha": "center", "va": "center"})

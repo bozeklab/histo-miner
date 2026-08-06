@@ -16,7 +16,7 @@ def download_from_zenodo(url: str, output_path: str):
 
     print(f"Downloaded to {output_path}")
 
-def create_folders():  
+def create_folders():
     dirs = [
         script_dir + "/../../data/",
         script_dir + "/../../data/checkpoints/",
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # Create all the needed folders
     create_folders()
 
-    # Download tcheckpoints from Zenodo 
+    # Download tcheckpoints from Zenodo
     zenodo_links = [
         "https://zenodo.org/records/13970198/files/scchovernet_bestweights.tar?download=1",
         "https://zenodo.org/records/13970198/files/sccsegmenter_bestweights.pth?download=1",
@@ -50,17 +50,17 @@ if __name__ == "__main__":
 
     k = 0
     for url in zenodo_links:
-        
+
         output_folder_path = script_dir + output_folder_name[k]
         filename = url.split("/")[-1].split("?")[0]
         output_path = os.path.join(output_folder_path, filename)
 
-        if not os.path.exists(output_path): 
-            print("Downloading {} ({})...".format(filename, file_size[k]))
+        if not os.path.exists(output_path):
+            print(f"Downloading {filename} ({file_size[k]})...")
             download_from_zenodo(url, output_path)
         else:
-            print("{} already downloaded".format(filename))
-       
+            print(f"{filename} already downloaded")
+
         k += 1
 
 

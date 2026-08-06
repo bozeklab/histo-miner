@@ -25,7 +25,7 @@ def update_cellclass(classjson: str, maskmap: str, maskmapdownfactor: int) -> No
     Returns
     -------
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjsondict = json.load(filename)  # data must be a dictionnary
 
     maskmap = Image.open(maskmap)
@@ -81,7 +81,7 @@ def cancelupdate(classjson: str) -> None:
     Returns
     -------
     """
-    with open(classjson, 'r') as filename:
+    with open(classjson) as filename:
         classjsondict = json.load(filename)  # data must be a dictionnary
 
     # Define more explicity the cell classes
