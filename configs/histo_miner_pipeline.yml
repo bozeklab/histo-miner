@@ -63,7 +63,7 @@
 
     bool:                                        # --- parent key, DO NOT FILL this line.
  
-      calculate_morphologies: True               # Allow or not to calculate nucleus morphology related features while running tissue analyser. Default: True [bool]
+      calculate_morphologies: False              # Allow or not to calculate nucleus morphology related features while running tissue analyser. Default: False [bool]
 
       calculate_vicinity: True                   # Allow or not to calculate features for cells in the tumor vicinity while running tissue analyser. Default: True [bool]
 

@@ -786,6 +786,15 @@ def morph_classandmargin_classjson(maskmap: str,
 
         #Take into consideration the case of a cell type not present:
         if len(areas_class) == 0:
+            warnings.warn(
+                f"No cells of class {valueclass} in the tumour vicinity. "
+                "Morphology features for this class are unreliable: the "
+                "zero-fallback below is not applied (the consumer reads "
+                "different variable names), so the reported values repeat the "
+                "previously processed class, or raise UnboundLocalError if this "
+                "is the first class. See tests/test_tissue_analyser.py.",
+                stacklevel=2,
+            )
             # Areas distribution - choose value if no distribution (0 or infinity)
             areas_mean = 0
             areas_std = 0
@@ -893,6 +902,15 @@ def morph_classandmargin_classjson(maskmap: str,
 
         #Take into consideration the case of a cell type not present:
         if len(areas_class) == 0:
+            warnings.warn(
+                f"No cells of class {valueclass} in the tumour region. "
+                "Morphology features for this class are unreliable: the "
+                "zero-fallback below is not applied (the consumer reads "
+                "different variable names), so the reported values repeat the "
+                "previously processed class, or raise UnboundLocalError if this "
+                "is the first class. See tests/test_tissue_analyser.py.",
+                stacklevel=2,
+            )
             # Areas distribution - choose value if no distribution (0 or infinity)
             areas_mean = 0
             areas_std = 0
@@ -1531,10 +1549,6 @@ def multipro_distc2c(allnucl_info,
 
         del sourceclass_list
         del targetclass_list
-        if min_dist:
-            avgdist = sum(allmindist) / len(allmindist)  # take the average of all closest neighbour distance
-        else:
-            avgdist = False
 
         # Calculate all distribution feature:
 
@@ -1583,9 +1597,18 @@ def multipro_distc2c(allnucl_info,
 
         # Warning message
         if len(sourceclass_list) == 0:
-            warnings.warn(f'No cell of class {sourceclass}, so corresponding min distance calculation are skipped')
+            warnings.warn(
+                f'No cell of class {sourceclass}, so corresponding min distance '
+                'calculation are skipped',
+                stacklevel=2,
+            )
         if len(targetclass_list) == 0:
-            warnings.warn(f'No cell of class {targetclass} , so corresponding min distance calculation are skipped')
+            warnings.warn(
+                f'No cell of class {targetclass}, so corresponding min distance '
+                'calculation are skipped',
+                stacklevel=2,
+            )
+
 
         # Calculations
         mindist_mean = 0

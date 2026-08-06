@@ -66,5 +66,23 @@ extend-exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
-ignore = ["E501"]
+ignore = [
+    "E501",   # line length
+    "W291",   # trailing whitespace: almost all of it sits inside docstrings,
+    "W293",   #   where removing it would rewrite the string content itself
+    "B905",   # zip() without strict=: needs per-call-site review, deferred
+    "B007",   # unused loop control variable: cosmetic
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The empty-class fallback in morph_classandmargin_classjson (both the vicinity
+# and the tumour block) assigns areas_mean/circularities_mean/aspectratios_mean,
+# while the else branches and the consumers use the _vic_ / _mask_ variants.
+# The zero assignments are therefore never read.
+# Deliberately unchanged: morphology is disabled by default
+# (calculate_morphologies: False) and is outside the published feature set.
+# A runtime warning is emitted if the condition occurs; raise an issue if a fix
+# is needed. See the skipped tests in tests/test_tissue_analyser.py.
+# Note: morph_insidemask_classjson uses consistent names and is not affected.
+"src/histo_miner/tissue_analyser.py" = ["F841"]
 

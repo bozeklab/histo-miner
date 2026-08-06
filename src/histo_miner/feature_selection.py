@@ -138,7 +138,7 @@ class FeatureSelector:
         method_boruta.fit(X, y)
         # Calculate index of Selected Featurs
         print('Selected Feature are:', method_boruta.support_)
-        selfeat_boruta_index = [i for i, val in enumerate( method_boruta.support_) if val.any() == True]
+        selfeat_boruta_index = [i for i, val in enumerate( method_boruta.support_) if val.any()]
         # Check selected features
         # Select the chosen features from our dataframe.
         # selfeatmatrix_boruta = X[:, method_boruta.support_]
