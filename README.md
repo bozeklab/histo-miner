@@ -1,7 +1,5 @@
 <div align="center">
 
-
-<div align="center">
 ![tests](https://github.com/bozeklab/histo-miner/actions/workflows/tests.yml/badge.svg)
 [![arXiv](https://img.shields.io/badge/arXiv-2505.04672-b31b1b.svg)](https://arxiv.org/abs/2505.04672)
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
@@ -11,10 +9,10 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
+
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints) • [Q&A](#models-checkpoints) • [Citation](#citation) 
 
 </div>
-
 
 
 
