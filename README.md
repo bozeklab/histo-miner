@@ -1,7 +1,16 @@
+<div align="center">
+
+
+<div align="center">
+![tests](https://github.com/bozeklab/histo-miner/actions/workflows/tests.yml/badge.svg)
+[![arXiv](https://img.shields.io/badge/arXiv-2505.04672-b31b1b.svg)](https://arxiv.org/abs/2505.04672)
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+
+</div>
+
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints) • [Q&A](#models-checkpoints) • [Citation](#citation) 
 
 </div>
@@ -431,10 +440,6 @@ Pytorch versioning depends on the GPUs of your machine. By excluding pytorch ins
 ```
 If you use this code or the datasets links please also consider starring the repo to increase its visibility! Thanks 💫
 
-
-Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
-
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
 [cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
 [cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
