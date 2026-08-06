@@ -1,14 +1,12 @@
 #Lucas Sancéré -
 
-import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
-import os
 
 
-import yaml
 import numpy as np
+import yaml
 from attrdictionary import AttrDict as attributedict
-from src.histo_miner.evaluations import plot_conf_matrix, plot_conf_matrix_doublevalues
+
+from histo_miner.evaluations import plot_conf_matrix, plot_conf_matrix_doublevalues
 
 # Import parameters values from config file by generating a dict.
 # The lists will be imported as tuples.

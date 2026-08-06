@@ -1,29 +1,17 @@
 #Lucas Sancéré 
 
-import os
-import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
-import random
-
 import math
-from tqdm import tqdm
-import random
-import numpy as np
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
+import xgboost
 import yaml
-import xgboost 
-import lightgbm
 from attrdictionary import AttrDict as attributedict
-from sklearn.model_selection import ParameterGrid, cross_val_score, StratifiedGroupKFold, StratifiedKFold
-from sklearn.metrics import balanced_accuracy_score, roc_curve, RocCurveDisplay, auc
-from sklearn.preprocessing import StandardScaler 
-from scipy.cluster.hierarchy import linkage, fcluster
-from scipy.spatial.distance import squareform
-from collections import Counter, defaultdict
+from sklearn.metrics import RocCurveDisplay, auc, balanced_accuracy_score, roc_curve
+from sklearn.model_selection import StratifiedKFold
 
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSelector
-import src.histo_miner.utils.misc as utils_misc
-
+from histo_miner.feature_selection import FeatureSelector
 
 # We directly set the best case: xgboost and we keep 10 best features 
 

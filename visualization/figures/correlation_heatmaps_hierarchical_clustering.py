@@ -1,24 +1,15 @@
 #Lucas Sancéré -
 
-import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
 import os
 
-from tqdm import tqdm
-import yaml
-import json
-import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import seaborn as sns
+import yaml
 from attrdictionary import AttrDict as attributedict
-from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from scipy.cluster.hierarchy import fcluster, linkage
 from scipy.spatial.distance import squareform
-
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant
-
-
-
 
 # create the heatmap
 

@@ -1,7 +1,6 @@
 # Histo-Miner: Tissue Features Extraction With Deep Learning from H&E Images of Squamous Cell Carcinoma Skin Cancer
 
 <div align="center">
-
 [Histo-Miner presentation](#presentation-of-the-pipeline) • [Project Structure](#project-structure) • [Visualization](#visualization) • [Installation](#installation) •  [Usage](#usage) • [Example](#example) •  [Datasets](#datasets) • [Checkpoints](#models-checkpoints) • [Q&A](#models-checkpoints) • [Citation](#citation) 
 
 </div>
@@ -96,7 +95,7 @@ cd histo-miner
 # histo-miner env
 conda env create -f histo-miner-env.yml
 conda activate histo-miner-env
-pip install --no-dependencies mrmr-selection==0.2.5
+pip install -e . --no-deps
 
 # mmsegmentation submodule env
 conda create --name mmsegmentation_submodule python=3.8 -y
@@ -135,7 +134,7 @@ You can create environments from scratch instead of using yaml files.
    conda activate histo-miner-env-nomrmr
    conda install -c conda-forge openslide=3.4.1
    pip install -r ./requirements.txt
-   pip install --no-dependencies mrmr-selection==0.2.5
+   pip install -e . --no-deps
 
    # mmsegmentation submodule env
    conda create --name mmsegmentation_submodule python=3.8 -y
@@ -342,6 +341,20 @@ This version performs classification using a new feature selection tailored to y
    - `eval_folder`, name of the folder
    Optionally update `classification.yml` for custom parameters.
 6. Choose a feature selection method from `scripts/cross_validation/`. We recommand running `featsel_mrmr_std_crossval_samesplits.py`. Run the selected feature method.
+
+   > **Optional dependency: mRMR**
+   >
+   > The `featsel_mrmr_*` scripts (and `FeatureSelector.run_mrmr()`) require `mrmr-selection`, which is **not** installed by default. Its package metadata declares a dependency on `sklearn` — a deprecated placeholder for `scikit-learn` — so it must be installed without dependency resolution:
+   >
+   > ```bash
+   > pip install jinja2
+   > pip install --no-dependencies mrmr-selection==0.2.5
+   > ```
+   >
+   > `jinja2` is required because `mrmr`'s `__init__` imports a BigQuery helper that depends on it. Install it **before** `mrmr-selection`, otherwise later `pip` commands print a spurious resolver warning about the missing `sklearn` package.
+   >
+   > The other selection methods (Mann-Whitney U, hierarchical clustering, Boruta) need none of this.
+   
 7. Update the following parameters in `classification.yml` config:
    - `predefined_feature_selection` must be set to **False**
    - `feature_selection_file`, path to the feature selection numpy file generated in 7. 

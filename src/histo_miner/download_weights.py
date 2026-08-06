@@ -1,10 +1,7 @@
 import os
-import sys
-import glob
-import re
 from pathlib import Path
-import requests
 
+import requests
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 

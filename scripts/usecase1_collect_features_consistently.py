@@ -1,22 +1,20 @@
 #Lucas Sancéré -
 
-import sys
+import json
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-sys.path.append(script_dir)   # subdir/
-sys.path.append(parent_dir)   # project/
-
-import json
 import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
 
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, noheadercsv_to_dict, \
-                                       rename_with_ancestors
-from src.histo_miner.utils.filemanagment import anaylser2featselect
+from histo_miner.utils.misc import (
+    convert_flatten,
+    convert_flatten_redundant,
+    noheadercsv_to_dict,
+    rename_with_ancestors,
+)
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 #####################################################################

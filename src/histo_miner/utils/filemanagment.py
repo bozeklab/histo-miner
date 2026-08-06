@@ -1,13 +1,12 @@
 #Lucas Sancéré -
 
-import json
+import glob
 import os
 import shutil
-import numpy as np
 
-import glob
-from tqdm import tqdm
+import numpy as np
 from PIL import Image as im
+from tqdm import tqdm
 
 ### Utils Functions
 

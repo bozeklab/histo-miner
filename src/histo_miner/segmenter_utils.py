@@ -1,10 +1,10 @@
 #Lucas Sancéré -
 
-from PIL import Image
-import numpy as np
-from itertools import product
 import copy
+from itertools import product
 
+import numpy as np
+from PIL import Image
 
 ##### SEGMENTER OUTPUT CONVERSIONS AND PROCESSING
 

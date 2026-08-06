@@ -1,19 +1,16 @@
 #Lucas Sancéré -
 
-import sys
+import json
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-sys.path.append(script_dir)   # subdir/
-sys.path.append(parent_dir)   # project/
-
+import joblib
 import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix
-import joblib
-import json
+
+from histo_miner.feature_selection import SelectedFeaturesMatrix
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 #############################################################

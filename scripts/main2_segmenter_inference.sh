@@ -38,8 +38,7 @@ if [ $downsample_needed = true ]; then
 
 	echo "Downsample images..."
 
-	python -c "import sys; sys.path.append('../'); \
-	from src.histo_miner.utils.image_processing import downsample_image_segmenter; \
+	python -c "from histo_miner.utils.image_processing import downsample_image_segmenter; \
 	downsample_image_segmenter('$input_dir')"
 
 fi
@@ -68,7 +67,7 @@ if [ $downsample_needed = true ]; then
 	input_dir="$input_dir/downsampling/"
 fi
 # Name of folder "downsmapling" is based on the name chosen on
-# src.histo_miner.utils.image_processing.downsample_image_segmenter function arg*
+# histo_miner.utils.image_processing.downsample_image_segmenter function arg*
 
 echo "Run mmsegmentation submodule inference..."
 

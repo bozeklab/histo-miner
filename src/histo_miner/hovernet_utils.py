@@ -2,15 +2,13 @@
 
 import glob
 import itertools
+import json
 import os
 
 import numpy as np
+from scipy.io import loadmat
 from skimage.measure import regionprops
 from tqdm import tqdm
-import json
-from scipy.io import loadmat
-from typing import Tuple
-
 
 ##### HOVERNET OUTPUT CONVERSIONS AND PROCESSING
 

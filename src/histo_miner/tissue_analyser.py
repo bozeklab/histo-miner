@@ -2,20 +2,23 @@
 
 # import copy
 # import glob
-import warnings
 import json
 import math
 import multiprocessing as mp
+import warnings
+
 # import os
 # from ast import literal_eval
 from itertools import product
-import PIL
+
 import cv2
 import numpy as np
+import PIL
 import scipy
 import shapely.geometry
 from PIL import Image
 from skimage.measure import regionprops
+
 # from skimage.util import view_as_blocks
 # from sklearn.preprocessing import binarize
 from tqdm import tqdm

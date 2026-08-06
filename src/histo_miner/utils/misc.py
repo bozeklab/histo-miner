@@ -1,18 +1,17 @@
 #Lucas Sancéré -
 
+import csv
 import json
 import os
-import csv
-from collections.abc import MutableMapping
+
 #depends on the env, could be
 # from collections.abd import MutableMapping
 import random
-from tqdm import tqdm
+from collections.abc import MutableMapping
 
 import imagesize
 import numpy as np
-from openslide import OpenSlide
-
+from tqdm import tqdm
 
 ### Utils Functions
 
@@ -32,6 +31,8 @@ def checkdownsampling(originalimagepath: str, downsampleimagepath: str, downfact
     Returns
     -------
     """
+    from openslide import OpenSlide
+    
     originalimage = OpenSlide(originalimagepath)
     originalwidth = originalimage.dimensions[0]
     originalheight = originalimage.dimensions[1]

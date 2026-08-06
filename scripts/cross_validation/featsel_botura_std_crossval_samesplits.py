@@ -1,27 +1,18 @@
 #Lucas Sancéré 
 
-import sys
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-grandparent_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
-sys.path.append(script_dir)
-sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
 
-import numpy as np
-import yaml
-import xgboost 
 import lightgbm
+import numpy as np
+import xgboost
+import yaml
 from attrdictionary import AttrDict as attributedict
-from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import balanced_accuracy_score
-from sklearn.preprocessing import StandardScaler 
+from sklearn.model_selection import StratifiedKFold
 
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix, FeatureSelector
-
-
+from histo_miner.feature_selection import FeatureSelector
 
 #############################################################
 ## Load configs parameter

@@ -5,27 +5,14 @@ Here we will add the functions from classic_image_processing
 from Misc_Utils othat are needed (probably downsampling code and so on) and are not present anywhere on this repo
 """
 
-import copy
 import glob
-import json
-import math
-import multiprocessing as mp
 import os
-from ast import literal_eval
-from itertools import product
 
-import PIL
-import cv2
 import imagesize
-import numpy as np
-import shapely.geometry
-import yaml
-from PIL import Image
-from skimage.measure import regionprops, label
-from skimage.util import view_as_blocks
-from sklearn.preprocessing import binarize
-from tqdm import tqdm
+import PIL
 from openslide import OpenSlide
+from PIL import Image
+from tqdm import tqdm
 
 PIL.Image.MAX_IMAGE_PIXELS = 10000000000000
 

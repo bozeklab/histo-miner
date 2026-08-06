@@ -1,30 +1,33 @@
 #Lucas Sancéré -
 
-import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
+import json
 import os
 
-import json
-from tqdm import tqdm
-import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import ttest_ind
-from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.manifold import TSNE
-from sklearn.preprocessing import StandardScaler
+import numpy as np
 import pandas as pd
 import plotnine
 import seaborn as sns
 import yaml
 from attrdictionary import AttrDict as attributedict
-from plotnine import ggplot, aes, geom_boxplot, xlab, ylab, labs, theme, \
-                    element_text, geom_density, scale_color_manual, scale_fill_manual
+from plotnine import (
+    aes,
+    geom_density,
+    ggplot,
+    labs,
+    scale_color_manual,
+    scale_fill_manual,
+    theme,
+    xlab,
+    ylab,
+)
+from scipy.stats import ttest_ind
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
 
-from src.histo_miner.utils.misc import convert_flatten, convert_flatten_redundant, rename_with_ancestors
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix
-
-
+from histo_miner.utils.misc import convert_flatten, rename_with_ancestors
 
 #############################################################
 ## Load configs parameter

@@ -1,20 +1,15 @@
 #Lucas Sancéré -
 
-import sys
+import json
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-sys.path.append(script_dir)   # subdir/
-sys.path.append(parent_dir)   # project/
-
-import json
 import yaml
 from attrdictionary import AttrDict as attributedict
 
-from src.histo_miner import tissue_analyser as analyser
-from src.histo_miner.utils.misc import NpEncoder
+from histo_miner import tissue_analyser as analyser
+from histo_miner.utils.misc import NpEncoder
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 ###################################################################

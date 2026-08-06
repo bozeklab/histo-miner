@@ -1,16 +1,12 @@
 #Lucas Sancéré -
 
 import glob
-import itertools
 import os
+from typing import Tuple
 
 import numpy as np
 from skimage.measure import regionprops
 from tqdm import tqdm
-import json
-from scipy.io import loadmat
-from typing import Tuple
-
 
 
 def count_cells(classmap_folder: str, 

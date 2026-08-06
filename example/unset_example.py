@@ -1,5 +1,6 @@
-import os
 import glob
+import os
+
 
 def replace_in_file(path, old, new):
     with open(path, 'r', encoding='utf-8') as f:

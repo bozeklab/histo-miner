@@ -1,29 +1,21 @@
 #Lucas Sancéré -
 
-import sys
 import os
+import sys
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-grandparent_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
-sys.path.append(script_dir)
-sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
 
 import glob
-import numpy as np
-import yaml
-from tqdm import tqdm
-from attrdictionary import AttrDict as attributedict
 from itertools import product
-import cv2
+
+import numpy as np
 import sklearn.metrics
+import yaml
+from attrdictionary import AttrDict as attributedict
+from tqdm import tqdm
 
-from src.histo_miner.evaluations import get_fast_pq, remap_label, pairing_cells
-from src.histo_miner.hovernet_utils import classmap_from_classvector
-
-
-
+from histo_miner.evaluations import get_fast_pq, pairing_cells, remap_label
+from histo_miner.hovernet_utils import classmap_from_classvector
 
 #############################################################
 ## Notes

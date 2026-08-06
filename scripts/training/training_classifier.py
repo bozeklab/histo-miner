@@ -1,34 +1,21 @@
 #Lucas Sancéré -
 
-import sys
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-grandparent_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
-sys.path.append(script_dir)
-sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
 
-import os.path
-from tqdm import tqdm
-import numpy as np
-import time
-import yaml
-import xgboost 
-import lightgbm
-from attrdictionary import AttrDict as attributedict
-from sklearn import linear_model, ensemble, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV, ParameterGrid, \
-cross_validate, cross_val_score, GroupKFold, StratifiedGroupKFold
-import joblib
 import json
+import os.path
 
-from src.histo_miner.feature_selection import SelectedFeaturesMatrix
-import src.histo_miner.utils.misc as utils_misc
+import joblib
+import lightgbm
+import numpy as np
+import xgboost
+import yaml
+from attrdictionary import AttrDict as attributedict
 
-
-
+import histo_miner.utils.misc as utils_misc
+from histo_miner.feature_selection import SelectedFeaturesMatrix
 
 ##############################################################
 ## Load configs parameter

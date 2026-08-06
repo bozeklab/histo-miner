@@ -19,6 +19,7 @@ Here we will see how to use Histo-Miner on a provided WSI slide. It is similar t
 
 - The user is running the code on macOS or Linux, or on Windows via WSL. 
 - `histo-miner-env`, `hovernet_submodule` and `mmsegmentation_submodule` conda environments are installed as described in **Installation** section. 
+- The `histo-miner` package is installed in the `histo-miner-env` environment (by ssimply running `pip install -e . --no-deps`, see **Installation**).
 - GPU compatible with CUDA
 
 

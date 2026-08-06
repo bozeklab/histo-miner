@@ -1,14 +1,11 @@
 #Lucas Sancéré -
 
 import os
-import sys
-sys.path.append('../../')  # Only for Remote use on Clusters
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import yaml
 from attrdictionary import AttrDict as attributedict
-
 
 #############################################################
 ## Load configs parameter

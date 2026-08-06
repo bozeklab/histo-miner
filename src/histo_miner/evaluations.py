@@ -1,14 +1,9 @@
-import numpy as np
 import os
-import scipy
-from scipy.optimize import linear_sum_assignment
 
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml
-from attrdictionary import AttrDict as attributedict
+from scipy.optimize import linear_sum_assignment
 from seaborn import heatmap
-
 
 ######################
 ### METRICS

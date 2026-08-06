@@ -1,7 +1,5 @@
 #Lucas Sancéré -
 
-import boruta
-import mrmr
 import numpy as np
 import pandas as pd
 import scipy.stats
@@ -64,8 +62,9 @@ class FeatureSelector:
         selfeat_mrmr_index: npy array
             Array containing the index of the selected features
             (the index correspond to the index of the features in the feature array, starts at 0)
-        TO FILL
         """
+        import mrmr #lazy import to only load if fct run
+        
         try:
             X = pd.DataFrame(self.feature_array)
             X = np.transpose(X)
@@ -123,6 +122,8 @@ class FeatureSelector:
             List containing the index of the selected features
             (the index correspond to the index of the features in the feature array)
         """
+        import boruta #lazy import to only load if fct run
+
         rf = RandomForestClassifier(n_jobs=-1, class_weight=class_weight, max_depth=max_depth)
         # Define Boruta feature selection method
         method_boruta = boruta.BorutaPy(rf, n_estimators='auto', verbose=2, random_state=random_state)
