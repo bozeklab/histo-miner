@@ -79,10 +79,10 @@ ignore = [
 # and the tumour block) assigns areas_mean/circularities_mean/aspectratios_mean,
 # while the else branches and the consumers use the _vic_ / _mask_ variants.
 # The zero assignments are therefore never read.
-# Deliberately unchanged: morphology is disabled by default
-# (calculate_morphologies: False) and is outside the published feature set.
-# A runtime warning is emitted if the condition occurs; raise an issue if a fix
-# is needed. See the skipped tests in tests/test_tissue_analyser.py.
-# Note: morph_insidemask_classjson uses consistent names and is not affected.
+# Deliberately unchanged to reproduce morphology feat with distance and tissue
+# feat comparison in the paper and check if there is a real issue.
+# Morphology is disabled by default and is outside the published feature set. 
+# A runtime warning is emitted if the condition occurs.
+# See the skipped tests in tests/test_tissue_analyser.py.
 "src/histo_miner/tissue_analyser.py" = ["F841"]
-
+# Note: morph_insidemask_classjson uses consistent names and is not affected.
